@@ -249,10 +249,15 @@ class RawRequestSemanticsTests(unittest.TestCase):
             baseline = next(samples)
             self.assertTrue(baseline['current']['request']['supported'])
             self.assertIsNone(baseline['source']['candidate_event'])
+            request_only = {'greToClientEvent': {'greToClientMessages':
+                            [copy.deepcopy(request(source[-1]))]}}
             with path.open('a', encoding='utf-8') as stream:
-                stream.write(json.dumps(source[-1]) + '\n')
+                stream.write(json.dumps(request_only) + '\n')
             duplicate = next(samples)
             self.assertEqual(duplicate['source']['phase'], 'append')
+            self.assertEqual(duplicate['source']['new_records'], 1)
+            self.assertTrue(duplicate['current']['valid'])
+            self.assertEqual(duplicate['current']['request']['id'], 311)
             self.assertIsNone(duplicate['source']['candidate_event'])
             self.assertFalse(duplicate['current']['actionable'])
 
