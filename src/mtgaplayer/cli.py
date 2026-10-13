@@ -58,23 +58,64 @@ def replay(path, dry=False, format='normalized'):
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
+    # History is a baseline, never a new opportunity. A request can be emitted
+    # only on its first complete, supported append observation.
+    seen_requests = set()
     for index in range(samples):
         reset, records = follower.poll()
         if reset:
             reducer.reset(follower.generation)
+        phase = 'history' if index == 0 or reset else 'append'
+        newly_accepted = set()
         for record in records:
             reducer.apply(record)
+            # Record *every* accepted supported request before a later record
+            # can invalidate the outward snapshot. A subsequent identical Full
+            # recovery must not turn its retransmission into a new opportunity.
+            # A later failure (even in this same GRE record) does not erase
+            # a previously accepted request. Its identity still belongs in
+            # the deduplication ledger, but can never make an invalid current
+            # snapshot actionable.
+            accepted = reducer.request
+            binding = accepted.get('binding') if accepted and accepted.get('supported') else None
+            if binding and binding.get('ownership_verified') is True:
+                identity = (binding.get('generation'), binding.get('match'), binding.get('game'),
+                            binding.get('game_state_id'), binding.get('self_seat'), accepted['id'])
+                if identity not in seen_requests:
+                    gre = record.get('greToClientEvent') if isinstance(record, dict) else None
+                    messages = gre.get('greToClientMessages') if isinstance(gre, dict) else None
+                    if phase == 'append' and isinstance(messages, list) and any(
+                            isinstance(message, dict) and
+                            message.get('type') == accepted['type'] and
+                            message.get('msgId') == accepted['id'] and
+                            message.get('gameStateId') == accepted['game_state_id'] and
+                            message.get('systemSeatIds') == [binding['self_seat']]
+                            for message in messages):
+                        newly_accepted.add(identity)
+                    seen_requests.add(identity)
         document = reducer.document()
+        reduced_current = document['current']
         if follower.framer.partial:
-            document['current'] = {k: document['current'].get(k) for k in
+            document['current'] = {k: reduced_current.get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
             document['current']['valid'] = False
             document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
+        request = reduced_current.get('request') if reduced_current.get('valid') else None
+        binding = request.get('binding') if request and request.get('supported') else None
+        candidate_event = None
+        if binding and binding.get('ownership_verified') is True:
+            identity = (binding.get('generation'), binding.get('match'), binding.get('game'),
+                        binding.get('game_state_id'), binding.get('self_seat'), request['id'])
+            if phase == 'append' and not follower.framer.partial and identity in newly_accepted:
+                candidate_event = {'kind': 'supported_request_observed',
+                                   'binding': binding, 'request_id': request['id'],
+                                   'candidate_count': len(request['candidates']),
+                                   'read_only': True}
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
-                              'mode': 'watch', 'phase': 'history' if index == 0 or reset else 'append',
-                              'new_records': len(records), 'input_sent': False,
+                              'mode': 'watch', 'phase': phase, 'new_records': len(records),
+                              'candidate_event': candidate_event, 'input_sent': False,
                               'executor_connected': False, 'stopped': index + 1 == samples,
                               'stop_reason': 'sample_limit' if index + 1 == samples else None}
         yield document

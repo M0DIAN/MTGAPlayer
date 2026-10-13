@@ -5,8 +5,10 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
+from mtgaplayer.cli import watch
 from mtgaplayer.raw_log import RawReducer
 
 
@@ -193,6 +195,177 @@ class RawRequestSemanticsTests(unittest.TestCase):
         self.assertEqual(reducer.document()['current']['request']['candidates'],
                          [{'instance_id': number} for number in (175, 176, 178, 179)])
         self.assertFalse(reducer.document()['current']['actionable'])
+
+    def test_watch_append_only_candidate_event_and_consumption(self):
+        source = rows()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_text(''.join(json.dumps(item) + '\n' for item in source[:-1]),
+                            encoding='utf-8')
+            samples = watch(path, interval=0, samples=5)
+            baseline = next(samples)
+            self.assertEqual(baseline['source']['phase'], 'history')
+            self.assertIsNone(baseline['source']['candidate_event'])
+            self.assertIsNone(baseline['current']['request'])
+            encoded = (json.dumps(source[-1]) + '\n').encode('utf-8')
+            with path.open('ab') as stream:
+                stream.write(encoded[:19])
+            partial = next(samples)
+            self.assertTrue(partial['source']['partial_record'])
+            self.assertFalse(partial['current']['valid'])
+            self.assertIsNone(partial['source']['candidate_event'])
+            with path.open('ab') as stream:
+                stream.write(encoded[19:])
+            arrived = next(samples)
+            self.assertEqual(arrived['source']['phase'], 'append')
+            self.assertEqual(arrived['source']['new_records'], 1)
+            request = arrived['current']['request']
+            self.assertEqual(request['id'], 311)
+            self.assertEqual(arrived['source']['candidate_event'],
+                             {'kind': 'supported_request_observed',
+                              'binding': request['binding'], 'request_id': 311,
+                              'candidate_count': 4, 'read_only': True})
+            self.assertFalse(arrived['current']['actionable'])
+            self.assertFalse(arrived['source']['input_sent'])
+            self.assertFalse(arrived['source']['executor_connected'])
+            idle = next(samples)
+            self.assertIsNone(idle['source']['candidate_event'])
+            self.assertEqual(idle['source']['new_records'], 0)
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(RESPONSE.read_text(encoding='utf-8') + '\n')
+            consumed = next(samples)
+            self.assertIsNone(consumed['source']['candidate_event'])
+            self.assertIsNone(consumed['current']['request'])
+            self.assertEqual(consumed['current']['submission']['confirmation'],
+                             'client_submission_only')
+
+    def test_watch_history_and_retransmission_do_not_emit_candidate_event(self):
+        source = rows()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_text(''.join(json.dumps(item) + '\n' for item in source),
+                            encoding='utf-8')
+            samples = watch(path, interval=0, samples=2)
+            baseline = next(samples)
+            self.assertTrue(baseline['current']['request']['supported'])
+            self.assertIsNone(baseline['source']['candidate_event'])
+            request_only = {'greToClientEvent': {'greToClientMessages':
+                            [copy.deepcopy(request(source[-1]))]}}
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(request_only) + '\n')
+            duplicate = next(samples)
+            self.assertEqual(duplicate['source']['phase'], 'append')
+            self.assertEqual(duplicate['source']['new_records'], 1)
+            self.assertTrue(duplicate['current']['valid'])
+            self.assertEqual(duplicate['current']['request']['id'], 311)
+            self.assertIsNone(duplicate['source']['candidate_event'])
+            self.assertFalse(duplicate['current']['actionable'])
+
+
+    def test_historical_request_partial_tail_cannot_become_new_append_event(self):
+        # Independent-review P1: unrelated completion of a partial tail must
+        # not make an existing request 311 appear newly received.
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_bytes(FIXTURE.read_bytes() + b'{"probe":')
+            samples = watch(path, interval=0, samples=3)
+            baseline = next(samples)
+            self.assertEqual(baseline['source']['phase'], 'history')
+            self.assertTrue(baseline['source']['partial_record'])
+            self.assertFalse(baseline['current']['valid'])
+            self.assertIsNone(baseline['source']['candidate_event'])
+
+            with path.open('ab') as stream:
+                stream.write(b'true}')
+            appended = next(samples)
+            self.assertEqual(appended['source']['phase'], 'append')
+            self.assertEqual(appended['source']['new_records'], 1)
+            self.assertTrue(appended['current']['valid'])
+            self.assertEqual(appended['current']['request']['id'], 311)
+            self.assertIsNone(appended['source']['candidate_event'])
+
+            duplicate = {'greToClientEvent': {'greToClientMessages':
+                         [copy.deepcopy(request(rows()[-1]))]}}
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(duplicate) + '\n')
+            retransmitted = next(samples)
+            self.assertEqual(retransmitted['source']['new_records'], 1)
+            self.assertTrue(retransmitted['current']['valid'])
+            self.assertIsNone(retransmitted['source']['candidate_event'])
+            self.assertFalse(retransmitted['current']['actionable'])
+            self.assertFalse(retransmitted['source']['input_sent'])
+            self.assertFalse(retransmitted['source']['executor_connected'])
+
+
+    def test_history_accepted_request_invalid_then_identical_full_and_request_retransmit(self):
+        # Synthesize the observed SelectN 311 on fixture's real Full state 1:
+        # unlike state 231 (a Diff), this Full supports exact retransmission
+        # recovery after a malformed complete record.
+        source = rows()
+        original = copy.deepcopy(request(source[-1]))
+        original['gameStateId'] = 1
+        request_record = {'greToClientEvent': {'greToClientMessages': [original]}}
+        malformed = b'{"greToClientEvent":}\n'
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            history = source[:3] + [request_record]
+            path.write_bytes((''.join(json.dumps(item) + '\n' for item in history)).encode('utf-8')
+                             + malformed)
+            samples = watch(path, interval=0, samples=2)
+            baseline = next(samples)
+            self.assertEqual(baseline['source']['phase'], 'history')
+            self.assertEqual(baseline['error'], 'malformed_raw_record')
+            self.assertFalse(baseline['current']['valid'])
+            self.assertIsNone(baseline['source']['candidate_event'])
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(source[2]) + '\n')  # exact Full state 1
+                stream.write(json.dumps(request_record) + '\n')  # same SelectN request
+            recovered = next(samples)
+            self.assertEqual(recovered['source']['phase'], 'append')
+            self.assertEqual(recovered['source']['new_records'], 2)
+            self.assertIsNone(recovered['error'])
+            self.assertTrue(recovered['current']['valid'])
+            self.assertEqual(recovered['current']['request']['id'], 311)
+            self.assertTrue(recovered['current']['request']['supported'])
+            self.assertIsNone(recovered['source']['candidate_event'])
+            self.assertFalse(recovered['current']['actionable'])
+            self.assertFalse(recovered['source']['input_sent'])
+            self.assertFalse(recovered['source']['executor_connected'])
+
+
+    def test_history_request_then_gap_in_same_gre_entry_dedups_after_full_recovery(self):
+        # A request can be accepted and then invalidated by a later message
+        # inside ONE framed raw record; per-record history must still seed it.
+        source = rows()
+        original = copy.deepcopy(request(source[-1]))
+        original['gameStateId'] = 1
+        combined = {'greToClientEvent': {'greToClientMessages': [
+            original,
+            {'type': 'GREMessageType_GameStateMessage', 'systemSeatIds': [1],
+             'gameStateMessage': {'type': 'GameStateType_Diff',
+                                  'gameStateId': 2, 'prevGameStateId': 999}}]}}
+        retransmit = {'greToClientEvent': {'greToClientMessages': [original]}}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_text(''.join(json.dumps(item) + '\n'
+                                    for item in source[:3] + [combined]),
+                            encoding='utf-8')
+            samples = watch(path, interval=0, samples=2)
+            history = next(samples)
+            self.assertEqual(history['error'], 'state_gap_or_missing_full')
+            self.assertFalse(history['current']['valid'])
+            self.assertIsNone(history['source']['candidate_event'])
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(source[2]) + '\n')
+                stream.write(json.dumps(retransmit) + '\n')
+            after = next(samples)
+            self.assertEqual(after['source']['new_records'], 2)
+            self.assertTrue(after['current']['valid'])
+            self.assertEqual(after['current']['request']['id'], 311)
+            self.assertIsNone(after['source']['candidate_event'])
+            self.assertFalse(after['current']['actionable'])
+            self.assertFalse(after['source']['input_sent'])
+            self.assertFalse(after['source']['executor_connected'])
 
 
 if __name__ == '__main__':
