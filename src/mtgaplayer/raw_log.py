@@ -72,7 +72,7 @@ def _available_action_inventory(message):
     type_labels_complete = True
     for position, row in enumerate(actions):
         typ = row.get('actionType')
-        if typ not in _OBSERVED_ACTION_TYPES or type(typ) is not str:
+        if type(typ) is not str or typ not in _OBSERVED_ACTION_TYPES:
             typ = '_unrecognized_action_type'
             type_labels_complete = False
         counts[typ] = counts.get(typ, 0) + 1
