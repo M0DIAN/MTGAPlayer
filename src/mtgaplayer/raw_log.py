@@ -207,7 +207,11 @@ class RawReducer:
         for field in ('authenticateResponse', 'matchGameRoomStateChangedEvent',
                       'greToClientEvent'):
             if field in entry and not isinstance(entry[field], dict):
-                self._invalidate('invalid_' + field)
+                reason = 'invalid_' + field
+                if field in ('authenticateResponse', 'matchGameRoomStateChangedEvent'):
+                    self._revoke_seat(reason, revoke_client=field == 'authenticateResponse')
+                else:
+                    self._invalidate(reason)
                 return
         auth = entry.get('authenticateResponse')
         if isinstance(auth, dict):

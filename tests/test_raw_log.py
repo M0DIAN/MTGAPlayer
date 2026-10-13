@@ -346,6 +346,10 @@ class RawLogTests(unittest.TestCase):
     def test_bad_auth_and_room_revoke_seat_until_new_verified_pair(self):
         rows = entries()
         for bad in ({'authenticateResponse': {'clientId': 42}},
+                    {'authenticateResponse': None},
+                    {'authenticateResponse': 42},
+                    {'matchGameRoomStateChangedEvent': None},
+                    {'matchGameRoomStateChangedEvent': 42},
                     {'matchGameRoomStateChangedEvent': {'gameRoomInfo': {
                         'gameRoomConfig': {'matchId': 'fixture-match', 'reservedPlayers': []},
                         'stateType': 'MatchGameRoomStateType_Playing'}}}):
