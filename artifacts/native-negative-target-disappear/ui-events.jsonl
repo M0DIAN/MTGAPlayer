@@ -1,0 +1,6 @@
+{"at": 1073194.687, "kind": "press", "hit_object": 17, "x": 404, "y": 430, "request": "req-1", "state_version": 1}
+{"at": 1073194.734, "kind": "release", "hit_object": 65533, "x": 404, "y": 250, "request": "req-1", "state_version": 1}
+{"at": 1073195.156, "kind": "press", "hit_object": 17, "x": 404, "y": 430, "request": "req-2", "state_version": 3}
+{"at": 1073195.187, "kind": "release", "hit_object": 17, "x": 404, "y": 430, "request": "req-2", "state_version": 3}
+{"at": 1073195.218, "kind": "press", "hit_object": 91, "x": 134, "y": 100, "request": "req-2:target", "state_version": 4}
+{"at": 1073195.25, "kind": "release", "hit_object": null, "x": 134, "y": 100, "request": "req-2:target", "state_version": 5}

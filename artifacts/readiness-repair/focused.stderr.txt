@@ -1,0 +1,14 @@
+test_point_uses_shared_wait_and_returns_latest_binding (test_visual.ConfirmationReadinessTests.test_point_uses_shared_wait_and_returns_latest_binding) ... ok
+test_terminal_changes_during_capture_never_confirm (test_visual.ConfirmationReadinessTests.test_terminal_changes_during_capture_never_confirm) ... ok
+test_terminal_pixels_lag_waits_without_repeating_input (test_visual.ConfirmationReadinessTests.test_terminal_pixels_lag_waits_without_repeating_input) ... ok
+test_ambiguous_or_unknown_decoder_errors_never_retry (test_visual.ReadinessTests.test_ambiguous_or_unknown_decoder_errors_never_retry) ... ok
+test_context_change_after_capture_rejects_even_missing_pixels (test_visual.ReadinessTests.test_context_change_after_capture_rejects_even_missing_pixels) ... ok
+test_fixed_deadline_and_state_expiry_sleep_without_input (test_visual.ReadinessTests.test_fixed_deadline_and_state_expiry_sleep_without_input) ... ok
+test_focus_loss_during_wait_rejects_immediately (test_visual.ReadinessTests.test_focus_loss_during_wait_rejects_immediately) ... ok
+test_only_missing_or_old_pixels_wait_read_only (test_visual.ReadinessTests.test_only_missing_or_old_pixels_wait_read_only) ... ok
+test_stop_and_deadline_after_capture_cannot_return_coordinates (test_visual.ReadinessTests.test_stop_and_deadline_after_capture_cannot_return_coordinates) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.016s
+
+OK

@@ -1,0 +1,53 @@
+{
+  "NATIVE_HARNESS": "BLOCKED_NATIVE",
+  "LATENCY": "NOT_MEASURED",
+  "LIVE_MTGA": "NOT_RUN",
+  "native_probe": {
+    "platform": "nt",
+    "input_sent": false,
+    "scope": "read_only",
+    "MTGA_object_location": "NOT_IMPLEMENTED",
+    "screen": [
+      1920,
+      1080
+    ],
+    "foreground_hwnd": 0,
+    "input_desktop": true,
+    "matching_visible_windows": [],
+    "status": "AVAILABLE_FOR_PROBE",
+    "limitations": "Session visibility is scoped to this process; no MTGA input adapter."
+  },
+  "rows": 1,
+  "reason": "focus_lost",
+  "scope": "native_synthetic_harness_only",
+  "opportunities": 1,
+  "status_counts": {
+    "confirmed": 0,
+    "fail": 0,
+    "unsupported": 0,
+    "timeout": 0,
+    "paused": 1,
+    "cancelled": 0,
+    "uncertain": 0
+  },
+  "unfinished": 0,
+  "compound_confirmed": 0,
+  "action_counts": {},
+  "startup_ms": null,
+  "success_end_to_end_ms": null,
+  "all_ended_opportunities_ms": {
+    "p50": 30.999999959021807,
+    "p95": 30.999999959021807,
+    "p99": 30.999999959021807,
+    "max": 30.999999959021807,
+    "n": 1
+  },
+  "before_input_ms": null,
+  "input_ms": null,
+  "after_input_ms": null,
+  "ordered_seven_timestamps": true,
+  "MTGA_object_location": "NOT_IMPLEMENTED",
+  "startup_failed_ms": 359.99999986961484,
+  "harness_exit_code": 0,
+  "total_run_ms": 437.99999984912574
+}

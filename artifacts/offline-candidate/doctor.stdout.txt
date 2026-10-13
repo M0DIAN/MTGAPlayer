@@ -1,0 +1,47 @@
+{
+  "python": "3.11.16 (main, Sep  1 2026, 14:15:24) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+  "base_prefix": "D:\\Development\\python\\cpython-3.11-windows-x86_64-none",
+  "venv": true,
+  "python_lock": "3.11",
+  "interpreter_supported": true,
+  "dependencies": "stdlib only; setuptools used only to install",
+  "os": "Windows-10-10.0.26200-SP0",
+  "config": {
+    "path": null,
+    "valid": true,
+    "error": null
+  },
+  "log": {
+    "path": null,
+    "exists": null,
+    "format": "normalized-ndjson-v1 only; raw Player.log unsupported"
+  },
+  "desktop": {
+    "platform": "nt",
+    "input_sent": false,
+    "scope": "read_only",
+    "MTGA_object_location": "NOT_IMPLEMENTED",
+    "screen": [
+      1920,
+      1080
+    ],
+    "foreground_hwnd": 1116784,
+    "input_desktop": true,
+    "matching_visible_windows": [
+      {
+        "hwnd": 331550,
+        "title": "MTGA"
+      },
+      {
+        "hwnd": 132738,
+        "title": "M0DIAN/MTGAPlayer - Google Chrome"
+      }
+    ],
+    "status": "AVAILABLE_FOR_PROBE",
+    "limitations": "Session visibility is scoped to this process; no MTGA input adapter."
+  },
+  "default_mode": "replay/dry-run",
+  "input_sent": false,
+  "LIVE_MTGA": "NOT_RUN"
+}
