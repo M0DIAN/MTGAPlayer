@@ -206,7 +206,7 @@ class RawRequestSemanticsTests(unittest.TestCase):
             baseline = next(samples)
             self.assertEqual(baseline['source']['phase'], 'history')
             self.assertIsNone(baseline['source']['candidate_event'])
-            self.assertIsNone(baseline['current']['request'])
+            self.assertFalse(baseline['current']['request']['supported'])
             encoded = (json.dumps(source[-1]) + '\n').encode('utf-8')
             with path.open('ab') as stream:
                 stream.write(encoded[:19])
