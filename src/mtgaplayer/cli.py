@@ -12,7 +12,9 @@ from .stream import Follower
 from .raw_log import RawFollower, RawReducer
 
 
-def replay(path, dry=False, format='normalized'):
+def replay(path, dry=False, format='normalized', card_db_path=None):
+    if card_db_path is not None and format != 'player-log':
+        raise ValueError('card_db_requires_player_log_format')
     if format == 'player-log':
         follower, reducer = RawFollower(path), RawReducer()
         reset, records = follower.poll()
@@ -27,6 +29,9 @@ def replay(path, dry=False, format='normalized'):
             document['current']['valid'] = False
             document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
+        if card_db_path is not None and document['current'].get('valid') is True:
+            from .card_catalog import enrich_visible_document
+            enrich_visible_document(document, card_db_path)
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
@@ -155,6 +160,8 @@ def main(argv=None):
         replay_parser = sub.add_parser(name, help='consume explicit normalized JSONL; never sends input')
         replay_parser.add_argument('input', type=Path)
         replay_parser.add_argument('--format', choices=['normalized', 'player-log'], default='normalized')
+        replay_parser.add_argument('--card-db', type=Path,
+                                   help='opt-in local read-only MTGA card SQLite (raw replay only)')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -184,7 +191,8 @@ def main(argv=None):
         code = 0 if result['interpreter_supported'] and result['config']['valid'] else 1
     elif args.command in {'replay', 'dry-run'}:
         try:
-            result = replay(args.input, args.command == 'dry-run', args.format)
+            result = replay(args.input, args.command == 'dry-run', args.format,
+                            args.card_db)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1

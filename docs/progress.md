@@ -1,5 +1,14 @@
 # MTGAPlayer progress
 
+## MP11 — opt-in visible card names from local read-only SQLite (candidate)
+
+Baseline: MP10's accepted squash main `f5369591fba0abff972a6a85eb80be67eca90988`, natural main push CI `38404218129` SUCCESS with Core 80/80 and Windows native-no-input. The existing real GRE parser and action source joins remain frozen.
+
+MP11 reads an **explicitly selected**, local MTGA card SQLite file only on user opt-in. The standard-library SQLite reader validates `Cards(GrpId,TitleId)` and either `Localizations_enUS(LocId,Loc)` or `Localizations(LocId,enUS)`, preferring formatted entries. Queries use only the GrpIds of the **already-visible current objects** and parameterized bounded SQL. It returns optional names, set codes and collector numbers with provenance; absent, duplicate and malformed catalog records remain unresolved. The snapshot overlay does not touch hidden GRE objects, `last_valid`, request lifecycle or the policy/executor. No game data file is bundled or auto-discovered, and the program still runs without any game asset.
+
+This is identity **metadata**, not Oracle rules, zone/cast permissions, legal mana/targets, strategy or MTGA input. `request.supported=false`, `legal_actions=null`, `actionable=false` remain. The CLI opt-in is `replay --format player-log --card-db <file>`, and the focused count-only scanner `scripts/inspect_card_catalog.py` permits an owner's original-log and actual installed-card-database smoke check without exposing card names/IDs. Synthetic SQLite plus real-source sanitized GRE fixture tests cover the contract. Actual installed SQLite compatibility requires owner-local evidence and an independent exact-HEAD review prior to integration.
+
+
 ## MP10: bind engine action source to already-visible game object (candidate, 2026-10-13)
 
 Base: accepted MP9 squash main `3c2d0e54f1b4bee7e101beae55a13b0879ba555d`; the natural post-merge main [CI #38377647298](https://github.com/M0DIAN/MTGAPlayer/actions/runs/38377647298) passed core 76/76 and Windows native-no-input, both on the exact squash SHA. The previous MP4-MP9 real GRE reducer already exposes only own-hand and explicitly public game objects, and MP7-MP9 describe request-bound action instance IDs without a safe join to visible cards.
