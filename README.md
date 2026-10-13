@@ -53,6 +53,19 @@ A separate `scripts/inspect_card_catalog.py --log <Player.log> --card-db <actual
 
 
 
+### MP13 request-bound read-only decision observation
+
+The MP13 opt-in `--decision-input` view composes **only the already-projected current raw GRE snapshot**: authenticated own-seat request identity (generation/match/game/state/request ID), turn/players, the existing own-hand/public visible objects, MP10 source links, MP8–9 **opaque** cost/target shape/equality evidence, and optional MP11–12 localized card names/stored numeric power and toughness. It never re-opens hidden raw objects or joins an offered SelectN option ID to hidden card metadata. Its compact `decision_input.request.engine_action_inventory.described_rows` contains only engine-described active rows; unrecognized/undetailed actions remain counted but **not invented**. All positional mana/target evidence remains uninterpreted, and legal target/payment flags remain false.
+
+```powershell
+# Offline-only observation, optionally including stored catalog metadata:
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log --decision-input --card-db "<Raw_CardDatabase_file.mtga>" "<Player.log>"
+# Existing read-only watch; no card database read on the polling loop:
+.\.venv\Scripts\mtgaplayer.exe watch --decision-input "<Player.log>" --samples 5
+```
+
+This adds a **separate output-only `decision_input` property** only when requested; existing replay/watch payloads stay unchanged by default. Invalid, partial, unbound or absent-current-request observations yield `decision_input: null` with **no fallback to diagnostic `last_valid`**. Even an appended watch request has `source.freshness_verified=false`: offline historical data, finite polling and file timestamps are **not live action authority**. `read_only=true`, `actionable=false`, `legal_actions=null`, `input_sent=false`, `executor_connected=false`, `strategy_selected=false` remain invariant. No policy/LLM, Magic rules engine, input coordinates, native MTGA bridge or <3 second execution proof is added. `--decision-input` is rejected for the separate synthetic normalized replay format.
+
 ### MP12 opt-in card capability schema evidence (read-only)
 
 To avoid guessing whether the installed MTGA database contains card types, mana costs, abilities, targets or rules text, the next stage starts with a **schema-only** diagnostic. It opens only the explicitly selected SQLite catalog in immutable/read-only mode and returns `Cards` column names with SQLite **storage affinity** plus names of potentially relevant game-data tables. It never selects card rows, so **no card values, names, IDs, rules text or local paths** enter its JSON output. Table-name filtering and column limits are explicit; column names alone do **not** prove any game-rule meaning or legality.
