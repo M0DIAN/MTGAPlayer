@@ -10,6 +10,8 @@ from pathlib import Path
 import re
 
 from mtgaplayer.raw_log import RawFollower, RawReducer
+from mtgaplayer.decision_input import build_decision_input
+from mtgaplayer.action_gaps import assess_action_gaps
 
 
 TARGET = "GREMessageType_ActionsAvailableReq"
@@ -451,6 +453,108 @@ def inspect_visible_sources(path, max_history_bytes=64 * 1024 * 1024):
     }
 
 
+def inspect_gap_coverage(path, max_history_bytes=64 * 1024 * 1024):
+    """Aggregates only accepted own-seat, current engine-action gap reports."""
+    follower = RawFollower(Path(path), max_history_bytes)
+    _, records = follower.poll()
+    reducer = RawReducer()
+    reducer.reset(follower.generation)
+    seen = set()
+    counts, types, undetailed, statuses = Counter(), Counter(), Counter(), Counter()
+    gaps, shapes = Counter(), Counter()
+    for entry in records:
+        reducer.apply(entry)
+        if not isinstance(entry, dict) or reducer.error is not None:
+            continue
+        request = reducer.request
+        if not request or request.get("type") != TARGET:
+            continue
+        binding = request.get("binding")
+        if not isinstance(binding, dict) or binding.get("ownership_verified") is not True:
+            continue
+        gre = entry.get("greToClientEvent")
+        messages = gre.get("greToClientMessages") if isinstance(gre, dict) else None
+        if not isinstance(messages, list) or not any(
+                isinstance(m, dict) and m.get("type") == TARGET
+                and m.get("msgId") == request["id"]
+                and m.get("gameStateId") == request["game_state_id"]
+                and m.get("systemSeatIds") == [binding["self_seat"]]
+                for m in messages):
+            continue
+        identity = (binding["generation"], binding["match"], binding["game"],
+                    binding["game_state_id"], binding["self_seat"], request["id"])
+        if identity in seen:
+            continue
+        seen.add(identity)
+        doc = reducer.document()
+        doc["source"] = {
+            "format": "player-log-gre-v1", "mode": "offline",
+            "generation": follower.generation, "byte_offset": follower.offset,
+            # Current iterated record is complete even if final stream has a tail.
+            "partial_record": False,
+            "input_sent": False, "executor_connected": False}
+        report = assess_action_gaps(build_decision_input(doc))
+        if report is None:
+            counts["unassessable_verified_requests"] += 1
+            continue
+        counts["assessed_verified_requests"] += 1
+        for source, key in (("observed_action_rows", "engine_active_rows"),
+                            ("described_rows", "described_rows"),
+                            ("undetailed_rows", "undetailed_rows")):
+            counts[key] += report[source]
+        for item in report["undetailed_by_type"]:
+            undetailed[item["engine_action_type"]] += item["count"]
+        for item in report["gap_counts"]:
+            gaps[item["gap"]] += item["described_rows"]
+        for item in report["actions"]:
+            types[item["engine_action_type"]] += 1
+            statuses[item["source_link_status"]] += 1
+            for value in item["parameter_shapes"].values():
+                shapes[value["shape"]] += 1
+            relations = item["request_local_relations"]
+            counts["raw_pair_unique_rows"] += sum(
+                relations[name]["unique_pair_rows"] for name in
+                ("auto_tap_mana_links", "mana_selection_links"))
+            counts["raw_target_groups_shaped"] += (
+                relations["target_slots"]["raw_target_groups_shaped"])
+            counts["raw_relation_unresolved_rows"] += sum(
+                relations[name]["unresolved_rows"] for name in
+                ("auto_tap_mana_links", "mana_selection_links", "target_slots"))
+    return {
+        "probe": "mtga-action-gap-coverage-v1",
+        "source": {
+            "format": "player-log-gre-v1", "mode": "offline",
+            "framed_records": len(records),
+            "complete": follower.framer.errors == 0 and not follower.framer.partial,
+            "framing_errors": follower.framer.errors,
+            "partial_record": follower.framer.partial,
+            "input_sent": False, "executor_connected": False,
+        },
+        "assessed_verified_requests": counts["assessed_verified_requests"],
+        "unassessable_verified_requests": counts["unassessable_verified_requests"],
+        "engine_active_rows": counts["engine_active_rows"],
+        "described_rows": counts["described_rows"],
+        "undetailed_rows": counts["undetailed_rows"],
+        "described_by_type": [
+            {"action_type": kind, "count": count}
+            for kind, count in sorted(types.items())],
+        "undetailed_by_type": [
+            {"action_type": kind, "count": count}
+            for kind, count in sorted(undetailed.items())],
+        "source_status_counts": dict(sorted(statuses.items())),
+        "gap_row_counts": [
+            {"gap": kind, "described_rows": count}
+            for kind, count in sorted(gaps.items())],
+        "parameter_shape_counts": dict(sorted(shapes.items())),
+        "raw_pair_unique_rows": counts["raw_pair_unique_rows"],
+        "raw_target_groups_shaped": counts["raw_target_groups_shaped"],
+        "raw_relation_unresolved_rows": counts["raw_relation_unresolved_rows"],
+        "counts_not_rule_legality": True,
+        "raw_values_included": False, "legal_actions": None,
+        "actionable": False, "input_sent": False,
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Read-only schema probe; no action IDs, card IDs or prompt values leave the file")
@@ -461,18 +565,23 @@ def main(argv=None):
                          help="MP9: nested action field types / raw-pair equality counts")
     choices.add_argument("--visible-sources", action="store_true",
                          help="MP10: only own-request visible-source join statistics")
+    choices.add_argument("--gap-coverage", action="store_true",
+                         help="MP14: aggregate own-request action rule/response gaps (no raw values)")
     args = parser.parse_args(argv)
     if not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024:
         parser.error("max-history-bytes must be between 1 and 1073741824")
     try:
-        if args.visible_sources:
+        if args.gap_coverage:
+            result = inspect_gap_coverage(args.input, args.max_history_bytes)
+        elif args.visible_sources:
             result = inspect_visible_sources(args.input, args.max_history_bytes)
         elif args.complex_relations:
             result = inspect_complex_relations(args.input, args.max_history_bytes)
         else:
             result = inspect(args.input, args.max_history_bytes)
     except (OSError, ValueError):
-        print(json.dumps({"probe": ("visible-action-sources-v1" if args.visible_sources
+        print(json.dumps({"probe": ("mtga-action-gap-coverage-v1" if args.gap_coverage
+                                   else "visible-action-sources-v1" if args.visible_sources
                                    else "actions-complex-relations-v1" if args.complex_relations
                                    else "actions-available-schema-v1"),
                           "error": "file_unavailable_or_history_limit",

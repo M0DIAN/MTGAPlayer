@@ -12,7 +12,10 @@ from .stream import Follower
 from .raw_log import RawFollower, RawReducer
 
 
-def replay(path, dry=False, format='normalized', card_db_path=None, decision_input=False):
+def replay(path, dry=False, format='normalized', card_db_path=None,
+           decision_input=False, action_gaps=False):
+    if action_gaps and not decision_input:
+        raise ValueError('action_gaps_requires_decision_input')
     if card_db_path is not None and format != 'player-log':
         raise ValueError('card_db_requires_player_log_format')
     if decision_input and format != 'player-log':
@@ -40,6 +43,10 @@ def replay(path, dry=False, format='normalized', card_db_path=None, decision_inp
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
+            if action_gaps:
+                from .action_gaps import assess_action_gaps
+                document['action_gap_report'] = assess_action_gaps(
+                    document['decision_input'])
         return document
     follower, reducer = Follower(path), Reducer()
     reset, records = follower.poll()
@@ -66,8 +73,10 @@ def replay(path, dry=False, format='normalized', card_db_path=None, decision_inp
 
 
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
-          decision_input=False):
+          decision_input=False, action_gaps=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
+    if action_gaps and not decision_input:
+        raise ValueError('action_gaps_requires_decision_input')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
@@ -132,6 +141,10 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
+            if action_gaps:
+                from .action_gaps import assess_action_gaps
+                document['action_gap_report'] = assess_action_gaps(
+                    document['decision_input'])
         yield document
         if index + 1 < samples:
             time.sleep(interval)
@@ -173,6 +186,8 @@ def main(argv=None):
                                    help='opt-in local read-only MTGA card SQLite (raw replay only)')
         replay_parser.add_argument('--decision-input', action='store_true',
                                    help='MP13 read-only, own-request-bound observation (player-log only)')
+        replay_parser.add_argument('--action-gaps', action='store_true',
+                                   help='MP14 unverified rule/response evidence gaps; needs --decision-input')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -180,6 +195,8 @@ def main(argv=None):
     watch_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     watch_parser.add_argument('--decision-input', action='store_true',
                               help='MP13 read-only own-request observations (no executor)')
+    watch_parser.add_argument('--action-gaps', action='store_true',
+                              help='MP14 evidence gaps on observation only; needs --decision-input')
     harness = sub.add_parser('harness', help='independent synthetic interactive test window')
     harness.add_argument('--directory', type=Path, required=True)
     harness.add_argument('--nonce', required=True)
@@ -205,14 +222,16 @@ def main(argv=None):
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
-                            args.card_db, decision_input=args.decision_input)
+                            args.card_db, decision_input=args.decision_input,
+                            action_gaps=args.action_gaps)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
     elif args.command == 'watch':
         try:
             for result in watch(args.input, args.interval, args.samples,
-                                args.max_history_bytes, decision_input=args.decision_input):
+                                args.max_history_bytes, decision_input=args.decision_input,
+                                action_gaps=args.action_gaps):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:
