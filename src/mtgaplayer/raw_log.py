@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 
 
 def _id(value):
@@ -17,6 +18,26 @@ def _id(value):
 
 def _key(value):
     return hashlib.sha256(value.encode('utf-8')).hexdigest()[:16] if isinstance(value, str) and value else None
+
+
+def _label(value, prefix):
+    return isinstance(value, str) and re.fullmatch(prefix + r'[A-Za-z0-9_]{1,80}', value) is not None
+
+
+def _seat(value):
+    return type(value) is int and value in (1, 2)
+
+
+def _viewer_list(value):
+    return isinstance(value, list) and all(_seat(seat) for seat in value)
+
+
+def _timestamp(value):
+    if type(value) is int and value >= 0:
+        return value
+    if isinstance(value, str) and 1 <= len(value) <= 20 and value.isascii() and value.isdecimal():
+        return value
+    return None
 
 
 class RawFramer:
@@ -141,6 +162,7 @@ class RawReducer:
         self.conflict = False
         self.consumed = set()
         self.request_ids = {}
+        self.superseded = set()
         self.submitted = None
         self.unsupported_broadcast_requests = 0
 
@@ -152,6 +174,13 @@ class RawReducer:
         if self.first_error is None:
             self.first_error = {'reason': reason, 'generation': self.generation,
                                 'match': self.match, 'game': self.game}
+
+    def _revoke_seat(self, reason, revoke_client=False):
+        if revoke_client:
+            self.client_id = None
+        self.room_seat = self.seat = None
+        self.room_players = None
+        self._invalidate(reason)
 
     def _boundary(self, match, game=None):
         if self.match is not None and self.game is not None:
@@ -166,6 +195,7 @@ class RawReducer:
         self.conflict = False
         self.consumed.clear()
         self.request_ids.clear()
+        self.superseded.clear()
         self.submitted = None
         self.unsupported_broadcast_requests = 0
         self.error = 'await_full_baseline'
@@ -180,10 +210,12 @@ class RawReducer:
                 self._invalidate('invalid_' + field)
                 return
         auth = entry.get('authenticateResponse')
-        if isinstance(auth, dict) and isinstance(auth.get('clientId'), str):
+        if isinstance(auth, dict):
+            if not isinstance(auth.get('clientId'), str) or not auth['clientId']:
+                self._revoke_seat('invalid_auth_identity', revoke_client=True)
+                return
             if self.client_id is not None and self.client_id != auth['clientId']:
-                self._invalidate('client_identity_changed')
-                self.room_seat = self.seat = None
+                self._revoke_seat('client_identity_changed', revoke_client=True)
             self.client_id = auth['clientId']
             if self.room_players is not None and self.room_seat is None:
                 hits = [p.get('systemSeatId') for p in self.room_players if isinstance(p, dict) and
@@ -210,8 +242,9 @@ class RawReducer:
             config = info.get('gameRoomConfig')
             config = config if isinstance(config, dict) else {}
             match = _key(config.get('matchId'))
-            if match is None:
-                self._invalidate('room_identity_missing')
+            state_type = info.get('stateType')
+            if match is None or not _label(state_type, 'MatchGameRoomStateType_'):
+                self._revoke_seat('room_identity_or_state_invalid')
             else:
                 if match != self.room_match and any(old_match == match for old_match, _ in self.retired):
                     return  # Late room completion cannot retire a newer match.
@@ -220,17 +253,23 @@ class RawReducer:
                     self.room_seat = None
                     self._boundary(match)
                 players = config.get('reservedPlayers')
-                self.room_players = copy.deepcopy(players) if isinstance(players, list) else None
-                hits = [p.get('systemSeatId') for p in players if isinstance(p, dict) and
-                        p.get('userId') == self.client_id] if isinstance(players, list) and self.client_id else []
-                if len(hits) == 1 and hits[0] in (1, 2) and type(hits[0]) is int:
+                valid_players = (isinstance(players, list) and len(players) == 2 and
+                                 all(isinstance(p, dict) and isinstance(p.get('userId'), str) and
+                                     bool(p['userId']) and _seat(p.get('systemSeatId')) for p in players))
+                if valid_players:
+                    valid_players = (len({p['userId'] for p in players}) == 2 and
+                                     {p['systemSeatId'] for p in players} == {1, 2})
+                hits = [p['systemSeatId'] for p in players if p['userId'] == self.client_id] if (
+                    valid_players and self.client_id) else []
+                if len(hits) == 1:
                     if self.room_seat is not None and self.room_seat != hits[0]:
-                        self._invalidate('room_seat_conflict')
+                        self._revoke_seat('room_seat_conflict')
                     else:
                         self.room_seat = hits[0]
+                        self.room_players = copy.deepcopy(players)
                 else:
-                    self._invalidate('self_seat_unverified')
-                self.room_state = info.get('stateType') if isinstance(info.get('stateType'), str) else None
+                    self._revoke_seat('self_seat_unverified')
+                self.room_state = state_type
         gre = entry.get('greToClientEvent')
         if isinstance(gre, dict):
             messages = gre.get('greToClientMessages')
@@ -257,13 +296,19 @@ class RawReducer:
             if isinstance(recipients, list) and self.room_seat in recipients:
                 self.unsupported_broadcast_requests += 1
             return  # Broadcast and other-seat prompts are not own requests.
-        if recipients != [self.room_seat] or self.room_seat not in (1, 2):
+        if self.room_seat not in (1, 2):
+            self._invalidate('self_seat_unverified')
+            return
+        if recipients != [self.room_seat]:
             self._invalidate('gre_recipient_or_self_seat_unverified')
             return
         self.seat = self.room_seat
         if state is not None:
             self._state(state, timestamp)
         if is_request:
+            if not _label(message.get('type'), 'GREMessageType_'):
+                self._invalidate('invalid_request_type')
+                return
             msg_id, state_id = message.get('msgId'), message.get('gameStateId')
             if not _id(msg_id) or not _id(state_id):
                 self._invalidate('request_identity_missing')
@@ -277,7 +322,10 @@ class RawReducer:
                 return
             self.request_ids[msg_id] = (state_id, message['type'], digest)
             if (state_id == self.version and self.error is None and
-                    (self.match, self.game, msg_id) not in self.consumed):
+                    (self.match, self.game, msg_id) not in self.consumed and
+                    msg_id not in self.superseded):
+                if self.request and self.request['id'] != msg_id:
+                    self.superseded.add(self.request['id'])
                 self.request = {'id': msg_id, 'type': message['type'],
                                 'game_state_id': state_id, 'current': True,
                                 'supported': False}
@@ -296,10 +344,10 @@ class RawReducer:
             return
         match = _key(info.get('matchID')) if isinstance(info, dict) and 'matchID' in info else self.match
         game = info.get('gameNumber') if isinstance(info, dict) and 'gameNumber' in info else self.game
-        if (match, game) in self.retired:
-            return
         if match != self.room_match or not _id(game) or game < 1:
             self._invalidate('game_identity_unverified')
+            return
+        if (match, game) in self.retired:
             return
         if (match, game) != (self.match, self.game):
             self._boundary(match, game)
@@ -368,10 +416,45 @@ class RawReducer:
                     raise ValueError('invalid_zone_membership')
                 if any(instance in objects and objects[instance].get('zoneId') != zone_id for instance in ids):
                     raise ValueError('object_zone_conflict')
+                if not _label(zone.get('type'), 'ZoneType_'):
+                    raise ValueError('invalid_zone_type')
+                if 'ownerSeatId' in zone and not _seat(zone['ownerSeatId']):
+                    raise ValueError('invalid_zone_owner')
+                if 'viewers' in zone and not _viewer_list(zone['viewers']):
+                    raise ValueError('invalid_zone_viewers')
+                if any(instance in objects and 'visibility' not in objects[instance] for instance in ids):
+                    raise ValueError('missing_object_visibility')
+            for obj in objects.values():
+                if 'zoneId' in obj and not _id(obj['zoneId']):
+                    raise ValueError('invalid_object_zone')
+                if 'grpId' in obj and not _id(obj['grpId']):
+                    raise ValueError('invalid_card_id')
+                if 'visibility' in obj and obj['visibility'] not in ('Visibility_Public', 'Visibility_Private'):
+                    raise ValueError('invalid_object_visibility')
+                if 'viewers' in obj and not _viewer_list(obj['viewers']):
+                    raise ValueError('invalid_object_viewers')
+                if any(field in obj and not _seat(obj[field]) for field in
+                       ('ownerSeatId', 'controllerSeatId')):
+                    raise ValueError('invalid_object_seat')
+                if 'isTapped' in obj and type(obj['isTapped']) is not bool:
+                    raise ValueError('invalid_object_tapped')
+            for player in players.values():
+                if not _seat(player['systemSeatNumber']):
+                    raise ValueError('invalid_player_seat')
+                if 'lifeTotal' in player and (type(player['lifeTotal']) is not int or
+                                              abs(player['lifeTotal']) > 2**31 - 1):
+                    raise ValueError('invalid_player_life')
             turn = copy.deepcopy(gs.get('turnInfo', self.turn if not full else {}))
             game_info = copy.deepcopy(info if info is not None else self.game_info)
             if not isinstance(turn, dict) or not isinstance(game_info, dict):
                 raise ValueError('invalid_state_fields')
+            if any(field in turn and turn[field] is not None and not _seat(turn[field])
+                   for field in ('activePlayer', 'decisionPlayer')):
+                raise ValueError('invalid_turn_seat')
+            if 'turnNumber' in turn and turn['turnNumber'] is not None and not _id(turn['turnNumber']):
+                raise ValueError('invalid_turn_number')
+            if 'stage' in game_info and not _label(game_info['stage'], 'GameStage_'):
+                raise ValueError('invalid_game_stage')
             if full:
                 kinds = {z.get('type') for z in zones.values()}
                 if not ({1, 2} <= set(players) and
@@ -379,7 +462,16 @@ class RawReducer:
                         any(z.get('type') == 'ZoneType_Hand' and z.get('ownerSeatId') == self.seat
                             for z in zones.values())):
                     raise ValueError('incomplete_full_schema')
-        except ValueError as exc:
+            # Build the only output-facing projection before touching accepted
+            # state. A malformed GRE field cannot leave a new version behind.
+            preview = copy.copy(self)
+            preview.objects, preview.zones, preview.players = objects, zones, players
+            preview.turn, preview.game_info = turn, game_info
+            preview.version = version
+            preview.last_state_timestamp = _timestamp(timestamp)
+            preview.request = None
+            projection = preview._current()
+        except (ValueError, TypeError, KeyError, AttributeError) as exc:
             self._invalidate(str(exc))
             return
         self.objects, self.zones, self.players = objects, zones, players
@@ -387,10 +479,10 @@ class RawReducer:
         self.version = version
         self.accepted_digest = digest
         self.accepted_kind = 'full' if full else 'diff'
-        self.last_state_timestamp = timestamp if isinstance(timestamp, (str, int)) else None
+        self.last_state_timestamp = _timestamp(timestamp)
         self.request = None
         self.error = None
-        self.last_valid = self._current()
+        self.last_valid = projection
 
     def _current(self):
         visible, hidden = [], {}
@@ -425,7 +517,7 @@ class RawReducer:
                 'room_state': self.room_state,
                 'game_stage': self.game_info.get('stage') if isinstance(self.game_info.get('stage'), str) else None,
                 'turn': {k: self.turn.get(k) for k in ('turnNumber', 'activePlayer', 'decisionPlayer')},
-                'players': [{'seat': s, 'life': p.get('lifeTotal') if _id(p.get('lifeTotal')) else None}
+                'players': [{'seat': s, 'life': p.get('lifeTotal') if type(p.get('lifeTotal')) is int else None}
                             for s, p in sorted(self.players.items()) if s in (1, 2)],
                 'objects': sorted(visible, key=lambda obj: obj['id']), 'hidden_counts': hidden,
                 'request': copy.deepcopy(self.request), 'legal_actions': None,

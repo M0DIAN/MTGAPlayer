@@ -295,6 +295,101 @@ class RawLogTests(unittest.TestCase):
         self.assertEqual(stopped['source']['stop_reason'], 'keyboard_interrupt')
         self.assertTrue(stopped['source']['stopped'])
 
+    def test_malformed_projection_is_transactional_and_cli_reports_json(self):
+        rows = entries()
+        for field, value, reason in (('viewers', None, 'invalid_object_viewers'),
+                                     ('visibility', {'private': 'SCHEMA_SENTINEL'},
+                                      'invalid_object_visibility'),
+                                     ('grpId', {'private': 'SCHEMA_SENTINEL'}, 'invalid_card_id')):
+            with self.subTest(field=field):
+                reducer = RawReducer()
+                reducer.reset(1)
+                for item in rows[:3]:
+                    reducer.apply(item)
+                prior = copy.deepcopy(reducer.document()['last_valid'])
+                malformed = copy.deepcopy(rows[3])
+                state(malformed)['gameObjects'][0][field] = value
+                reducer.apply(malformed)
+                doc = reducer.document()
+                self.assertEqual(doc['error'], reason)
+                self.assertEqual(reducer.version, 1)
+                self.assertFalse(doc['current']['valid'])
+                self.assertNotIn('objects', doc['current'])
+                self.assertEqual(doc['last_valid'], prior)
+                self.assertNotIn('SCHEMA_SENTINEL', json.dumps(doc))
+        invalid_turn = copy.deepcopy(rows[4])
+        state(invalid_turn)['turnInfo']['decisionPlayer'] = {'private': 'SCHEMA_SENTINEL'}
+        reducer = RawReducer()
+        reducer.reset(1)
+        for item in rows[:4]:
+            reducer.apply(item)
+        reducer.apply(invalid_turn)
+        self.assertEqual(reducer.document()['error'], 'invalid_turn_seat')
+        self.assertEqual(reducer.version, 2)
+        self.assertNotIn('SCHEMA_SENTINEL', json.dumps(reducer.document()))
+        executable = Path(sys.prefix) / ('Scripts/mtgaplayer.exe' if os.name == 'nt' else 'bin/mtgaplayer')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            malformed = copy.deepcopy(rows[3])
+            state(malformed)['gameObjects'][0]['viewers'] = None
+            path.write_text(''.join(json.dumps(x) + '\n' for x in rows[:3] + [malformed]),
+                            encoding='utf-8')
+            result = subprocess.run([str(executable), 'replay', '--format', 'player-log', str(path)],
+                                    capture_output=True, text=True, encoding='utf-8', check=False)
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(result.stderr, '')
+            output = json.loads(result.stdout)
+            self.assertEqual(output['error'], 'invalid_object_viewers')
+            self.assertFalse(output['current']['valid'])
+            self.assertNotIn('objects', output['current'])
+
+    def test_bad_auth_and_room_revoke_seat_until_new_verified_pair(self):
+        rows = entries()
+        for bad in ({'authenticateResponse': {'clientId': 42}},
+                    {'matchGameRoomStateChangedEvent': {'gameRoomInfo': {
+                        'gameRoomConfig': {'matchId': 'fixture-match', 'reservedPlayers': []},
+                        'stateType': 'MatchGameRoomStateType_Playing'}}}):
+            with self.subTest(bad=tuple(bad)):
+                reducer = RawReducer()
+                reducer.reset(1)
+                for item in rows[:4]:
+                    reducer.apply(item)
+                prior = copy.deepcopy(reducer.document()['last_valid'])
+                reducer.apply(bad)
+                self.assertFalse(reducer.document()['current']['valid'])
+                self.assertIsNone(reducer.room_seat)
+                self.assertIsNone(reducer.seat)
+                self.assertEqual(reducer.document()['last_valid'], prior)
+                later_full = copy.deepcopy(rows[2])
+                state(later_full)['gameStateId'] = 10
+                reducer.apply(later_full)
+                self.assertFalse(reducer.document()['current']['valid'])
+                reducer.apply(rows[0])  # authenticated client alone is insufficient
+                reducer.apply(later_full)
+                self.assertFalse(reducer.document()['current']['valid'])
+                reducer.apply(rows[1])  # room must bind the client to a unique seat
+                reducer.apply(later_full)
+                self.assertTrue(reducer.document()['current']['valid'])
+                self.assertEqual(reducer.document()['current']['self_seat'], 1)
+                self.assertNotIn('fixture-local', json.dumps(reducer.document()))
+
+    def test_superseded_request_never_reopens_on_retransmission(self):
+        rows = entries()
+        reducer = RawReducer()
+        reducer.reset(1)
+        for item in rows[:5]:
+            reducer.apply(item)
+        old = copy.deepcopy(rows[4]['greToClientEvent']['greToClientMessages'][-1])
+        newer = copy.deepcopy(old)
+        newer['msgId'] = 13
+        reducer.apply({'greToClientEvent': {'greToClientMessages': [newer]}})
+        self.assertEqual(reducer.document()['current']['request']['id'], 13)
+        state_timestamp = reducer.document()['current']['source_state_timestamp']
+        reducer.apply({'greToClientEvent': {'greToClientMessages': [old]}})
+        self.assertEqual(reducer.document()['current']['request']['id'], 13)
+        self.assertEqual(reducer.document()['current']['source_state_timestamp'], state_timestamp)
+        self.assertIsNone(reducer.document()['error'])
+
 
 if __name__ == '__main__':
     unittest.main()
