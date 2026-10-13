@@ -297,5 +297,41 @@ class RawRequestSemanticsTests(unittest.TestCase):
             self.assertFalse(retransmitted['source']['executor_connected'])
 
 
+    def test_history_accepted_request_invalid_then_identical_full_and_request_retransmit(self):
+        # Synthesize the observed SelectN 311 on fixture's real Full state 1:
+        # unlike state 231 (a Diff), this Full supports exact retransmission
+        # recovery after a malformed complete record.
+        source = rows()
+        original = copy.deepcopy(request(source[-1]))
+        original['gameStateId'] = 1
+        request_record = {'greToClientEvent': {'greToClientMessages': [original]}}
+        malformed = b'{"greToClientEvent":}\n'
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            history = source[:3] + [request_record]
+            path.write_bytes((''.join(json.dumps(item) + '\n' for item in history)).encode('utf-8')
+                             + malformed)
+            samples = watch(path, interval=0, samples=2)
+            baseline = next(samples)
+            self.assertEqual(baseline['source']['phase'], 'history')
+            self.assertEqual(baseline['error'], 'malformed_raw_record')
+            self.assertFalse(baseline['current']['valid'])
+            self.assertIsNone(baseline['source']['candidate_event'])
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(source[2]) + '\n')  # exact Full state 1
+                stream.write(json.dumps(request_record) + '\n')  # same SelectN request
+            recovered = next(samples)
+            self.assertEqual(recovered['source']['phase'], 'append')
+            self.assertEqual(recovered['source']['new_records'], 2)
+            self.assertIsNone(recovered['error'])
+            self.assertTrue(recovered['current']['valid'])
+            self.assertEqual(recovered['current']['request']['id'], 311)
+            self.assertTrue(recovered['current']['request']['supported'])
+            self.assertIsNone(recovered['source']['candidate_event'])
+            self.assertFalse(recovered['current']['actionable'])
+            self.assertFalse(recovered['source']['input_sent'])
+            self.assertFalse(recovered['source']['executor_connected'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -65,11 +65,31 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
         reset, records = follower.poll()
         if reset:
             reducer.reset(follower.generation)
+        phase = 'history' if index == 0 or reset else 'append'
+        newly_accepted = set()
         for record in records:
             reducer.apply(record)
+            # Record *every* accepted supported request before a later record
+            # can invalidate the outward snapshot. A subsequent identical Full
+            # recovery must not turn its retransmission into a new opportunity.
+            accepted = reducer.request if reducer.error is None else None
+            binding = accepted.get('binding') if accepted and accepted.get('supported') else None
+            if binding and binding.get('ownership_verified') is True:
+                identity = (binding.get('generation'), binding.get('match'), binding.get('game'),
+                            binding.get('game_state_id'), binding.get('self_seat'), accepted['id'])
+                if identity not in seen_requests:
+                    gre = record.get('greToClientEvent') if isinstance(record, dict) else None
+                    messages = gre.get('greToClientMessages') if isinstance(gre, dict) else None
+                    if phase == 'append' and isinstance(messages, list) and any(
+                            isinstance(message, dict) and
+                            message.get('type') == accepted['type'] and
+                            message.get('msgId') == accepted['id'] and
+                            message.get('gameStateId') == accepted['game_state_id'] and
+                            message.get('systemSeatIds') == [binding['self_seat']]
+                            for message in messages):
+                        newly_accepted.add(identity)
+                    seen_requests.add(identity)
         document = reducer.document()
-        # An unrelated partial tail must mask outward current, but must not hide
-        # an already accepted request from the historical deduplication ledger.
         reduced_current = document['current']
         if follower.framer.partial:
             document['current'] = {k: reduced_current.get(k) for k in
@@ -77,35 +97,17 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
             document['current']['valid'] = False
             document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
-        phase = 'history' if index == 0 or reset else 'append'
         request = reduced_current.get('request') if reduced_current.get('valid') else None
         binding = request.get('binding') if request and request.get('supported') else None
         candidate_event = None
         if binding and binding.get('ownership_verified') is True:
             identity = (binding.get('generation'), binding.get('match'), binding.get('game'),
                         binding.get('game_state_id'), binding.get('self_seat'), request['id'])
-            # Snapshot presence is not append provenance. The matching GRE
-            # request must itself be inside this poll's newly framed records.
-            arrived = False
-            if phase == 'append' and not follower.framer.partial:
-                for record in records:
-                    gre = record.get('greToClientEvent') if isinstance(record, dict) else None
-                    messages = gre.get('greToClientMessages') if isinstance(gre, dict) else None
-                    if isinstance(messages, list) and any(
-                            isinstance(message, dict) and
-                            message.get('type') == request['type'] and
-                            message.get('msgId') == request['id'] and
-                            message.get('gameStateId') == request['game_state_id'] and
-                            message.get('systemSeatIds') == [binding['self_seat']]
-                            for message in messages):
-                        arrived = True
-                        break
-            if arrived and identity not in seen_requests:
+            if phase == 'append' and not follower.framer.partial and identity in newly_accepted:
                 candidate_event = {'kind': 'supported_request_observed',
                                    'binding': binding, 'request_id': request['id'],
                                    'candidate_count': len(request['candidates']),
                                    'read_only': True}
-            seen_requests.add(identity)
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'watch', 'phase': phase, 'new_records': len(records),
