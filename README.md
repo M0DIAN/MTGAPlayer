@@ -61,7 +61,13 @@ To avoid guessing whether the installed MTGA database contains card types, mana 
 .\.venv\Scripts\python.exe scripts\inspect_card_capability_schema.py --card-db "<Raw_CardDatabase_file.mtga>"
 ```
 
-This diagnostic does **not** add an ability parser, modify the existing MP11 card title lookup, touch `RawReducer`, enable strategy, or send MTGA input. After observing the real installed schema, a later MP12 candidate may decode only confirmed narrow fields as read-only decision metadata; unknown rule semantics remain null.
+This diagnostic does **not** add an ability parser, modify the existing MP11 card title lookup, touch `RawReducer`, enable strategy, or send MTGA input. The owner's real catalog schema report established 60 `Cards` columns, including `Types`, `Colors`, `Power`, `Toughness` and `AbilityIds` stored as SQLite TEXT; **actual value encoding and ability semantics are still unknown**. For a strictly bounded follow-up, the existing `inspect_card_catalog.py` offers an opt-in `--capability-shapes` mode that queries only card GrpIds already shown in verified own-seat GRE visible objects and reports **aggregate storage grammar types** for a fixed allowlist: null, JSON-array-looking, symbolic text, numeric text, and similar classes. Unlike the schema-only command it does read these *visible* Cards rows, but it never exports their values, card names, GrpIds, local paths or nested content. Shape labels cannot be treated as card abilities or valid mana payments.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_card_catalog.py --log "<Player.log>" --card-db "<Raw_CardDatabase_file.mtga>" --capability-shapes
+```
+
+ After observing the real installed schema, a later MP12 candidate may decode only confirmed narrow fields as read-only decision metadata; unknown rule semantics remain null.
 
 The benchmark starts its own process and verifies PID, HWND and nonce title. Screenshots find checksummed object markers bound to state/request/layout; log order never supplies screen order. Markers are **a harness-only protocol**, not MTGA vision. Layouts alternate; each mouse event requires a fresh screenshot. GDI capture and SendInput use ctypes. On Windows the harness launches the same base interpreter directly to avoid venv redirector PID ambiguity, loading the installed package source; no external desktop runtime is required.
 
