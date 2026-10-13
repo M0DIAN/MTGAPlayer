@@ -1,5 +1,14 @@
 # MTGAPlayer progress
 
+## MP8: Complex request-scoped raw action shapes (candidate, 2026-10-13)
+
+Starts from accepted MP7 squash main `2c66d56d391a85aea2a7cf6928eb0859140f7cc6` (natural post-merge main CI `38357974064` passed Ubuntu core 69/69 and Windows native-no-input). MP8's near-term mainline is actual Cast/Activate/Mana/Targets parameter evidence, not a speculative general Magic rule engine.
+
+The **user-provided, local-original Player.log schema inventory** proves the currently observed labels and fields but does not expose full target or mana combinations: 276 ActionsAvailableReq, 3,126 active actions, nested paths truncated for many Cast/Activate/mana shapes. Therefore this scoped candidate adds to `current.request.action_inventory` only **per-active-action raw descriptors** for Cast, Activate and Activate_Mana. Each descriptor is tied to the verified request's original `actions` array position; it copies at most type-checked primitive engine `instanceId/grpId/facetId/abilityGrpId/uniqueAbilityId` and boolean flags, plus *container presence/element counts* for `manaCost`, `targets`, `autoTapSolution`, `manaPaymentOptions` and `manaSelections`. It never exports nested payment/target/autotap entries, and `inactiveActions` remain excluded.
+
+All descriptors are explicitly `semantics_complete=false`, `legal_action_verified=false`, `executable=false`, `read_only=true`. The complete request is still `supported=false`, `candidates=[]`, `legal_actions=null`, `actionable=false`; `watch.source.candidate_event` remains null. No strategy, native input, card rules, or the frozen MP4-MP7 decoder/execution contract is expanded. Real-local validation still requires user-supplied *sanitized* output from this exact candidate on the local log. No original log is included in source control.
+
+
 ### MP7: Read-only engine action inventory (local schema evidence)
 
 On 2026-10-13 the user ran `scripts/inspect_actions.py` on their own Player.log and supplied the **sanitized result**, not the underlying log. It reported **6,021 framed records, complete/zero framing errors, 276 ActionsAvailableReq payloads, 3,126 active action rows**, and `inactiveActions` on 205 requests. Observed type counts: `ActionType_Activate_Mana` 1,168; `ActionType_Cast` 766; `ActionType_Activate` 401; `ActionType_Pass` 276; `ActionType_Play` 260; `ActionType_FloatMana` 255. Every request reported an active `ActionType_Pass`; this does **not** prove that passing is always the strategically correct or immediately executable click.
