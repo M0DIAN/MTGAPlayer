@@ -53,6 +53,16 @@ A separate `scripts/inspect_card_catalog.py --log <Player.log> --card-db <actual
 
 
 
+### MP12 opt-in card capability schema evidence (read-only)
+
+To avoid guessing whether the installed MTGA database contains card types, mana costs, abilities, targets or rules text, the next stage starts with a **schema-only** diagnostic. It opens only the explicitly selected SQLite catalog in immutable/read-only mode and returns `Cards` column names with SQLite **storage affinity** plus names of potentially relevant game-data tables. It never selects card rows, so **no card values, names, IDs, rules text or local paths** enter its JSON output. Table-name filtering and column limits are explicit; column names alone do **not** prove any game-rule meaning or legality.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_card_capability_schema.py --card-db "<Raw_CardDatabase_file.mtga>"
+```
+
+This diagnostic does **not** add an ability parser, modify the existing MP11 card title lookup, touch `RawReducer`, enable strategy, or send MTGA input. After observing the real installed schema, a later MP12 candidate may decode only confirmed narrow fields as read-only decision metadata; unknown rule semantics remain null.
+
 The benchmark starts its own process and verifies PID, HWND and nonce title. Screenshots find checksummed object markers bound to state/request/layout; log order never supplies screen order. Markers are **a harness-only protocol**, not MTGA vision. Layouts alternate; each mouse event requires a fresh screenshot. GDI capture and SendInput use ctypes. On Windows the harness launches the same base interpreter directly to avoid venv redirector PID ambiguity, loading the installed package source; no external desktop runtime is required.
 
 Handshake does not prove desktop pixels are ready. Startup, each input step and effect confirmation share bounded read-only screenshot waiting. Only missing pixels or an older visual context may be resampled, with a short wait between attempts and unchanged logical state/request/layout before and after capture. Focus loss, takeover, ambiguous identities and context changes refuse immediately. Confirmation locks the exact terminal state and effect; waiting never repeats input or resets the semantic-action timer.

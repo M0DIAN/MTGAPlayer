@@ -1,5 +1,14 @@
 # MTGAPlayer progress
 
+## MP12: installed-card capability schema evidence (candidate, 2026-10-13)
+
+Base is MP11 final reviewed squash main `05971490daf50ec6ddf1ea445da4b2fe5969d9da`; its actual natural main push CI `38416111429` completed SUCCESS (Ubuntu Core 87/87 tests, Windows native-no-input). MP11 owner-local evidence successfully resolved names for 2,013/2,013 request-bound action-source rows, but **only** `Cards(GrpId, TitleId)` and English localization were established from the actual 247 MB MTGA card database. Card type, casting cost, ability, target and rules-text schema is **not known**. Guessing it or building a generic Magic rule engine would be ungrounded.
+
+The first MP12 evidence step is the existing user-selected, **offline read-only SQLite** file, no new dependency: `python scripts/inspect_card_capability_schema.py --card-db <explicit_game_db>`. This small schema probe reads SQLite `sqlite_master` table names and `PRAGMA table_info("Cards")` only; it **does not SELECT or export card rows**. JSON contains bounded ASCII-safe Cards column names, declared SQLite affinity and relevant table-name hints (plus explicit counts/truncation/suppression). The names are schema evidence, not proof of semantics. It does not change the raw reducer, MP11 catalog overlay, default replay/watch, `policy` or native executor. `rules_verified=false`, `legal_actions=null`, `actionable=false`, `input_sent=false` remain.
+
+Validation: a synthetic SQLite fixture with named columns, real row values that must never appear in output, a path-free unsupported schema case, and an actual direct CLI check; default 87 tests continue unchanged. **Owner-local original installed SQLite schema probe evidence is PENDING**, so no semantic field mapping is asserted or merged. After original schema evidence, narrow the same MP12 PR to data types that actually exist and do not infer legality, then focus-retest and independently review the exact final candidate. No real MTGA UI/input operations.
+
+
 ## MP11 — opt-in visible card names from local read-only SQLite (candidate)
 
 Baseline: MP10's accepted squash main `f5369591fba0abff972a6a85eb80be67eca90988`, natural main push CI `38404218129` SUCCESS with Core 80/80 and Windows native-no-input. The existing real GRE parser and action source joins remain frozen.
