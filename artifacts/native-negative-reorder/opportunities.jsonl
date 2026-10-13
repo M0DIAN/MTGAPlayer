@@ -1,0 +1,1 @@
+{"opportunity_id": "opp-1", "request_key": [1, "synthetic-match", "game-1", "req-1"], "opportunity_at": 1073195.921, "observed": 1073198.984, "state_ready": null, "decision_end": null, "first_input": null, "last_input": null, "confirm": null, "ended_at": 1073198.984, "status": "timeout", "action": null, "reason": "visual_readiness_timeout"}

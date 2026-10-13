@@ -1,0 +1,21 @@
+test_identity_reorder_duplicate_context_and_occlusion (test_core.MarkerTests.test_identity_reorder_duplicate_context_and_occlusion) ... ok
+test_effect_confirmation_not_just_version_growth (test_core.PolicyTests.test_effect_confirmation_not_just_version_growth) ... ok
+test_three_deterministic_actions_unknown_effect_and_deadline (test_core.PolicyTests.test_three_deterministic_actions_unknown_effect_and_deadline) ... ok
+test_complete_corruption_blocks_without_new_state_heartbeat_not_recovery (test_core.StateTests.test_complete_corruption_blocks_without_new_state_heartbeat_not_recovery) ... ok
+test_duplicate_request_after_consumption_never_reopens (test_core.StateTests.test_duplicate_request_after_consumption_never_reopens) ... ok
+test_expiry_and_partial_replay_block (test_core.StateTests.test_expiry_and_partial_replay_block) ... ok
+test_hidden_fields_removed_and_missing_unknown (test_core.StateTests.test_hidden_fields_removed_and_missing_unknown) ... ok
+test_new_game_before_seat_and_conflicting_same_game (test_core.StateTests.test_new_game_before_seat_and_conflicting_same_game) ... ok
+test_older_full_duplicate_and_gap_full_recovery (test_core.StateTests.test_older_full_duplicate_and_gap_full_recovery) ... ok
+test_append_truncate_rotate_and_same_size_replace (test_core.StreamTests.test_append_truncate_rotate_and_same_size_replace) ... ok
+test_half_append_utf8_and_ordered_corruption (test_core.StreamTests.test_half_append_utf8_and_ordered_corruption) ... ok
+test_all_terminal_opportunities_counted_in_report (test_execution.ExecutionTests.test_all_terminal_opportunities_counted_in_report) ... ok
+test_compound_keeps_root_time_and_validates_each_child (test_execution.ExecutionTests.test_compound_keeps_root_time_and_validates_each_child) ... ok
+test_exception_releases_owned_button_and_never_retries (test_execution.ExecutionTests.test_exception_releases_owned_button_and_never_retries) ... ok
+test_focus_stop_expiry_target_disappearance_and_unexpected_substage (test_execution.ExecutionTests.test_focus_stop_expiry_target_disappearance_and_unexpected_substage) ... ok
+test_land_actual_postcondition_required_and_dedup (test_execution.ExecutionTests.test_land_actual_postcondition_required_and_dedup) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.029s
+
+OK

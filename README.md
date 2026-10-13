@@ -1,1 +1,47 @@
 # MTGAPlayer
+
+Independent Python 3.11 CLI with normalized JSONL state, finite synthetic tactics, and a Windows native interactive test harness. Runtime uses only the standard library. **MTGA raw Player.log decoding and MTGA automatic object localization are not implemented. No MTGA input is enabled.**
+
+```powershell
+# Use an independent Python 3.11, never a Codex interpreter cache.
+python3.11.exe -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --no-build-isolation -e .
+.\.venv\Scripts\mtgaplayer.exe doctor
+.\.venv\Scripts\mtgaplayer.exe replay examples\synthetic.jsonl
+.\.venv\Scripts\mtgaplayer.exe dry-run examples\synthetic.jsonl
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+
+# Actual input to the separately launched synthetic harness only.
+# Interactive Windows desktop, 96 DPI, 820x580 client area required.
+# Output must be a NEW directory. Default: 30 actions, 10 compound casts.
+.\.venv\Scripts\mtgaplayer.exe benchmark --output artifacts\local-native-01
+# Optional negative scenarios retain their own failure evidence:
+.\.venv\Scripts\mtgaplayer.exe benchmark --output artifacts\local-unsupported --scenario unsupported
+.\.venv\Scripts\mtgaplayer.exe benchmark --output artifacts\local-disappear --scenario target-disappear
+
+# Standalone interactive test window, no player:
+.\.venv\Scripts\mtgaplayer.exe harness --directory artifacts\local-manual --nonce manual --count 30
+```
+
+`py -3.11` can create the .venv where the Python launcher is installed. Linux/offline CI uses `python -m pip install -e .`, the same unittest command and replay/dry-run. `doctor --config config.toml` accepts only optional string `log_path`; `--log` overrides it. Doctor reports interpreter/base prefix, configuration, log existence, current-session window visibility and desktop limitations without screenshots or input. Sandbox window inventory is not the user's desktop inventory.
+
+The benchmark starts its own process and verifies PID, HWND and nonce title. Screenshots find checksummed object markers bound to state/request/layout; log order never supplies screen order. Markers are **a harness-only protocol**, not MTGA vision. Layouts alternate; each mouse event requires a fresh screenshot. GDI capture and SendInput use ctypes. On Windows the harness launches the same base interpreter directly to avoid venv redirector PID ambiguity, loading the installed package source; no external desktop runtime is required.
+
+Handshake does not prove desktop pixels are ready. Startup, each input step and effect confirmation share bounded read-only screenshot waiting. Only missing pixels or an older visual context may be resampled, with a short wait between attempts and unchanged logical state/request/layout before and after capture. Focus loss, takeover, ambiguous identities and context changes refuse immediately. Confirmation locks the exact terminal state and effect; waiting never repeats input or resets the semantic-action timer.
+
+The harness changes semantic state only from real mouse callbacks: drag land to the drop region; click spark, target and confirmation; or click pass. Confirmation checks source movement/land count, mana and target health, or priority transfer with root-request completion. SendInput success is only dispatch. Only exact target/submit successor requests/versions are allowed, retaining root context, expiry and timing. Unknown effects, missing markers, target loss, focus loss, detected manual input, Escape, `stop`/`pause` files, exceptions or timeout stop the loop. Owned held buttons are released. Unknown results are never automatically retried. Re-enable by inspecting evidence and explicitly starting a fresh run/directory; no automatic resume.
+
+The producer writes `normalized.jsonl` and `ui-events.jsonl`; the player writes every observed root opportunity to `opportunities.jsonl`, including fail/unsupported/timeout/paused/cancelled/uncertain results. Seven monotonic timestamps are retained (null if not reached); compound subrequests do not reset the opportunity origin. Reports use nearest-rank p50/p95/p99/max for successful end-to-end, all ended opportunities, pre-input/input/post-input, plus startup separately. PASS requires 30+ consecutive confirmed actions, all three classes, 10+ compound casts, ordered timestamps, no failed opportunities and max <=3000ms. No-input startup failure is BLOCKED_NATIVE with null confirmed latency. Evidence is synthetic; no game screenshots or private logs.
+
+Normalized schema 1 is distinct from raw GRE and old derived events. Each line is a complete UTF-8 JSON object ending in newline. `begin` binds opaque `match`, `game`, integer `self_seat`; only an explicit new-game boundary or source generation can rebuild binding. Retired identities cannot reopen; same-game seat conflict invalidates current. See [examples/synthetic.jsonl](examples/synthetic.jsonl).
+
+- `full`: complete `state_version`, `objects`, `request`, `mana`, `land_plays`, `phase`, `priority`, `effects`, `layout`, `outcome`. Missing fields remain null/unknown. Objects have unique integer `id`, integer `owner`, `zone`, `visibility`, `rule`, optional `hp`/`tapped`.
+- `diff`: increasing version, exact `previous`, whitelisted `changes`. Included objects are a full list replacement. Gaps, old Full and corrupt complete lines block until an explicit non-regressing Full; binding/duplicate conflicts require a new explicit game boundary or source generation. Identical Full does not refresh freshness during normal continuity.
+- `request`: current state version plus immutable `id`, `kind`, `opportunity_id`/`opportunity_at`, `root`, optional visible `source`/`targets`. IDs are opaque, not assumed monotonic. Consumed/executing/uncertain roots never reopen on retransmission or Full.
+- `response`: consumes `request_id`, without establishing a semantic effect. `heartbeat` neither refreshes state nor repairs errors.
+
+Only own `self` hand and explicitly public battlefield/stack/graveyard objects reach projection. Hidden zones expose counts, no IDs/rules. Request/outcome references must be visible. Invalid `current` has no stale objects/request; `last_valid` is diagnostic only and first error is preserved. `valid_until`, `last_observed`, `missing_fields` expose freshness/unknowns. Replay is an offline projection/recommendation, never native execution evidence.
+
+Supported **synthetic rules v1**: main-phase own priority; no continuous effects; one land play per scene; integer generic mana pool; `spark` costs exactly one generic and deals one damage to one visible opposing `inert_creature`; inert creatures have no other abilities. Scores prefer land, spark, then legal pass. Unknown visible own/opponent rules/effects or missing required fields return unsupported even if pass would otherwise be available. No real card database, colored mana, combat, stack responses, triggers, general Magic legality, win-rate or optimal-play claim.
+
+Measured status/blockers and raw evidence: [docs/progress.md](docs/progress.md). Source decisions/hashes: [THIRD_PARTY.md](THIRD_PARTY.md). CI separates Ubuntu offline checks from Windows no-input doctor, each with a 10-minute limit. Frozen candidate identity, actual CI revisions and independent review are reported on the candidate PR and final handoff. The native normal set passed; retained negative scenarios include an unsupported effect, an uncertain target disappearance and a reordering timeout. This does not establish MTGA or dynamic-layout three-second performance.

@@ -1,0 +1,2 @@
+{"schema": 1, "type": "begin", "match": "m1", "game": "g1", "self_seat": 1}
+{"schema": 1, "type": "full", "match": "m1", "game": "g1", "self_seat": 1, "state_version": 1, "objects": [{"id": 17, "owner": 1, "zone": "hand", "visibility": "self", "rule": "land"}, {"id": 91, "owner": 2, "zone": "battlefield", "visibility": "public", "rule": "inert_creature", "hp": 5}], "mana": 2, "land_plays": 0, "phase": "main", "priority": 1, "effects": [], "layout": 1, "outcome": null, "request": {"id": "r1", "kind": "priority", "opportunity_id": "o1", "opportunity_at": 1, "root": "r1"}}

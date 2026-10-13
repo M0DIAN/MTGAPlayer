@@ -1,0 +1,131 @@
+{
+  "scope": "uncommitted_working_tree_author_validation",
+  "head": "4fbdeb465dc185814654cff13efd487fb6678978",
+  "branch": "codex/mp0-mp3",
+  "python": "3.11.16 (main, Sep  1 2026, 14:15:24) [MSC v.1944 64 bit (AMD64)]",
+  "commands": [
+    {
+      "name": "unittest",
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 343.99999980814755
+    },
+    {
+      "name": "doctor",
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mtgaplayer",
+        "doctor"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 219.0000000409782
+    },
+    {
+      "name": "replay",
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mtgaplayer",
+        "replay",
+        "examples/synthetic.jsonl"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 172.0000000204891
+    },
+    {
+      "name": "dry-run",
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mtgaplayer",
+        "dry-run",
+        "examples/synthetic.jsonl"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 187.00000015087426
+    },
+    {
+      "name": "native-final",
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mtgaplayer",
+        "benchmark",
+        "--output",
+        "artifacts/native-final"
+      ],
+      "exit_code": 2,
+      "elapsed_ms": 656.9999998901039
+    }
+  ],
+  "sha256": {
+    ".github/workflows/checks.yml": "654c048b16aef266234f64731acb2db863412a876088d42482be4699a7356d1d",
+    ".gitignore": "63453ecd36204770da0cb88c43f480c3a0b32b3908f66ac8108d2767b3282e4e",
+    ".python-version": "49a506dd32096b010d75205acf3430c9ae6c40351888129499e5a5e487126c93",
+    "AGENTS.md": "9c014f8121ffbd15d3036c3f268d3e0fb8d631ae01372dfa915bb0ae449c9ac1",
+    "artifacts/native-attempt-01/handshake.json": "89182d64aa85b89fcf67c4e548f512db4b85448e5d46803e5efa80c8fc9bb49e",
+    "artifacts/native-attempt-01/harness.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-01/harness.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-01/normalized.jsonl": "f2ef9b92a30659246f52d9ea1af2d8337c4a351c2f75b17363c54bc5651a672f",
+    "artifacts/native-attempt-01/opportunities.jsonl": "6576c1936e76b1dcd8302863df8ce76c5b1e112f2fd8d8f9c029e9502a106587",
+    "artifacts/native-attempt-01/report.json": "03295c4850a333905c3dea85fc60be1dae1e263838d6c4df543142418da9c8ff",
+    "artifacts/native-attempt-01/stop": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-01/ui-events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-02/handshake.json": "85168e56617bd366a7d8759f541bf43c810d1d5678553a92155d37e6232dee2b",
+    "artifacts/native-attempt-02/harness.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-02/harness.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-02/normalized.jsonl": "a1221ab2098078c4ca75e205ebad984700eb44caff340faa7cac950cab51a977",
+    "artifacts/native-attempt-02/opportunities.jsonl": "b21349f532e0ef64530707a7a809fa992cf649266f17c79212092d13aa6fcf38",
+    "artifacts/native-attempt-02/report.json": "953c54bbad12370baebb94f8bc491dae6796c4e7693b1220c424172b40bd2c94",
+    "artifacts/native-attempt-02/stop": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-attempt-02/ui-events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-final/handshake.json": "b70fab4a3dd7e18fea6aa8e7c880889e2568c855fb2f095bbaa7eeabeb26400f",
+    "artifacts/native-final/harness.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-final/harness.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-final/normalized.jsonl": "ed030820b7b0e2d3e0b36c26ba793e9629f0d0c18ce69fe069d1a5b8b1cf8fc3",
+    "artifacts/native-final/opportunities.jsonl": "e08da77713f4c1fda68bb095a6de8bb8219d4fd3b95e8542a07078a0b8fb9fd3",
+    "artifacts/native-final/report.json": "42911ae42dc53ad8ab1e2a940472113a29952939732cc90dd43e4fb3137996e6",
+    "artifacts/native-final/stop": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/native-final/ui-events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/offline/doctor.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/offline/doctor.stdout.txt": "943838f1583ba079bab73dada4cf930ac0eba81109522cd974f56b26883beb23",
+    "artifacts/offline/dry-run.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/offline/dry-run.stdout.txt": "75dfeff1846a66669dd43706f9aeb7ed967d1e79188e7affda689a02f03e8d6e",
+    "artifacts/offline/native-final.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/offline/native-final.stdout.txt": "288ca34dedeefd3c3c4ff3a109f84522484dd1cc873dc92c07d974541fe675bd",
+    "artifacts/offline/replay.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/offline/replay.stdout.txt": "1991ffa6a99ac42516e29aaf1c3b25cc9a7e809040a8c1a86d465b07a85c7526",
+    "artifacts/offline/unittest.stderr.txt": "8922bab2afa43fc40064063bef1d56de23fc46a2384605f08aed365326e5a3a4",
+    "artifacts/offline/unittest.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/progress.md": "f86cf6411b75410321cc2c32131d97616cb6f55754592fcb388e22e1a35548bb",
+    "examples/synthetic.jsonl": "875f9d5b1343286b14f9a4b5e027ff1542d24f288ee79495accd0fc841844fb5",
+    "LICENSES/mtga-play-MIT.txt": "6679cd0417007f9ed846fbcb26216662c9db189c726014539c918e518ae8bb78",
+    "pyproject.toml": "265e2aa8b77f32f4632034c3399a358bca8be47623e8f12aa46d15bc137e55c6",
+    "README.md": "2a3df61aa031623dd72a7f2068b23c6136123dc7a15152fb62bb0b5450ff3e0e",
+    "scripts/validate.py": "5e0a36c9f294a2e5494483d48e6a5dba167f97fda0ac8495811abe8b4212598d",
+    "src/mtgaplayer/__init__.py": "f80cdc8519e77b3d808eccc52e7a6f616461da6190c451eba3e4490fe1a072f1",
+    "src/mtgaplayer/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src/mtgaplayer/benchmark.py": "a60c3170ac71f4978131324372a036a7f53b81fd69f805acbdf7f263c05382f8",
+    "src/mtgaplayer/cli.py": "1e1314fe11c35e111f5fb0cd39f787648148536c45d82cd7160fc6af7bd845bf",
+    "src/mtgaplayer/files.py": "6d0ea8eb2dc2543f80be9e93d8ccb7eec8209557f6f6f663a571ba37dca00a24",
+    "src/mtgaplayer/harness.py": "34ce3084db53a5f6bfe05c22a2b47192f91747640d5f1fcb180ba3c974479ac1",
+    "src/mtgaplayer/markers.py": "4192337628ee6413bd59a9d324743d93033fa7befb541aeaafed889b88c87c61",
+    "src/mtgaplayer/native.py": "afa9edc8a17fff6f626cef6b8692e64b23fbf7d9b7ee3dc94caddd7e0cd90c23",
+    "src/mtgaplayer/player.py": "809ae04a727fe02b2387f6f6978438cfd87fd2bd96e574c943acdf637082b0f9",
+    "src/mtgaplayer/policy.py": "b12427cf225b54c8f99e8c7da12a496fb1ef7a4761d8879003044274244e3f84",
+    "src/mtgaplayer/state.py": "4b30b5a1ecfecece08f661c49fe7e3b20eba6530cb3f99393778453860ce8e5e",
+    "src/mtgaplayer/stream.py": "6337f3f18c57e134bee4b6eea9cbb5dd0bca76713e7c5c7ca24f584fc00da6a9",
+    "tests/test_core.py": "71673aa0c4175e7948bf53832070516ae958068be70dc01772874edb43c4403d",
+    "tests/test_execution.py": "6cb6edbbd5cff2faae7d9b1551d1849a72dc1f4638953a17d45a1a04db77301d",
+    "THIRD_PARTY.md": "65bc61ad5340fbed0d7661a36aee15d89def5e6c3f1f541debc4c7abba3c5942"
+  }
+}

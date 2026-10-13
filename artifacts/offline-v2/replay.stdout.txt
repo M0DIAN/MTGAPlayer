@@ -1,0 +1,112 @@
+{
+  "current": {
+    "schema_version": 1,
+    "source_generation": 1,
+    "match": "m1",
+    "game": "g1",
+    "self_seat": 1,
+    "last_observed": 1072221.765,
+    "objects": [
+      {
+        "id": 17,
+        "owner": 1,
+        "zone": "hand",
+        "visibility": "self",
+        "rule": "land",
+        "hp": null,
+        "tapped": null
+      },
+      {
+        "id": 91,
+        "owner": 2,
+        "zone": "battlefield",
+        "visibility": "public",
+        "rule": "inert_creature",
+        "hp": 5,
+        "tapped": null
+      }
+    ],
+    "mana": 2,
+    "land_plays": 0,
+    "phase": "main",
+    "priority": 1,
+    "effects": [],
+    "request": {
+      "id": "r1",
+      "kind": "priority",
+      "opportunity_id": "o1",
+      "opportunity_at": 1,
+      "root": "r1",
+      "source": null,
+      "targets": null,
+      "received_at": 1072221.765
+    },
+    "layout": 1,
+    "outcome": null,
+    "state_version": 1,
+    "hidden_counts": {},
+    "valid_until": 1072224.765,
+    "missing_fields": [],
+    "valid": true
+  },
+  "last_valid": {
+    "schema_version": 1,
+    "source_generation": 1,
+    "match": "m1",
+    "game": "g1",
+    "self_seat": 1,
+    "last_observed": 1072221.765,
+    "objects": [
+      {
+        "id": 17,
+        "owner": 1,
+        "zone": "hand",
+        "visibility": "self",
+        "rule": "land",
+        "hp": null,
+        "tapped": null
+      },
+      {
+        "id": 91,
+        "owner": 2,
+        "zone": "battlefield",
+        "visibility": "public",
+        "rule": "inert_creature",
+        "hp": 5,
+        "tapped": null
+      }
+    ],
+    "mana": 2,
+    "land_plays": 0,
+    "phase": "main",
+    "priority": 1,
+    "effects": [],
+    "request": {
+      "id": "r1",
+      "kind": "priority",
+      "opportunity_id": "o1",
+      "opportunity_at": 1,
+      "root": "r1",
+      "source": null,
+      "targets": null,
+      "received_at": 1072221.765
+    },
+    "layout": 1,
+    "outcome": null,
+    "state_version": 1,
+    "hidden_counts": {},
+    "valid_until": 1072224.765,
+    "missing_fields": [],
+    "valid": true
+  },
+  "first_error": null,
+  "error": null,
+  "source": {
+    "format": "normalized-ndjson-v1",
+    "generation": 1,
+    "byte_offset": 579,
+    "partial_record": false,
+    "mode": "offline",
+    "input_sent": false
+  }
+}

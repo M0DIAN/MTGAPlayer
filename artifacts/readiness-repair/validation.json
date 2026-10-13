@@ -1,0 +1,155 @@
+{
+  "scope": "uncommitted_readiness_repair_only",
+  "head": "4fbdeb465dc185814654cff13efd487fb6678978",
+  "branch": "codex/mp0-mp3",
+  "python": "3.11.16 (main, Sep  1 2026, 14:15:24) [MSC v.1944 64 bit (AMD64)]",
+  "task_pack_sha256": "e9f1df3db0e6718750e354b3ddc2819c74ad4d7a863cd9377a95dea756da2fdd",
+  "commands": [
+    {
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_visual.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "focused.stderr.txt",
+      "scope": "initial focused tests; final helper independently rerun by reviewer"
+    },
+    {
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 1,
+      "stderr": "unittest.stderr.txt",
+      "scope": "initial suite exposed old compound fixture conflict"
+    },
+    {
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "unittest-final.stderr.txt",
+      "scope": "after fixture repair"
+    },
+    {
+      "argv": [
+        "D:\\GitHub\\MTGAPlayer\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "unittest-reviewed.stderr.txt",
+      "scope": "final reviewed source hashes; 32 tests PASS"
+    },
+    {
+      "argv": [
+        ".venv/Scripts/mtgaplayer.exe",
+        "doctor"
+      ],
+      "exit_code": 0,
+      "stdout": "doctor.json"
+    },
+    {
+      "argv": [
+        ".venv/Scripts/mtgaplayer.exe",
+        "benchmark",
+        "--output",
+        "artifacts/readiness-repair/native-worker"
+      ],
+      "exit_code": 2,
+      "stdout": "native-worker.stdout.txt",
+      "scope": "worker focus_lost; before terminal status classification tweak",
+      "runtime_benchmark_sha256": "d178ebef9c0e0a54637ed8e54a827be50f123c56c372b63ecd904b381c527394"
+    }
+  ],
+  "review": {
+    "agent": "/root/readiness_review",
+    "code": "PASS",
+    "native": "INSUFFICIENT_EVIDENCE/BLOCKED_NATIVE",
+    "independent_tests": 9,
+    "reviewed_sha256": {
+      "src/mtgaplayer/player.py": "32de2f5b97a58fdd93162f76ff6351f3804ead19f83fa6bf81563c4d82dfa4a1",
+      "src/mtgaplayer/benchmark.py": "e963eb7d5adf889b9a47664c258e3d06f77478e6a1127d041fe3ea6ef638edee",
+      "src/mtgaplayer/visual.py": "692b84091409d27455d5e9f87cf1b2aaa09f9c1b204c3ad29e86fcc3eeda32ea",
+      "tests/test_visual.py": "86477d1894eb9b47ca5c232c8ae15fdb5316ff2c00eee466840ee46528af6bfd",
+      "tests/test_execution.py": "710e37cab9c9e2c228d4bc99436d168af54b611764ce9c3b966faf17fae317ea"
+    },
+    "modified_files": false,
+    "input_sent": false
+  },
+  "layers": {
+    "OFFLINE": "PASS",
+    "NATIVE_HARNESS": "BLOCKED_NATIVE",
+    "LIVE_MTGA": "NOT_RUN",
+    "LATENCY": "NOT_MEASURED",
+    "DECISION_QUALITY": "UNCHANGED_BASIC_SYNTHETIC_TACTICS"
+  },
+  "native_ui_events_bytes": 0,
+  "sha256": {
+    "AGENTS.md": "9c014f8121ffbd15d3036c3f268d3e0fb8d631ae01372dfa915bb0ae449c9ac1",
+    "artifacts/readiness-repair/before/benchmark.py": "a1fb05705ff779493e551f5cf4a34474edf157411ca3ef2c169cc996e064a195",
+    "artifacts/readiness-repair/before/player.py": "809ae04a727fe02b2387f6f6978438cfd87fd2bd96e574c943acdf637082b0f9",
+    "artifacts/readiness-repair/doctor.json": "943838f1583ba079bab73dada4cf930ac0eba81109522cd974f56b26883beb23",
+    "artifacts/readiness-repair/focused.stderr.txt": "5c6f08a4463ac3da04bc6ad51b4a3972c8b768f2c25b501e40003275c8254aac",
+    "artifacts/readiness-repair/focused.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker/handshake.json": "0db76727f8f180ab7ddaca011705f2fff5e324c198036924383ce3a766767030",
+    "artifacts/readiness-repair/native-worker/harness.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker/harness.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker/normalized.jsonl": "014d8a81ed6d1f5bf71ddd75b2a5e4a38ab6ee16340af59fbf029ffa45066064",
+    "artifacts/readiness-repair/native-worker/opportunities.jsonl": "a841f4ff369b5b5d7dbdd341700ed524537a18e592e274fcbd22249f27f17216",
+    "artifacts/readiness-repair/native-worker/report.json": "cf849be330fb659f206b39611ab26c4339a2e820dc4636331432efd7a05ae9aa",
+    "artifacts/readiness-repair/native-worker/state-diagnostic.json": "1469e52b412ac37d708de14922e5969b65b5d63eb8a5da2c058980ab6517a896",
+    "artifacts/readiness-repair/native-worker/stop": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker/ui-events.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/native-worker.stdout.txt": "1246165d7250c36a93ca5cc9600b5ec0b753907e275cfa999c4242e6309ad919",
+    "artifacts/readiness-repair/unittest-final.stderr.txt": "11bc421868e61263210bd12c5c21cf6801e0773583cc7d0b7928b782ef1b3b3f",
+    "artifacts/readiness-repair/unittest-final.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/unittest-reviewed.stderr.txt": "254cde1db559004f16611ff496a9759b964564005bf265a3086cc12979cff73c",
+    "artifacts/readiness-repair/unittest-reviewed.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/readiness-repair/unittest.stderr.txt": "49e31a461da86193ddc858ff605d18ee68e4ce722334d8b21275378cc6779ed6",
+    "artifacts/readiness-repair/unittest.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/progress.md": "1539d76b34623315efe411e298b72f04843f4e3dcc2a8b4323ff026b7a763184",
+    "pyproject.toml": "265e2aa8b77f32f4632034c3399a358bca8be47623e8f12aa46d15bc137e55c6",
+    "README.md": "edffa012af797b94055586bd556d6bb223200230227747f506917c82de1f9ef5",
+    "src/mtgaplayer/__init__.py": "f80cdc8519e77b3d808eccc52e7a6f616461da6190c451eba3e4490fe1a072f1",
+    "src/mtgaplayer/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src/mtgaplayer/benchmark.py": "e963eb7d5adf889b9a47664c258e3d06f77478e6a1127d041fe3ea6ef638edee",
+    "src/mtgaplayer/cli.py": "1e1314fe11c35e111f5fb0cd39f787648148536c45d82cd7160fc6af7bd845bf",
+    "src/mtgaplayer/files.py": "6d0ea8eb2dc2543f80be9e93d8ccb7eec8209557f6f6f663a571ba37dca00a24",
+    "src/mtgaplayer/harness.py": "34ce3084db53a5f6bfe05c22a2b47192f91747640d5f1fcb180ba3c974479ac1",
+    "src/mtgaplayer/markers.py": "4192337628ee6413bd59a9d324743d93033fa7befb541aeaafed889b88c87c61",
+    "src/mtgaplayer/native.py": "afa9edc8a17fff6f626cef6b8692e64b23fbf7d9b7ee3dc94caddd7e0cd90c23",
+    "src/mtgaplayer/player.py": "32de2f5b97a58fdd93162f76ff6351f3804ead19f83fa6bf81563c4d82dfa4a1",
+    "src/mtgaplayer/policy.py": "b12427cf225b54c8f99e8c7da12a496fb1ef7a4761d8879003044274244e3f84",
+    "src/mtgaplayer/state.py": "16dee901289d83a4d67dd4976c489f3c1582f294d24fed8e4a483059dd505beb",
+    "src/mtgaplayer/stream.py": "6337f3f18c57e134bee4b6eea9cbb5dd0bca76713e7c5c7ca24f584fc00da6a9",
+    "src/mtgaplayer/visual.py": "692b84091409d27455d5e9f87cf1b2aaa09f9c1b204c3ad29e86fcc3eeda32ea",
+    "tests/test_conflict_recovery.py": "2f4a2dab773c60016a7a11817d9404d84a00a86edece97ba88c0accf86d3f14e",
+    "tests/test_core.py": "5c17cb630642cd4ee03b0d15b04b165ae03fa86148ac87c3cead26d22e0c32da",
+    "tests/test_execution.py": "710e37cab9c9e2c228d4bc99436d168af54b611764ce9c3b966faf17fae317ea",
+    "tests/test_visual.py": "86477d1894eb9b47ca5c232c8ae15fdb5316ff2c00eee466840ee46528af6bfd"
+  }
+}
