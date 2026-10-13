@@ -253,6 +253,50 @@ def _available_action_inventory(message):
                 'executable': False, 'read_only': True}}
 
 
+
+def _join_action_sources_to_visible(inventory, visible):
+    """Same-state observable object join; never inspect hidden/raw game objects.
+
+    Action instance IDs can refer to invisible zones. Only objects which
+    passed the existing visibility projection may produce a reference.
+    """
+    indexed = {}
+    for obj in visible:
+        instance = obj.get('id')
+        if _id(instance):
+            indexed.setdefault(instance, []).append(obj)
+    links = []
+    for item in inventory.get('simple_shapes', []) + inventory.get('complex_raw_shapes', []):
+        if item.get('action_type') == 'ActionType_Pass':
+            continue  # A Pass has no source card, not an unresolved card.
+        instance = (item.get('instance_id') if 'instance_id' in item else
+                    item.get('raw_identifiers', {}).get('instance_id'))
+        row = {'list_position': item['list_position'],
+               'action_type': item['action_type']}
+        if not _id(instance):
+            row['status'] = 'missing_source_instance'
+        else:
+            hits = indexed.get(instance, ())
+            if not hits:
+                row['status'] = 'not_in_visible_projection'
+            elif len(hits) != 1:
+                row['status'] = 'ambiguous_visible_projection'
+            else:
+                row['status'] = 'visible_unique'
+                row['visible_object_id'] = instance
+                group_id = (item.get('grp_id') if 'grp_id' in item else
+                            item.get('raw_identifiers', {}).get('grp_id'))
+                card_id = hits[0].get('card_id')
+                row['raw_group_equals_visible_card_id'] = (
+                    group_id == card_id if _id(group_id) and _id(card_id) else None)
+        links.append(row)
+    links.sort(key=lambda item: item['list_position'])
+    return {'scope': 'described_active_actions_and_current_visible_objects_only',
+            'links': links, 'link_count': len(links),
+            'unique_visible_count': sum(x['status'] == 'visible_unique' for x in links),
+            'all_legal_actions_known': False, 'read_only': True, 'executable': False}
+
+
 def _request_semantics(message):
     """Decode only the observed, own-seat SelectN option shape.
 
@@ -800,6 +844,10 @@ class RawReducer:
                 else:
                     label = f'{owner if owner in (1, 2) else "unknown"}:{kind}'
                     hidden[label] = hidden.get(label, 0) + 1
+        request = copy.deepcopy(self.request)
+        if request and isinstance(request.get('action_inventory'), dict):
+            request['action_inventory']['visible_source_links'] = (
+                _join_action_sources_to_visible(request['action_inventory'], visible))
         return {'valid': True, 'match': self.match, 'game': self.game,
                 'self_seat': self.seat, 'game_state_id': self.version,
                 'source_state_timestamp': self.last_state_timestamp,
@@ -809,7 +857,7 @@ class RawReducer:
                 'players': [{'seat': s, 'life': p.get('lifeTotal') if type(p.get('lifeTotal')) is int else None}
                             for s, p in sorted(self.players.items()) if s in (1, 2)],
                 'objects': sorted(visible, key=lambda obj: obj['id']), 'hidden_counts': hidden,
-                'request': copy.deepcopy(self.request), 'legal_actions': None,
+                'request': request, 'legal_actions': None,
                 'submission': copy.deepcopy(self.submitted), 'mana': None, 'layout': None,
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}

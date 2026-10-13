@@ -1,5 +1,14 @@
 # MTGAPlayer progress
 
+## MP10: bind engine action source to already-visible game object (candidate, 2026-10-13)
+
+Base: accepted MP9 squash main `3c2d0e54f1b4bee7e101beae55a13b0879ba555d`; the natural post-merge main [CI #38377647298](https://github.com/M0DIAN/MTGAPlayer/actions/runs/38377647298) passed core 76/76 and Windows native-no-input, both on the exact squash SHA. The previous MP4-MP9 real GRE reducer already exposes only own-hand and explicitly public game objects, and MP7-MP9 describe request-bound action instance IDs without a safe join to visible cards.
+
+This scoped candidate adds `current.request.action_inventory.visible_source_links` **only for authenticated, own-seat, current-state `ActionsAvailableReq`**. It joins each existing **described active** Play/Cast/Activate/Activate_Mana source `instanceId` to the already filtered `current.objects` projection. Only exactly one visible instance match yields a visible object-ID reference (not a duplicated raw object); missing, unseen or ambiguous sources stay unlinked. Pass requires no card source and is excluded. Equal/different raw action `grpId` vs projected visible card `card_id` is recorded as an optional **raw equality flag**; mismatch can represent alternate facets and is never interpreted as illegal. The join is computed on the `document()` snapshot, without mutating persistent request state or expanding any hidden-zone access.
+
+This stage deliberately does **not** identify card names/rules, compute target legality, choose mana payment, claim complete legal actions, create input coordinates or send MTGA input. `request.supported=false`, `candidates=[]`, `legal_actions=null`, `actionable=false`, `watch.source.candidate_event=null` for ActionsAvailable requests remain frozen. Tests use actual sanitized Full/Diff GRE source chain with injected synthetic action rows; source-visible and opponent-private cases explicitly tested. The private original Player.log has not been run at this candidate, and a later owner-local read-only original-log sampling plus independent exact-HEAD review is required before merge.
+
+
 ## MP9 verified structural source, new request-scoped position links (2026-10-13)
 
 The owner executed the first MP9 deep probe on their original local Player.log at `f4f4c362d0807da0ea0862381083a09f98ab67bd` (not shared with GitHub). The sanitized output counted 276 action requests, 2,335 complex active actions (Cast 766, Activate 401, Activate_Mana 1,168), 0 malformed action rows or framing errors. For 1,561 auto-tap rows, exact `(instanceId, abilityGrpId)` raw pair equality occurred 1,542 times; 19 rows lacked a comparable pair; no comparable but unmatched pair was observed. All 1,168 mana-selection rows had a matching pair. **The probe did not establish that these pairs uniquely identify an action** or a valid payment: several nested keys were masked and 2 Cast structures were depth truncated.
