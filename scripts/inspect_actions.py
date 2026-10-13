@@ -183,18 +183,210 @@ def inspect(path, max_history_bytes=64 * 1024 * 1024):
     }
 
 
+
+# MP9: audited deep structural paths. Any unrecognized key is suppressed
+# rather than echoed (free-form dictionary keys can themselves be private).
+_RELATION_TYPES = ("ActionType_Cast", "ActionType_Activate", "ActionType_Activate_Mana")
+_RELATION_FIELDS = frozenset({
+    "actionType", "instanceId", "abilityGrpId", "uniqueAbilityId", "grpId",
+    "facetId", "shouldStop", "isBatchable", "isManaAbilityWithSideEffect",
+    "manaCost", "count", "color", "mana", "manaId", "costId", "sourceId",
+    "targets", "targetIdx", "autoTapSolution", "autoTapActions",
+    "manaPaymentOptions", "manaSelections", "options",
+    "alternativeGrpId", "alternativeSourceZcid",
+})
+_RELATION_MAX_DEPTH = 9
+_RELATION_MAX_PATHS = 80
+_RELATION_MAX_LIST_EXAMPLES = 12
+_RELATION_MAX_VARIANTS = 96
+_RELATION_DISPLAY_VARIANTS = 4
+
+
+def _deep_relation_paths(value):
+    """Return structural *types*, never the contents of any scalar leaf."""
+    paths = set()
+    truncated = False
+    unknown_keys = False
+
+    def visit(item, prefix, depth):
+        nonlocal truncated, unknown_keys
+        if depth > _RELATION_MAX_DEPTH or len(paths) >= _RELATION_MAX_PATHS:
+            truncated = True
+            return
+        if isinstance(item, dict):
+            if not item:
+                paths.add(prefix + ":empty_object")
+            if len(item) > _MAX_FIELDS:
+                truncated = True
+            for key in sorted(item, key=lambda key: str(key))[:_MAX_FIELDS]:
+                name = key if type(key) is str and key in _RELATION_FIELDS else "_unrecognized_field"
+                if name == "_unrecognized_field":
+                    unknown_keys = True
+                visit(item[key], (prefix + "." if prefix else "") + name, depth + 1)
+        elif isinstance(item, list):
+            paths.add(prefix + "[]")
+            if not item:
+                paths.add(prefix + "[]:empty")
+            if len(item) > _RELATION_MAX_LIST_EXAMPLES:
+                truncated = True
+            for element in item[:_RELATION_MAX_LIST_EXAMPLES]:
+                visit(element, prefix + "[]", depth + 1)
+        else:
+            paths.add(prefix + ":" + _kind(item))
+
+    visit(value, "", 0)
+    return tuple(sorted(paths)[:_RELATION_MAX_PATHS]), truncated, unknown_keys
+
+
+def _valid_ref(value):
+    return type(value) is int and 0 <= value <= 2**53 - 1
+
+
+def _pairs(actions):
+    return {
+        (action["instanceId"], action["abilityGrpId"])
+        for action in actions
+        if isinstance(action, dict)
+        and action.get("actionType") == "ActionType_Activate_Mana"
+        and _valid_ref(action.get("instanceId"))
+        and _valid_ref(action.get("abilityGrpId"))
+    }
+
+
+def _reference_counts(items, mana_pairs, counts, label):
+    """Compare opaque pair equality in the SAME request; no IDs are exported."""
+    if not isinstance(items, list):
+        return
+    for item in items:
+        counts[label + "_rows"] += 1
+        if not isinstance(item, dict):
+            counts[label + "_non_object"] += 1
+            continue
+        instance, ability = item.get("instanceId"), item.get("abilityGrpId")
+        if not _valid_ref(instance) or not _valid_ref(ability):
+            counts[label + "_without_pair"] += 1
+        elif (instance, ability) in mana_pairs:
+            counts[label + "_same_request_mana_pair_match"] += 1
+        else:
+            counts[label + "_same_request_mana_pair_unmatched"] += 1
+
+
+def inspect_complex_relations(path, max_history_bytes=64 * 1024 * 1024):
+    """One bounded local read. Structural evidence is NOT a legal action list."""
+    follower = RawFollower(Path(path), max_history_bytes=max_history_bytes)
+    _, records = follower.poll()
+    request_count, payload_count, invalid_actions = 0, 0, 0
+    action_counts, variants, refs = Counter(), {}, Counter()
+    unknown_by_type, truncated_by_type = Counter(), Counter()
+    untracked_variants = 0
+    for entry in records:
+        if not isinstance(entry, dict):
+            continue
+        gre = entry.get("greToClientEvent")
+        messages = gre.get("greToClientMessages") if isinstance(gre, dict) else None
+        if not isinstance(messages, list):
+            continue
+        for message in messages:
+            if not isinstance(message, dict) or message.get("type") != TARGET:
+                continue
+            request_count += 1
+            payload = message.get("actionsAvailableReq")
+            if not isinstance(payload, dict):
+                continue
+            payload_count += 1
+            actions = payload.get("actions")
+            if not isinstance(actions, list):
+                invalid_actions += 1
+                continue
+            mana_pairs = _pairs(actions)
+            for action in actions:
+                if not isinstance(action, dict):
+                    invalid_actions += 1
+                    continue
+                kind = action.get("actionType")
+                if type(kind) is not str or kind not in _RELATION_TYPES:
+                    continue
+                action_counts[kind] += 1
+                paths, truncated, unknown = _deep_relation_paths(action)
+                signature = (kind, paths)
+                if signature in variants or len(variants) < _RELATION_MAX_VARIANTS:
+                    variants[signature] = variants.get(signature, 0) + 1
+                else:
+                    untracked_variants += 1
+                if truncated:
+                    truncated_by_type[kind] += 1
+                if unknown:
+                    unknown_by_type[kind] += 1
+                auto = action.get("autoTapSolution")
+                if isinstance(auto, dict):
+                    _reference_counts(auto.get("autoTapActions"), mana_pairs, refs, "autotap")
+                if kind == "ActionType_Activate_Mana":
+                    _reference_counts(action.get("manaSelections"), mana_pairs, refs,
+                                      "mana_selection")
+    details = []
+    for kind in _RELATION_TYPES:
+        candidates = sorted(
+            ((signature[1], count) for signature, count in variants.items()
+             if signature[0] == kind),
+            key=lambda entry: (-entry[1], entry[0]))
+        details.append({
+            "action_type": kind, "active_action_count": action_counts[kind],
+            "distinct_structural_variants": len(candidates),
+            "variants": [{"count": count, "field_types": list(paths)}
+                         for paths, count in candidates[:_RELATION_DISPLAY_VARIANTS]],
+            "unshown_variant_count": max(0, len(candidates) - _RELATION_DISPLAY_VARIANTS),
+            "truncated_action_count": truncated_by_type[kind],
+            "unrecognized_field_action_count": unknown_by_type[kind],
+        })
+    return {
+        "probe": "actions-complex-relations-v1",
+        "source": {
+            "format": "player-log-gre-v1", "mode": "offline",
+            "framed_records": len(records),
+            "complete": follower.framer.errors == 0 and not follower.framer.partial,
+            "partial_record": follower.framer.partial,
+            "framing_errors": follower.framer.errors,
+            "input_sent": False, "executor_connected": False,
+        },
+        "request_count": request_count,
+        "payload_count": payload_count,
+        "invalid_active_action_rows_or_lists": invalid_actions,
+        "complex_active_action_count": sum(action_counts.values()),
+        "action_shapes": details,
+        "same_request_raw_id_pair_comparisons": {
+            key: refs[key] for key in (
+                "autotap_rows", "autotap_non_object", "autotap_without_pair",
+                "autotap_same_request_mana_pair_match",
+                "autotap_same_request_mana_pair_unmatched",
+                "mana_selection_rows", "mana_selection_non_object",
+                "mana_selection_without_pair",
+                "mana_selection_same_request_mana_pair_match",
+                "mana_selection_same_request_mana_pair_unmatched"
+            )},
+        "reference_comparison_meaning": "numeric_pair_equality_only_not_payment_legality",
+        "distinct_variant_storage_cap_reached": untracked_variants > 0,
+        "untracked_variant_action_count": untracked_variants,
+        "raw_values_included": False, "self_seat_verified": False,
+        "legal_actions": None, "actionable": False,
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Read-only schema probe; no action IDs, card IDs or prompt values leave the file")
     parser.add_argument("input", type=Path, help="explicit local Player.log path")
     parser.add_argument("--max-history-bytes", type=int, default=64 * 1024 * 1024)
+    parser.add_argument("--complex-relations", action="store_true",
+                        help="MP9: deep field-type inventory and same-request raw-ID equality counts")
     args = parser.parse_args(argv)
     if not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024:
         parser.error("max-history-bytes must be between 1 and 1073741824")
     try:
-        result = inspect(args.input, args.max_history_bytes)
+        result = (inspect_complex_relations(args.input, args.max_history_bytes)
+                  if args.complex_relations else inspect(args.input, args.max_history_bytes))
     except (OSError, ValueError):
-        print(json.dumps({"probe": "actions-available-schema-v1",
+        print(json.dumps({"probe": ("actions-complex-relations-v1"
+                                   if args.complex_relations else "actions-available-schema-v1"),
                           "error": "file_unavailable_or_history_limit",
                           "actionable": False, "input_sent": False}))
         return 1

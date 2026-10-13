@@ -1,5 +1,23 @@
 # MTGAPlayer progress
 
+## MP9 verified structural source, new request-scoped position links (2026-10-13)
+
+The owner executed the first MP9 deep probe on their original local Player.log at `f4f4c362d0807da0ea0862381083a09f98ab67bd` (not shared with GitHub). The sanitized output counted 276 action requests, 2,335 complex active actions (Cast 766, Activate 401, Activate_Mana 1,168), 0 malformed action rows or framing errors. For 1,561 auto-tap rows, exact `(instanceId, abilityGrpId)` raw pair equality occurred 1,542 times; 19 rows lacked a comparable pair; no comparable but unmatched pair was observed. All 1,168 mana-selection rows had a matching pair. **The probe did not establish that these pairs uniquely identify an action** or a valid payment: several nested keys were masked and 2 Cast structures were depth truncated.
+
+Based on that evidence this MP9 candidate extends the existing own-seat-bound, read-only `current.request.action_inventory.complex_raw_shapes[*].raw_relations` with positional links. Each matched auto-tap or mana-selection row links to an **active** `ActionType_Activate_Mana` row's *array position* only when exactly one pair matches **within the same ActionsAvailableReq**. Duplicates, missing/invalid pairs and unmatched pairs have explicit statuses **without links**; inactive actions never enter the reference index. Target groups reveal strict integer `target_idx_raw` and nested array **counts**, never target objects or candidate IDs. Bounded 64-row samples explicitly report truncation.
+
+Pair equality remains `payment_legal=false`, target shape remains `targets_legal=false`, and `request.supported=false`, `candidates=[]`, `legal_actions=null`, `actionable=false`, `watch.source.candidate_event=null` for complex actions. No strategy, native input, game-rule inference or live-play time claim. Tests inject synthetic relationship bodies into the existing real-source GRE state chain; exact-head CI and independent incremental review are separate gates.
+
+
+## MP9: nested cost/target/auto-tap structural evidence (candidate, 2026-10-13)
+
+Baseline: MP8 squash main `4a5ab9702afaaf7f066d1936ce5da506c969cac8`; actual natural main CI `38360620704` passed core 71/71 and Windows no-input. MP8 already exposes per-action raw primitive IDs and opaque container counts. However the 2026-10-13 user-supplied local schema output reports many **depth-truncated** nested action shapes, so complete mana-payment/target/auto-tap relationships remain unproven.
+
+MP9 therefore extends the **existing** bounded local read-only probe, not a second parser or new action legality API: `scripts/inspect_actions.py --complex-relations <Player.log>`. This mode collects deep **field types only** for Cast, Activate and Activate_Mana active action rows (up to depth 9, capped list samples, paths and distinct variants), and aggregates equality of exact `(instanceId, abilityGrpId)` pairs between auto-tap/mana-selection rows and **active** Activate_Mana rows **within the same ActionsAvailableReq**. Numeric IDs themselves, leaf string values, original records, request/match identity and any unrecognized key names are never exported. Equality is explicitly **not** proof of legal payment or execution. Inactive actions are not used in comparisons; missing/unknown/truncated variants are disclosed, not silently made complete.
+
+This **initial evidence gate does not change** `RawReducer`, `request.supported`, `legal_actions`, `actionable`, `watch`, policy or native input. No real-log probe has run in the GitHub implementation environment. After owner-local output from exact candidate, narrow subsequent MP9 decoding to observed valid relationships and recheck only affected areas. No live MTGA input or UI interaction.
+
+
 ## MP8: Complex request-scoped raw action shapes (candidate, 2026-10-13)
 
 Starts from accepted MP7 squash main `2c66d56d391a85aea2a7cf6928eb0859140f7cc6` (natural post-merge main CI `38357974064` passed Ubuntu core 69/69 and Windows native-no-input). MP8's near-term mainline is actual Cast/Activate/Mana/Targets parameter evidence, not a speculative general Magic rule engine.
