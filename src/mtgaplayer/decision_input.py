@@ -40,14 +40,25 @@ def _observed_actions(inventory, visible_counts):
     offered = inventory["offered_count"]
     if not 0 <= offered <= 256:
         return None
-    records = inventory.get("simple_shapes", []) + inventory.get("complex_raw_shapes", [])
-    links = inventory.get("visible_source_links", {}).get("links", [])
-    if not isinstance(records, list) or not isinstance(links, list):
+    simple = inventory.get("simple_shapes")
+    complex_rows = inventory.get("complex_raw_shapes")
+    source_links = inventory.get("visible_source_links")
+    if (not isinstance(simple, list) or not isinstance(complex_rows, list) or
+            not isinstance(source_links, dict) or
+            not isinstance(source_links.get("links"), list)):
+        return None
+    records, links = simple + complex_rows, source_links["links"]
+    if len(records) > offered or len(links) > offered:
         return None
     by_position = {}
     for link in links:
-        if isinstance(link, dict) and type(link.get("list_position")) is int:
-            by_position[link["list_position"]] = link
+        if not isinstance(link, dict):
+            return None
+        position = link.get("list_position")
+        if (type(position) is not int or not 0 <= position < offered or
+                position in by_position):
+            return None
+        by_position[position] = link
     described, positions = [], set()
     for shape in records:
         if not isinstance(shape, dict):
@@ -114,6 +125,12 @@ def build_decision_input(document):
     binding = request.get("binding")
     if (not isinstance(binding, dict) or
             binding.get("ownership_verified") is not True or
+            not _id(binding.get("generation")) or
+            not _id(source.get("generation")) or
+            not isinstance(binding.get("match"), str) or
+            not _id(binding.get("game")) or binding.get("game") < 1 or
+            type(binding.get("self_seat")) is not int or
+            binding.get("self_seat") not in (1, 2) or
             not _id(request.get("id")) or
             not _id(current.get("game_state_id")) or
             request.get("game_state_id") != current.get("game_state_id") or

@@ -27,6 +27,16 @@ def action_frames():
     message = next(m for m in frame["greToClientEvent"]["greToClientMessages"]
                    if m.get("type") == "GREMessageType_ActionsAvailableReq")
     # Explicit synthetic actions injected into the real-source Full/Diff chain.
+    # Use an actual opponent-private hand instance from the sanitized state
+    # as one action source: it must NEVER become a visible source reference.
+    base = RawReducer()
+    base.reset(1)
+    for entry in original[:9]:
+        base.apply(entry)
+    opponent_hand = next(z for z in base.zones.values()
+                         if z.get("type") == "ZoneType_Hand"
+                         and z.get("ownerSeatId") == 2)
+    hidden_instance = opponent_hand["objectInstanceIds"][0]
     message["actionsAvailableReq"] = {"actions": [
         {"actionType": "ActionType_Play", "instanceId": 166, "grpId": 96839,
          "facetId": 0, "shouldStop": False},
@@ -37,7 +47,7 @@ def action_frames():
              {"instanceId": 283, "abilityGrpId": 7}]}},
         {"actionType": "ActionType_Activate_Mana", "instanceId": 283,
          "abilityGrpId": 7, "manaSelections": []},
-        {"actionType": "ActionType_Cast", "instanceId": 800008,
+        {"actionType": "ActionType_Cast", "instanceId": hidden_instance,
          "manaCost": [{"secret": "SECRET_PAYMENT_SENTINEL"}]},
         {"actionType": "ActionType_Pass"},
         {"actionType": "ActionType_FloatMana"},
@@ -127,6 +137,11 @@ class DecisionInputTests(unittest.TestCase):
         self.assertNotIn("OPPONENT_PRIVATE_CATALOG_SENTINEL", payload)
         self.assertFalse(result["current"]["actionable"])
         self.assertIsNone(result["current"]["legal_actions"])
+        broken = copy.deepcopy(result)
+        links = broken["current"]["request"]["action_inventory"][
+            "visible_source_links"]["links"]
+        links.append(copy.deepcopy(links[0]))  # Conflicting source position.
+        self.assertIsNone(build_decision_input(broken))
 
     def test_catalog_opt_in_is_provenance_labeled_no_private_card_leak(self):
         with tempfile.TemporaryDirectory() as directory:
