@@ -1,6 +1,6 @@
 # MTGAPlayer
 
-Independent Python 3.11 CLI with normalized JSONL state, finite synthetic tactics, and a Windows native interactive test harness. Runtime uses only the standard library. **MTGA raw Player.log decoding and MTGA automatic object localization are not implemented. No MTGA input is enabled.**
+Independent Python 3.11 CLI with normalized JSONL state, finite synthetic tactics, a read-only MTGA Player.log GRE projection, and a Windows native interactive test harness. Runtime uses only the standard library. **Raw GRE never reaches the policy or native executor. MTGA automatic object localization and MTGA input are not enabled.**
 
 ```powershell
 # Use an independent Python 3.11, never a Codex interpreter cache.
@@ -9,6 +9,9 @@ python3.11.exe -m venv .venv
 .\.venv\Scripts\mtgaplayer.exe doctor
 .\.venv\Scripts\mtgaplayer.exe replay examples\synthetic.jsonl
 .\.venv\Scripts\mtgaplayer.exe dry-run examples\synthetic.jsonl
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log tests\fixtures\player_log_minimal.jsonl
+# Confirmed local source on the development machine; pass your explicit path elsewhere.
+.\.venv\Scripts\mtgaplayer.exe watch "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log" --samples 5 --interval 0.5
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 
 # Actual input to the separately launched synthetic harness only.
@@ -24,6 +27,10 @@ python3.11.exe -m venv .venv
 ```
 
 `py -3.11` can create the .venv where the Python launcher is installed. Linux/offline CI uses `python -m pip install -e .`, the same unittest command and replay/dry-run. `doctor --config config.toml` accepts only optional string `log_path`; `--log` overrides it. Doctor reports interpreter/base prefix, configuration, log existence, current-session window visibility and desktop limitations without screenshots or input. Sandbox window inventory is not the user's desktop inventory.
+
+`replay --format player-log` reads a specified Player.log and reports a structurally continuous, player-visible snapshot. `watch` polls an explicit file for a finite number of samples (1–1000) at a bounded interval and emits JSON lines. Its first sample processes history; later samples process only appended bytes. `--max-history-bytes` bounds startup or replacement replay (default 64 MiB). Replacement/truncation resets identity and waits for a new authenticated room and Full. Empty polls do not change `source_state_timestamp`; the final sample marks `stopped`. Raw source results always have `actionable: false`, `input_sent: false`, and `executor_connected: false`. A structurally valid offline snapshot is historical evidence, not a live action opportunity.
+
+The raw decoder identifies the local seat only when `authenticateResponse.clientId` matches exactly one `gameRoomConfig.reservedPlayers.userId`, and a state GRE message targets that seat. Full requires match/game identity, two players, the public battlefield and stack, and the own hand zone. Diff requires the exact previous state ID and replaces listed zone/object/player entities, including deletions; a gap or corruption waits for a reliable Full. Broadcast requests are counted as unsupported; own requests expose only type, message ID and state ID. Client `respId` records submission only, not server confirmation, and consumed requests do not reopen. Projection includes own visible hand, public battlefield/stack/graveyard, and counts for hidden zones. Unknown mana, rules, layout, opportunities and legal actions remain null. This supports observation of the sampled GRE format, not general MTGA tactics or visual localization.
 
 The benchmark starts its own process and verifies PID, HWND and nonce title. Screenshots find checksummed object markers bound to state/request/layout; log order never supplies screen order. Markers are **a harness-only protocol**, not MTGA vision. Layouts alternate; each mouse event requires a fresh screenshot. GDI capture and SendInput use ctypes. On Windows the harness launches the same base interpreter directly to avoid venv redirector PID ambiguity, loading the installed package source; no external desktop runtime is required.
 
