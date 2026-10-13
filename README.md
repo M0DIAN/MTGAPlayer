@@ -53,6 +53,25 @@ A separate `scripts/inspect_card_catalog.py --log <Player.log> --card-db <actual
 
 
 
+### MP14 action evidence/gap classification (still read-only)
+
+MP13 produced a **request-bound observation**, not an action-execution contract. MP14 optionally classifies only **engine-described active action positions** into typed *engineering evidence gaps*; it never marks Pass, Play, Cast, Activate or Activate_Mana as executable, legal, strategically good or complete. An unknown/undetailed action such as `FloatMana` is counted by its observed type but gets **no invented position or response parameters**. A visible source join is not a Magic permission; even an explicit same-request mana pair/target slot is only raw structural equality, **not** a validated payment or target.
+
+```powershell
+# Offline request-level gap details: requires BOTH flags.
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log --decision-input --action-gaps "<Player.log>"
+# With optional previously supported, visible-card-only catalog metadata:
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log --decision-input --action-gaps --card-db "<Raw_CardDatabase_file.mtga>" "<Player.log>"
+# Existing read-only watcher: never promotes a gap report to live input authority.
+.\.venv\Scripts\mtgaplayer.exe watch --decision-input --action-gaps "<Player.log>" --samples 5
+# Owner-local historical evidence: count-only across accepted own requests.
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "<Player.log>" --gap-coverage
+```
+
+`action_gap_report` is an opt-in top-level property, **null** when there is no current verified `ActionsAvailableReq` decision input. Its summaries contain only recognized type labels, array positions, raw container and relation counts, existing visible source/link statuses, and *named missing semantic evidence* (effect interpretation, payment/target legality and response encoding). No raw card IDs, target IDs, titles, private GRE fields or complete actions are emitted in `--gap-coverage` aggregate output. Request-wide gaps always include rules, response encoding, strategy and live freshness; `strategy_evaluation_complete=false`, `legal_actions=null`, `actionable=false`, `input_sent=false` and `executor_connected=false` remain.
+
+This is a development **coverage map**, not an AI player, Magic rule engine, list of legal moves or authorization to click MTGA. Running the historical probe on the owner's original file may help prioritize which action types need the next narrow real-format evidence; it does not establish actual <3-second decision or execution.
+
 ### MP13 request-bound read-only decision observation
 
 The MP13 opt-in `--decision-input` view composes **only the already-projected current raw GRE snapshot**: authenticated own-seat request identity (generation/match/game/state/request ID), turn/players, the existing own-hand/public visible objects, MP10 source links, MP8–9 **opaque** cost/target shape/equality evidence, and optional MP11–12 localized card names/stored numeric power and toughness. It never re-opens hidden raw objects or joins an offered SelectN option ID to hidden card metadata. Its compact `decision_input.request.engine_action_inventory.described_rows` contains only engine-described active rows; unrecognized/undetailed actions remain counted but **not invented**. All positional mana/target evidence remains uninterpreted, and legal target/payment flags remain false.
