@@ -22,6 +22,11 @@ class ActionEvidenceTests(unittest.TestCase):
         self.assertEqual(result["missing_payload"], 9)
         self.assertEqual(result["action_count"], 0)
         self.assertEqual(result["variants"], [])
+        self.assertIn({"field": "type", "type": "string", "count": 9},
+                      result["request_fields"])
+        self.assertIn({"field": "gameStateId", "type": "int", "count": 9},
+                      result["request_fields"])
+        self.assertEqual(result["payload_fields"], [])
         self.assertTrue(result["source"]["complete"])
         self.assertIsNone(result["legal_actions"])
         self.assertFalse(result["self_seat_verified"])
@@ -34,7 +39,9 @@ class ActionEvidenceTests(unittest.TestCase):
             {"type": "GREMessageType_ActionsAvailableReq",
              "systemSeatIds": [2], "msgId": 222, "gameStateId": 99,
              "prompt": {"secret": "SECRET_PROMPT_abc"},
-             "actionsAvailableReq": {"actions": [
+             "unexpectedEnvelope": {"account": "PRIVATE_NAME"},
+             "actionsAvailableReq": {"optionalConstraint": True,
+                                      "actions": [
                  {"actionType": "ActionType_Play", "grpId": 873456,
                   "instanceId": 421337, "grouping": "Grouping_Single"},
                  {"actionType": "ActionType_Pass", "grouping": "Grouping_Single"},
@@ -51,8 +58,16 @@ class ActionEvidenceTests(unittest.TestCase):
                          {"ActionType_Play", "ActionType_Pass", "ActionType_Cast"})
         fields = " ".join(" ".join(v["field_types"]) for v in doc["variants"])
         self.assertIn("manaCost[]", fields)
+        self.assertIn({"field": "unexpectedEnvelope", "type": "object", "count": 1},
+                      doc["request_fields"])
+        self.assertIn({"field": "actionsAvailableReq", "type": "object", "count": 1},
+                      doc["request_fields"])
+        self.assertIn({"field": "optionalConstraint", "type": "bool", "count": 1},
+                      doc["payload_fields"])
+        self.assertIn({"field": "actions", "type": "array", "count": 1},
+                      doc["payload_fields"])
         output = json.dumps(doc)
-        for private in ("SECRET_PROMPT_abc", "421337", "873456", "998877",
+        for private in ("SECRET_PROMPT_abc", "PRIVATE_NAME", "421337", "873456", "998877",
                         "999999", "ManaColor_Red", "Grouping_Single"):
             self.assertNotIn(private, output)
         self.assertFalse(doc["source"]["input_sent"])

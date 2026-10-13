@@ -26,6 +26,42 @@ def _safe_key(key):
     return key if isinstance(key, str) and _KEY.fullmatch(key) else "_other_field"
 
 
+
+def _kind(item):
+    if isinstance(item, dict):
+        return "object"
+    if isinstance(item, list):
+        return "array"
+    if item is None:
+        return "null"
+    if type(item) is bool:
+        return "bool"
+    if type(item) is int:
+        return "int"
+    if type(item) is float:
+        return "float"
+    if isinstance(item, str):
+        return "string"
+    return "other"
+
+
+def _count_top_fields(item, counts):
+    """Inventory immediate field *types* only, never their scalar values."""
+    if len(item) > _MAX_FIELDS:
+        shortened = True
+    else:
+        shortened = False
+    for key in sorted(item, key=lambda x: str(x))[:_MAX_FIELDS]:
+        counts[(_safe_key(key), _kind(item[key]))] += 1
+    return shortened
+
+
+def _top_fields(counts):
+    return [{"field": key, "type": kind, "count": count}
+            for (key, kind), count in sorted(counts.items(),
+                                             key=lambda pair: (pair[0][0], pair[0][1]))[:_MAX_FIELDS]]
+
+
 def _paths(value):
     """Bounded structural paths; no scalar values."""
     paths = set()
@@ -73,6 +109,9 @@ def inspect(path, max_history_bytes=64 * 1024 * 1024):
     summary = Counter()
     shapes = Counter()
     shape_truncation = set()
+    request_fields = Counter()
+    payload_fields = Counter()
+    shortened_requests = shortened_payloads = False
     for entry in records:
         if not isinstance(entry, dict):
             continue
@@ -84,11 +123,13 @@ def inspect(path, max_history_bytes=64 * 1024 * 1024):
             if not isinstance(message, dict) or message.get("type") != TARGET:
                 continue
             summary["request_count"] += 1
+            shortened_requests |= _count_top_fields(message, request_fields)
             payload = message.get("actionsAvailableReq")
             if not isinstance(payload, dict):
                 summary["missing_payload"] += 1
                 continue
             summary["payload_count"] += 1
+            shortened_payloads |= _count_top_fields(payload, payload_fields)
             actions = payload.get("actions")
             if not isinstance(actions, list):
                 summary["invalid_actions_list"] += 1
@@ -124,6 +165,10 @@ def inspect(path, max_history_bytes=64 * 1024 * 1024):
         "invalid_actions_list": summary["invalid_actions_list"],
         "action_count": summary["action_count"],
         "invalid_action_rows": summary["invalid_action_rows"],
+        "request_fields": _top_fields(request_fields),
+        "payload_fields": _top_fields(payload_fields),
+        "request_fields_truncated": shortened_requests or len(request_fields) > _MAX_FIELDS,
+        "payload_fields_truncated": shortened_payloads or len(payload_fields) > _MAX_FIELDS,
         "variants": [
             {"action_type": kind, "count": count, "field_types": list(fields),
              "shape_truncated": (kind, fields) in shape_truncation}
