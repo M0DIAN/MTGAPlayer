@@ -46,6 +46,72 @@ _OBSERVED_ACTION_TYPES = frozenset({
 })
 
 
+_COMPLEX_ACTION_TYPES = frozenset({
+    'ActionType_Cast', 'ActionType_Activate', 'ActionType_Activate_Mana',
+})
+_RAW_ID_FIELDS = (
+    ('instanceId', 'instance_id'), ('grpId', 'grp_id'),
+    ('facetId', 'facet_id'), ('abilityGrpId', 'ability_grp_id'),
+    ('uniqueAbilityId', 'unique_ability_id'),
+)
+_RAW_FLAG_FIELDS = (
+    ('shouldStop', 'should_stop'), ('isBatchable', 'is_batchable'),
+    ('isManaAbilityWithSideEffect', 'is_mana_ability_with_side_effect'),
+)
+_OPAQUE_LIST_FIELDS = (
+    'manaCost', 'targets', 'manaPaymentOptions', 'manaSelections',
+)
+
+
+def _complex_raw_shape(position, action_type, row):
+    """Only request-scoped raw IDs and presence/size of opaque parameters.
+
+    Nested payment, target and tapping contents are deliberately NOT decoded,
+    even when their container is a list. This cannot establish a legal response.
+    """
+    identifiers, flags, invalid_types, parameters = {}, {}, [], {}
+    for field, public_field in _RAW_ID_FIELDS:
+        if field in row:
+            if _id(row[field]):
+                identifiers[public_field] = row[field]
+            else:
+                invalid_types.append(field)
+    for field, public_field in _RAW_FLAG_FIELDS:
+        if field in row:
+            if type(row[field]) is bool:
+                flags[public_field] = row[field]
+            else:
+                invalid_types.append(field)
+    for field in _OPAQUE_LIST_FIELDS:
+        if field in row:
+            value = row[field]
+            parameters[field] = {'kind': 'array' if isinstance(value, list) else 'unexpected',
+                                 'element_count': len(value) if isinstance(value, list) else None}
+            if not isinstance(value, list):
+                invalid_types.append(field)
+    if 'autoTapSolution' in row:
+        value = row['autoTapSolution']
+        nested = value.get('autoTapActions') if isinstance(value, dict) else None
+        parameters['autoTapSolution'] = {
+            'kind': 'object' if isinstance(value, dict) else 'unexpected',
+            'auto_tap_actions_count': len(nested) if isinstance(nested, list) else None}
+        if not isinstance(value, dict) or ('autoTapActions' in value and
+                                           not isinstance(nested, list)):
+            invalid_types.append('autoTapSolution')
+    accounted = ({'actionType', 'autoTapSolution'} |
+                 {key for key, _ in _RAW_ID_FIELDS} |
+                 {key for key, _ in _RAW_FLAG_FIELDS} |
+                 set(_OPAQUE_LIST_FIELDS))
+    return {
+        'list_position': position, 'action_type': action_type,
+        'raw_identifiers': identifiers, 'raw_flags': flags,
+        'opaque_parameter_shapes': parameters,
+        'invalid_known_field_types': sorted(invalid_types),
+        'other_top_level_fields_present': bool(set(row) - accounted),
+        'semantics_complete': False, 'legal_action_verified': False,
+        'executable': False, 'read_only': True}
+
+
 def _available_action_inventory(message):
     """Observe engine-listed action rows; never infer legality or execution.
 
@@ -68,7 +134,7 @@ def _available_action_inventory(message):
             not all(isinstance(row, dict) for row in actions)):
         return unsupported('invalid_actions_available_shape')
 
-    counts, simple = {}, []
+    counts, simple, complex_shapes = {}, [], []
     type_labels_complete = True
     for position, row in enumerate(actions):
         typ = row.get('actionType')
@@ -86,6 +152,8 @@ def _available_action_inventory(message):
                            'instance_id': row['instanceId'], 'grp_id': row['grpId'],
                            'facet_id': row['facetId'],
                            'should_stop_raw': row['shouldStop']})
+        elif typ in _COMPLEX_ACTION_TYPES:
+            complex_shapes.append(_complex_raw_shape(position, typ, row))
 
     # 'supported' stays false: typed observation is NOT proof of the
     # complete legal response, mana payment, target choice or native action.
@@ -102,6 +170,8 @@ def _available_action_inventory(message):
                 'inactive_excluded': True,
                 'simple_shapes': simple,
                 'simple_shapes_count': len(simple),
+                'complex_raw_shapes': complex_shapes,
+                'complex_raw_shapes_count': len(complex_shapes),
                 'remaining_action_details_unverified': len(actions) - len(simple),
                 'other_payload_fields_present': bool(set(payload) - {'actions', 'inactiveActions'}),
                 'semantics_complete': False, 'legal_actions_complete': False,
