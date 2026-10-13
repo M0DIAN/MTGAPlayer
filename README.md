@@ -13,6 +13,8 @@ python3.11.exe -m venv .venv
 .\.venv\Scripts\mtgaplayer.exe replay --format player-log tests\fixtures\player_log_selectn.jsonl
 # Confirmed local source on the development machine; pass your explicit path elsewhere.
 .\.venv\Scripts\mtgaplayer.exe watch "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log" --samples 5 --interval 0.5
+# MP7: schema-only probe on an explicit local log (never sends MTGA input).
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log"
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 
 # Actual input to the separately launched synthetic harness only.
