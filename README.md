@@ -15,6 +15,8 @@ python3.11.exe -m venv .venv
 .\.venv\Scripts\mtgaplayer.exe watch "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log" --samples 5 --interval 0.5
 # MP7: schema-only probe on an explicit local log (never sends MTGA input).
 .\.venv\Scripts\python.exe scripts\inspect_actions.py "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log"
+# MP9: inspect nested complex-action field TYPES and same-request raw-ID equality only.
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log" --complex-relations
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 
 # Actual input to the separately launched synthetic harness only.
