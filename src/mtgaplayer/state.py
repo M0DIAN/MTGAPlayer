@@ -28,6 +28,7 @@ class Reducer:
         self.state_seat = None
         self.retired = set()
         self.state = None
+        self.accepted_state = None
         self.last_valid = None
         self.first_error = None
         self.error = 'no_baseline'
@@ -39,6 +40,7 @@ class Reducer:
     def reset(self, generation):
         self.generation = generation
         self.identity = self.state = None
+        self.accepted_state = None
         self.state_seat = self.last_observed = None
         self.retired.clear()
         self.ledger.clear()
@@ -93,6 +95,7 @@ class Reducer:
                     self.retired.add(self.identity)
                 self.identity, self.state_seat = ident, event['self_seat']
                 self.state = None
+                self.accepted_state = None
                 self.last_observed = None
                 self.conflict = None
                 self.error = 'await_full_baseline'
@@ -141,12 +144,15 @@ class Reducer:
                                'objects' not in changes else None)
                 candidate = self._project(candidate, kept_counts)
                 if old_version == version:
-                    require(candidate == self.state, 'conflicting_duplicate_state')
-                    if not self.error:
-                        return
-                    # An identical complete baseline can repair corruption or a
-                    # gap, but cannot replace an accepted version or a conflict.
+                    # Compare producer content, not the current request that a
+                    # response may have consumed locally. Retransmission can
+                    # repair a non-conflict error, but never renew freshness or
+                    # restore that consumed request.
+                    require(candidate == self.accepted_state, 'conflicting_duplicate_state')
+                    self.error = None
+                    return
             self.state = candidate
+            self.accepted_state = copy.deepcopy(candidate)
             self.error = None
             self.last_observed = now
             self.last_valid = copy.deepcopy(self._view(now))

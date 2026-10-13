@@ -1,5 +1,6 @@
 """Offline executor safety checks with explicit fakes; NEVER native evidence."""
 import copy
+import json
 from pathlib import Path
 import tempfile
 import time
@@ -54,6 +55,37 @@ class FakeReader:
 
 
 class ExecutionTests(unittest.TestCase):
+    def test_reader_response_duplicate_allows_next_context_without_dispatch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'state.jsonl'
+            path.write_text(json.dumps(begin()) + '\n' + json.dumps(full()) + '\n',
+                            encoding='utf-8')
+            reader = Reader(path)
+            before = reader.sample()
+            plan = decide(before, time.monotonic() + 1)
+            adapter = FakeAdapter(None)
+            executor = Executor(reader, adapter, 'fake-nonce')
+            response = {**begin(), 'type': 'response', 'request_id': 'r1'}
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(response) + '\n' + json.dumps(full()) + '\n')
+            consumed = reader.sample()
+            self.assertTrue(consumed['valid'])
+            self.assertIsNone(consumed['request'])
+            self.assertEqual(consumed['last_observed'], before['last_observed'])
+            self.assertFalse(reader.reducer.actionable())
+            with self.assertRaisesRegex(NativeBlocked, 'context_changed'):
+                executor.context(plan, 'r1', 1, 'priority')
+            next_state = full(2)
+            next_state['request'].update(id='r2', root='r2', opportunity_id='o2')
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(next_state) + '\n')
+            after = reader.sample()
+            self.assertTrue(reader.reducer.actionable())
+            next_plan = decide(after, time.monotonic() + 1)
+            self.assertEqual(executor.context(next_plan, 'r2', 2, 'priority'), after)
+            self.assertEqual(len(reader.opportunities), 2)
+            self.assertEqual(adapter.inputs, [])
+
     def test_land_actual_postcondition_required_and_dedup(self):
         r = tracker()
         before = r.document()['current']
