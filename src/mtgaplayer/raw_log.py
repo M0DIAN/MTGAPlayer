@@ -40,6 +40,64 @@ def _timestamp(value):
     return None
 
 
+def _request_semantics(message):
+    """Decode only the observed, own-seat SelectN option shape.
+
+    IDs are explicit engine options in this request, including when the
+    referenced cards occupy a hidden zone. Never enrich them from raw objects.
+    """
+    def unsupported(reason):
+        return {'supported': False, 'unsupported_reason': reason,
+                'candidates': [], 'selection': None, 'candidate_evidence': None}
+    if message.get('type') != 'GREMessageType_SelectNReq':
+        return unsupported('unsupported_request_type')
+    payload = message.get('selectNReq')
+    if not isinstance(payload, dict):
+        return unsupported('missing_selectn_payload')
+    observed = {'maxSel', 'context', 'optionContext', 'listType', 'ids', 'prompt',
+                'idType', 'unfilteredIds', 'sourceId', 'validationType',
+                'minWeight', 'maxWeight'}
+    # Additional fields could narrow the choices. Refuse an unobserved shape.
+    if set(payload) != observed or set(message) - {
+            'type', 'systemSeatIds', 'msgId', 'gameStateId', 'prompt',
+            'selectNReq', 'allowCancel'}:
+        return unsupported('unsupported_selectn_shape')
+    ids, unfiltered = payload['ids'], payload['unfilteredIds']
+    if (not isinstance(ids, list) or not ids or
+            not all(_id(value) for value in ids) or len(ids) != len(set(ids)) or
+            not isinstance(unfiltered, list) or
+            not all(_id(value) for value in unfiltered) or
+            len(unfiltered) != len(set(unfiltered)) or
+            not set(ids) <= set(unfiltered)):
+        return unsupported('invalid_selectn_candidates')
+    if (payload['idType'] != 'IdType_InstanceId' or
+            payload['listType'] != 'SelectionListType_Dynamic' or
+            payload['context'] != 'SelectionContext_Resolution' or
+            payload['optionContext'] != 'OptionContext_Resolution' or
+            payload['validationType'] != 'SelectionValidationType_NonRepeatable' or
+            payload['minWeight'] != -2147483648 or
+            payload['maxWeight'] != 2147483647 or
+            not _id(payload['sourceId']) or
+            type(payload['maxSel']) is not int or
+            not 1 <= payload['maxSel'] <= len(ids) or
+            message.get('allowCancel') != 'AllowCancel_No' or
+            not isinstance(payload['prompt'], dict) or
+            not isinstance(message.get('prompt'), dict)):
+        return unsupported('unsupported_selectn_shape')
+    return {'supported': True, 'unsupported_reason': None,
+            'candidates': [{'instance_id': value} for value in ids],
+            'candidate_evidence': {'field': 'selectNReq.ids',
+                                   'kind': 'engine_offered_instance_ids',
+                                   'all_legal_actions': False},
+            'selection': {'id_type': payload['idType'], 'list_type': payload['listType'],
+                          'context': payload['context'], 'option_context': payload['optionContext'],
+                          'validation_type': payload['validationType'],
+                          'max_sel': payload['maxSel'], 'min_sel': None,
+                          'min_weight': payload['minWeight'], 'max_weight': payload['maxWeight'],
+                          'source_id': payload['sourceId'], 'allow_cancel': False,
+                          'combinations_complete': False}}
+
+
 class RawFramer:
     def __init__(self, limit=4 * 1024 * 1024):
         self.limit = limit
@@ -274,6 +332,9 @@ class RawReducer:
                 else:
                     self._revoke_seat('self_seat_unverified')
                 self.room_state = state_type
+                if state_type == 'MatchGameRoomStateType_MatchCompleted' and self.request:
+                    self.superseded.add(self.request['id'])
+                    self.request = None
         gre = entry.get('greToClientEvent')
         if isinstance(gre, dict):
             messages = gre.get('greToClientMessages')
@@ -326,13 +387,20 @@ class RawReducer:
                 return
             self.request_ids[msg_id] = (state_id, message['type'], digest)
             if (state_id == self.version and self.error is None and
+                    self.room_state != 'MatchGameRoomStateType_MatchCompleted' and
+                    self.game_info.get('stage') != 'GameStage_GameOver' and
                     (self.match, self.game, msg_id) not in self.consumed and
                     msg_id not in self.superseded):
                 if self.request and self.request['id'] != msg_id:
                     self.superseded.add(self.request['id'])
                 self.request = {'id': msg_id, 'type': message['type'],
                                 'game_state_id': state_id, 'current': True,
-                                'supported': False}
+                                'binding': {'generation': self.generation,
+                                            'match': self.match, 'game': self.game,
+                                            'game_state_id': state_id,
+                                            'self_seat': self.seat,
+                                            'ownership_verified': True},
+                                **_request_semantics(message)}
 
     def _state(self, gs, timestamp):
         if not isinstance(gs, dict) or gs.get('type') not in ('GameStateType_Full', 'GameStateType_Diff'):
@@ -484,6 +552,8 @@ class RawReducer:
         self.accepted_digest = digest
         self.accepted_kind = 'full' if full else 'diff'
         self.last_state_timestamp = _timestamp(timestamp)
+        if self.request:
+            self.superseded.add(self.request['id'])
         self.request = None
         self.error = None
         self.last_valid = projection

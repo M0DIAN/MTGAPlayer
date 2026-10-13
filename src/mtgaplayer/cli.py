@@ -25,6 +25,7 @@ def replay(path, dry=False, format='normalized'):
             document['current'] = {k: document['current'].get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
             document['current']['valid'] = False
+            document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
@@ -68,6 +69,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
             document['current'] = {k: document['current'].get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
             document['current']['valid'] = False
+            document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
