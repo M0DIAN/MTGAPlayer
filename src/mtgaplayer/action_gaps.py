@@ -97,7 +97,8 @@ def _relation_counts(relations, field, target=False):
                 return None, True
             valid_count += row["valid_shape"]
         else:
-            if row.get("status") not in _PAIR_STATUSES:
+            if (type(row.get("status")) is not str or
+                    row["status"] not in _PAIR_STATUSES):
                 return None, True
             valid_count += row["status"] == "unique_pair"
     missing = len(entries) - valid_count
@@ -162,8 +163,9 @@ def assess_action_gaps(decision_input):
         if not isinstance(item, dict):
             return None
         name, count = item.get("action_type"), item.get("count")
-        if (name not in _OBSERVED_TYPES or name in listed or
-                type(count) is not int or not 0 <= count <= offered):
+        if (type(name) is not str or name not in _OBSERVED_TYPES or
+                name in listed or type(count) is not int or
+                not 0 <= count <= offered):
             return None
         listed[name] = count
     if sum(listed.values()) != offered:
@@ -177,7 +179,8 @@ def assess_action_gaps(decision_input):
                                item.get("source_link_status"))
         if (type(index) is not int or not 0 <= index < offered or
                 index in positions or name not in _KNOWN_TYPES or
-                status not in _SOURCE or item.get("executable") is not False or
+                type(status) is not str or status not in _SOURCE or
+                item.get("executable") is not False or
                 item.get("legal_action_verified") is not False):
             return None
         if (name == "ActionType_Pass") != (status == "not_applicable"):
@@ -201,6 +204,13 @@ def assess_action_gaps(decision_input):
             return None
         rel = item.get("raw_relations")
         if rel is not None and not isinstance(rel, dict):
+            return None
+        if rel is not None and any((
+                rel.get("pair_equality_only") is not True,
+                rel.get("payment_legal") is not False,
+                rel.get("targets_legal") is not False,
+                rel.get("executable") is not False,
+                rel.get("read_only") is not True)):
             return None
         rel = rel or {}
         relations, bad_rel = {}, False

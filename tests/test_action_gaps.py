@@ -124,6 +124,10 @@ class ActionGapTests(unittest.TestCase):
                 lambda c: c["request"].update(type="GREMessageType_SelectNReq"),
                 lambda c: c["request"]["engine_action_inventory"].update(
                     offered_count=3),
+                lambda c: c["request"]["engine_action_inventory"]["type_counts"][0]
+                          .update(action_type={}),
+                lambda c: c["request"]["engine_action_inventory"]["described_rows"][2]
+                          ["raw_relations"].update(payment_legal=True),
                 lambda c: c["request"]["engine_action_inventory"]["described_rows"][1]
                           .update(visible_object_id=12345678)):
             altered = copy.deepcopy(obs)
