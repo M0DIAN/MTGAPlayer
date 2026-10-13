@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import re
 
-from mtgaplayer.raw_log import RawFollower
+from mtgaplayer.raw_log import RawFollower, RawReducer
 
 
 TARGET = "GREMessageType_ActionsAvailableReq"
@@ -371,22 +371,110 @@ def inspect_complex_relations(path, max_history_bytes=64 * 1024 * 1024):
     }
 
 
+
+_VISIBLE_TYPES = ('ActionType_Play', 'ActionType_Cast',
+                  'ActionType_Activate', 'ActionType_Activate_Mana')
+_VISIBLE_STATUSES = ('visible_unique', 'not_in_visible_projection',
+                     'missing_source_instance', 'ambiguous_visible_projection')
+
+
+def inspect_visible_sources(path, max_history_bytes=64 * 1024 * 1024):
+    """Only counts of accepted own-request joins, no raw identifiers or card data."""
+    follower = RawFollower(Path(path), max_history_bytes=max_history_bytes)
+    _, records = follower.poll()
+    reducer = RawReducer()
+    reducer.reset(follower.generation)
+    seen = set()
+    stats = Counter()
+    for entry in records:
+        reducer.apply(entry)
+        if not isinstance(entry, dict) or reducer.error is not None:
+            continue
+        request = reducer.request
+        if not request or request.get('type') != TARGET:
+            continue
+        binding = request.get('binding')
+        if not isinstance(binding, dict) or binding.get('ownership_verified') is not True:
+            continue
+        gre = entry.get('greToClientEvent')
+        messages = gre.get('greToClientMessages') if isinstance(gre, dict) else None
+        if not isinstance(messages, list) or not any(
+                isinstance(m, dict) and m.get('type') == TARGET
+                and m.get('msgId') == request['id']
+                and m.get('gameStateId') == request['game_state_id']
+                and m.get('systemSeatIds') == [binding['self_seat']]
+                for m in messages):
+            continue
+        identity = (binding['generation'], binding['match'], binding['game'],
+                    binding['game_state_id'], binding['self_seat'], request['id'])
+        if identity in seen:
+            continue
+        seen.add(identity)
+        current = reducer.document()['current']
+        inventory = current['request'].get('action_inventory')
+        if not isinstance(inventory, dict):
+            continue
+        stats['verified_inventory_requests'] += 1
+        data = inventory['visible_source_links']
+        for row in data['links']:
+            kind, status = row.get('action_type'), row.get('status')
+            if kind not in _VISIBLE_TYPES or status not in _VISIBLE_STATUSES:
+                continue
+            stats['total_described_sources'] += 1
+            stats['status.' + status] += 1
+            stats['type.' + kind + '.' + status] += 1
+            if status == 'visible_unique':
+                equality = row.get('raw_group_equals_visible_card_id')
+                label = 'equal' if equality is True else 'different' if equality is False else 'unknown'
+                stats['visible_raw_group_comparison.' + label] += 1
+    return {
+        'probe': 'visible-action-sources-v1',
+        'source': {'mode': 'offline', 'format': 'player-log-gre-v1',
+                   'framed_records': len(records),
+                   'complete': follower.framer.errors == 0 and not follower.framer.partial,
+                   'partial_record': follower.framer.partial,
+                   'framing_errors': follower.framer.errors,
+                   'input_sent': False, 'executor_connected': False},
+        'verified_inventory_requests': stats['verified_inventory_requests'],
+        'total_described_sources': stats['total_described_sources'],
+        'status_counts': {key: stats['status.' + key] for key in _VISIBLE_STATUSES},
+        'type_status_counts': [
+            {'type': kind, 'status': status,
+             'count': stats['type.' + kind + '.' + status]}
+            for kind in _VISIBLE_TYPES for status in _VISIBLE_STATUSES
+            if stats['type.' + kind + '.' + status]],
+        'visible_raw_group_comparisons': {
+            key: stats['visible_raw_group_comparison.' + key]
+            for key in ('equal', 'different', 'unknown')},
+        'source_visibility_only': True, 'legal_actions': None,
+        'actionable': False, 'raw_values_included': False,
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Read-only schema probe; no action IDs, card IDs or prompt values leave the file")
     parser.add_argument("input", type=Path, help="explicit local Player.log path")
     parser.add_argument("--max-history-bytes", type=int, default=64 * 1024 * 1024)
-    parser.add_argument("--complex-relations", action="store_true",
-                        help="MP9: deep field-type inventory and same-request raw-ID equality counts")
+    choices = parser.add_mutually_exclusive_group()
+    choices.add_argument("--complex-relations", action="store_true",
+                         help="MP9: nested action field types / raw-pair equality counts")
+    choices.add_argument("--visible-sources", action="store_true",
+                         help="MP10: only own-request visible-source join statistics")
     args = parser.parse_args(argv)
     if not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024:
         parser.error("max-history-bytes must be between 1 and 1073741824")
     try:
-        result = (inspect_complex_relations(args.input, args.max_history_bytes)
-                  if args.complex_relations else inspect(args.input, args.max_history_bytes))
+        if args.visible_sources:
+            result = inspect_visible_sources(args.input, args.max_history_bytes)
+        elif args.complex_relations:
+            result = inspect_complex_relations(args.input, args.max_history_bytes)
+        else:
+            result = inspect(args.input, args.max_history_bytes)
     except (OSError, ValueError):
-        print(json.dumps({"probe": ("actions-complex-relations-v1"
-                                   if args.complex_relations else "actions-available-schema-v1"),
+        print(json.dumps({"probe": ("visible-action-sources-v1" if args.visible_sources
+                                   else "actions-complex-relations-v1" if args.complex_relations
+                                   else "actions-available-schema-v1"),
                           "error": "file_unavailable_or_history_limit",
                           "actionable": False, "input_sent": False}))
         return 1
