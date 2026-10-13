@@ -1,5 +1,33 @@
 # MTGAPlayer progress
 
+### MP7: Read-only engine action inventory (local schema evidence)
+
+On 2026-10-13 the user ran `scripts/inspect_actions.py` on their own Player.log and supplied the **sanitized result**, not the underlying log. It reported **6,021 framed records, complete/zero framing errors, 276 ActionsAvailableReq payloads, 3,126 active action rows**, and `inactiveActions` on 205 requests. Observed type counts: `ActionType_Activate_Mana` 1,168; `ActionType_Cast` 766; `ActionType_Activate` 401; `ActionType_Pass` 276; `ActionType_Play` 260; `ActionType_FloatMana` 255. Every request reported an active `ActionType_Pass`; this does **not** prove that passing is always the strategically correct or immediately executable click.
+
+The active `actions` list and optional `inactiveActions` are distinct. The log contains nested mana payment, mana selections, auto-tap and target structures; many reported schema shapes are depth-truncated, so the inventory does **not** resolve those semantics. Only two unambiguous flat shapes are given typed, non-executable *observations*: `ActionType_Pass` (type-only) and `ActionType_Play` (instanceId, grpId, facetId, shouldStop). For an authenticated, own-seat `ActionsAvailableReq` on an accepted GRE state, `current.request.action_inventory` exposes engine-provided **active** type counts plus observed simple shapes; inactive entries are excluded, counted only. Unknown action types and other payload fields do not become guessed instructions. Missing/malformed arrays yield explicit unsupported reason with no inventory.
+
+The request remains `supported=false`, `unsupported_reason=action_details_unverified`, `candidates=[]`, `selection=null`, and `current.legal_actions=null`. `watch.source.candidate_event` stays null for this unimplemented semantic request, and `actionable=false`, `input_sent=false`, `executor_connected=false` remain unchanged. The user's schema JSON does **not** prove the complete real decoder or provide a full original-log replay for this branch; tests use the previously sanitized real GRE state chain with specifically identified **synthetic** action payload injection. The next stage must validate this inventory via the installed CLI on the owner's local original-log **continuous prefix** (not assume the later known state gap is recoverable), then narrow real Cast/Activate/mana/targets behavior based on actual evidence; do not connect the executor.
+
+
+
+## MP7 ActionsAvailableReq evidence gate (2026-10-13)
+
+Base is MP6's actual squash main `ddcd80a581c71e49834069e4a80ae4dc21861cdd`, with natural `push/main` CI `38352907427` passing both jobs. Existing raw state, watch freshness, SelectN semantics and all no-input boundaries remain frozen.
+
+The only in-repo **real-source** action requests in `tests/fixtures/player_log_selectn.jsonl` are **nine `GREMessageType_ActionsAvailableReq` headers** (type, recipient, request and state IDs). Their `actionsAvailableReq` payloads were intentionally removed during MP5 sanitization. Thus no real action type, cost, target, mana option or legality can be inferred from the committed fixture. Older public examples of `actionsAvailableReq.actions` are background, not confirmation of the currently installed client schema.
+
+This candidate supplies **`scripts/inspect_actions.py`**, a bounded, local, read-only schema probe using the existing Player.log brace framer. It reports the number of ActionsAvailableReq messages, count with/without `actionsAvailableReq.actions`, **top-level request/payload field names and data types with counts**, safe enum action type labels, and **field names / scalar types** of nested action shapes. It never prints prompt values, action/instance/card IDs, original records, match/account identifiers, paths, or credentials. No new runtime dependency or core product interfaces; `legal_actions=null`, `actionable=false`, `input_sent=false`. Completeness, malformed framing and shape truncation are explicit.
+
+From the repository root (installed Python 3.11), run on the local original file without copying it:
+
+```powershell
+& '.\.venv\Scripts\python.exe' 'scripts\inspect_actions.py' 'C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log'
+```
+
+The console emits **one sanitized JSON object**. Supply that JSON to the next decoder work; do **not** commit or upload the original log. The current MP7 deliverable is **evidence discovery**, not complete `ActionsAvailableReq` decoding, real rules/strategy, native localization, or live input. Further code should be defined from the output of the actual local log, not fabricated synthetic action data.
+
+
+
 ## MP5 request semantics candidate (2026-10-13)
 
 MP4 PR #2 was squash merged on main as `bcb3cd90fe2a9c3083b0f0acf7e5ed499e7e299b`; its tree equals accepted `7dcbed87ba88bb4b76cc4c0774eff744a578166f`. Natural push/main CI run [38342059123](https://github.com/M0DIAN/MTGAPlayer/actions/runs/38342059123) passed both jobs with that actual squash SHA in checkout and Tested revision logs. Before merging, root retrieved the original Astra final PASS from reviewer chat `01a13324-77df-7a82-8bcd-018a93316d07`, final turn `01a13335-fc81-7150-8c8c-1ae02a0abd8d`: it binds exact accepted HEAD, closes all blockers and explicitly reuses unaffected evidence after checking the final envelope repair. GitHub head/base matched, both CI runs passed, and main had no protection/rulesets. MP5 work is on `codex/mp5-request-semantics` from that verified base and stops at a candidate PR for owner acceptance; MP5 merge and release remain unauthorized.
