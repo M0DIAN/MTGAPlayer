@@ -63,7 +63,80 @@ _OPAQUE_LIST_FIELDS = (
 )
 
 
-def _complex_raw_shape(position, action_type, row):
+
+_RELATION_LIMIT = 64
+
+
+def _mana_position_index(actions):
+    """Same-request active mana row locations keyed by exact raw ID pair."""
+    lookup = {}
+    for index, row in enumerate(actions):
+        if (row.get('actionType') == 'ActionType_Activate_Mana' and
+                _id(row.get('instanceId')) and _id(row.get('abilityGrpId'))):
+            lookup.setdefault((row['instanceId'], row['abilityGrpId']), []).append(index)
+    return lookup
+
+
+def _positional_links(rows, mana_index):
+    """Position only: numeric identity equality does not prove usable payment."""
+    if not isinstance(rows, list):
+        return {'valid_array': False, 'total': None, 'examined': 0,
+                'truncated': False, 'entries': []}
+    entries = []
+    for index, row in enumerate(rows[:_RELATION_LIMIT]):
+        item = {'position': index}
+        if not isinstance(row, dict):
+            item['status'] = 'non_object'
+        elif not _id(row.get('instanceId')) or not _id(row.get('abilityGrpId')):
+            item['status'] = 'missing_or_invalid_pair'
+        else:
+            matches = mana_index.get((row['instanceId'], row['abilityGrpId']), ())
+            if len(matches) == 1:
+                item.update(status='unique_pair', active_mana_position=matches[0])
+            else:
+                item['status'] = 'ambiguous_pair' if matches else 'no_active_pair'
+        entries.append(item)
+    return {'valid_array': True, 'total': len(rows), 'examined': len(entries),
+            'truncated': len(rows) > _RELATION_LIMIT, 'entries': entries}
+
+
+def _raw_target_slots(rows):
+    """Only group position, strict raw targetIdx and nested element count."""
+    if not isinstance(rows, list):
+        return {'valid_array': False, 'total': None, 'examined': 0,
+                'truncated': False, 'entries': []}
+    entries = []
+    for index, row in enumerate(rows[:_RELATION_LIMIT]):
+        item = {'position': index}
+        if isinstance(row, dict):
+            raw_idx = row.get('targetIdx')
+            targets = row.get('targets')
+            item['target_idx_raw'] = raw_idx if _id(raw_idx) else None
+            item['target_count'] = len(targets) if isinstance(targets, list) else None
+            item['valid_shape'] = _id(raw_idx) and isinstance(targets, list)
+        else:
+            item['valid_shape'] = False
+        entries.append(item)
+    return {'valid_array': True, 'total': len(rows), 'examined': len(entries),
+            'truncated': len(rows) > _RELATION_LIMIT, 'entries': entries}
+
+
+def _raw_action_relations(row, mana_index):
+    auto = row.get('autoTapSolution')
+    taps = auto.get('autoTapActions') if isinstance(auto, dict) else None
+    return {
+        'auto_tap_mana_links': (_positional_links(taps, mana_index)
+                                if 'autoTapSolution' in row else None),
+        'mana_selection_links': (_positional_links(row['manaSelections'], mana_index)
+                                 if 'manaSelections' in row else None),
+        'target_slots': (_raw_target_slots(row['targets'])
+                          if 'targets' in row else None),
+        'pair_equality_only': True, 'payment_legal': False,
+        'targets_legal': False, 'executable': False, 'read_only': True,
+    }
+
+
+def _complex_raw_shape(position, action_type, row, mana_index):
     """Only request-scoped raw IDs and presence/size of opaque parameters.
 
     Nested payment, target and tapping contents are deliberately NOT decoded,
@@ -108,6 +181,7 @@ def _complex_raw_shape(position, action_type, row):
         'opaque_parameter_shapes': parameters,
         'invalid_known_field_types': sorted(invalid_types),
         'other_top_level_fields_present': bool(set(row) - accounted),
+        'raw_relations': _raw_action_relations(row, mana_index),
         'semantics_complete': False, 'legal_action_verified': False,
         'executable': False, 'read_only': True}
 
@@ -135,6 +209,7 @@ def _available_action_inventory(message):
         return unsupported('invalid_actions_available_shape')
 
     counts, simple, complex_shapes = {}, [], []
+    mana_index = _mana_position_index(actions)
     type_labels_complete = True
     for position, row in enumerate(actions):
         typ = row.get('actionType')
@@ -153,7 +228,7 @@ def _available_action_inventory(message):
                            'facet_id': row['facetId'],
                            'should_stop_raw': row['shouldStop']})
         elif typ in _COMPLEX_ACTION_TYPES:
-            complex_shapes.append(_complex_raw_shape(position, typ, row))
+            complex_shapes.append(_complex_raw_shape(position, typ, row, mana_index))
 
     # 'supported' stays false: typed observation is NOT proof of the
     # complete legal response, mana payment, target choice or native action.
