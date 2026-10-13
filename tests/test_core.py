@@ -144,7 +144,10 @@ class StateTests(unittest.TestCase):
         text = json.dumps(r.document())
         self.assertNotIn('PRIVATE_SENTINEL', text)
         self.assertNotIn('SECRET', text)
-        self.assertNotIn('999', text)
+        # Check the hidden object's *identity*, not its digits in an
+        # unrelated runtime timestamp (which can legitimately contain 999).
+        for snapshot in (r.document()['current'], r.document()['last_valid']):
+            self.assertNotIn(999, {obj['id'] for obj in snapshot['objects']})
         self.assertIsNone(r.state['mana'])
         with self.assertRaises(Unsupported):
             decide(r.document()['current'], time.monotonic() + 1)
