@@ -87,6 +87,96 @@ class CardCatalogCLITests(unittest.TestCase):
                        "96839", "92359", "75557", "cards.mtga", "Player.log"):
             self.assertNotIn(secret, out)
 
+    def test_capability_shapes_are_optional_and_value_free(self):
+        # Only cards appearing in the accepted own-seat visible projection
+        # may influence the aggregate counts. No source scalar is exported.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            log, db = root / "Player.log", root / "cards.mtga"
+            fixture_prefix(log)
+            create_card_db(db)
+            with sqlite3.connect(db) as conn:
+                for name in ("Types", "Colors", "Power", "Toughness",
+                             "AbilityIds"):
+                    conn.execute('ALTER TABLE Cards ADD COLUMN "' + name + '" TEXT')
+                conn.execute(
+                    'UPDATE Cards SET Types=?, Colors=?, Power=?, '
+                    'Toughness=?, AbilityIds=? WHERE GrpId=?',
+                    ('["Creature"]', 'W,U', '3', '4', '[12,31]', 96839))
+                conn.execute(
+                    'UPDATE Cards SET Types=?, Colors=?, Power=?, '
+                    'Toughness=?, AbilityIds=? WHERE GrpId=?',
+                    ('Instant', '[]', '*', '3.5', '[]', 92359))
+                conn.execute(
+                    'UPDATE Cards SET Types=?, Colors=?, Power=?, '
+                    'Toughness=?, AbilityIds=? WHERE GrpId=?',
+                    ('["Land"]', '', None, None, 'PRIVATE_RAW_SENTINEL', 75557))
+                conn.execute(
+                    'INSERT INTO Cards (GrpId,TitleId,Types) VALUES (?,?,?)',
+                    (999998, 1, 'NEVER_VISIBLE_SENTINEL'))
+            default = inspect(log, db)
+            sampled = inspect(log, db, capability_shapes=True)
+            run = subprocess.run(
+                [sys.executable, str(SCRIPT), "--log", str(log),
+                 "--card-db", str(db), "--capability-shapes"],
+                cwd=ROOT, capture_output=True, text=True, check=False)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertNotIn("capability_shapes", default)
+        self.assertEqual(json.loads(run.stdout), sampled)
+        self.assertEqual(sampled["verified_requests"], 1)
+        profile = sampled["capability_shapes"]
+        self.assertEqual(profile["distinct_source_ids_found"], 3)
+        self.assertEqual(profile["card_rows_examined"], 3)
+        self.assertEqual(profile["ambiguous_source_ids"], 0)
+        self.assertFalse(profile["field_semantics_verified"])
+        self.assertFalse(profile["mana_cost_verified"])
+        coverage = profile["localized_visible_stat_coverage"]
+        self.assertEqual(coverage["named_visible_card_ids"], 3)
+        self.assertEqual(coverage["numeric_power_literal_ids"], 1)
+        self.assertEqual(coverage["numeric_toughness_literal_ids"], 1)
+        self.assertEqual(coverage["both_numeric_literal_ids"], 1)
+        self.assertFalse(coverage["effective_game_stats_verified"])
+        self.assertIsNone(profile["legal_actions"])
+        self.assertFalse(profile["actionable"])
+        shapes = {row["field"]: row["shape_counts"]
+                  for row in profile["field_shapes"]}
+        self.assertEqual(shapes["Types"]["json_array"], 2)
+        self.assertEqual(shapes["Types"]["symbol_text"], 1)
+        self.assertEqual(shapes["Colors"]["comma_text"], 1)
+        self.assertEqual(shapes["Colors"]["json_array"], 1)
+        self.assertEqual(shapes["Colors"]["empty_text"], 1)
+        self.assertEqual(shapes["Power"]["text_integer"], 1)
+        self.assertEqual(shapes["Power"]["other_text"], 1)
+        self.assertEqual(shapes["Toughness"]["text_decimal"], 1)
+        self.assertEqual(shapes["AbilityIds"]["json_array"], 2)
+        self.assertIn("OldSchoolManaText", profile["fields_missing_from_schema"])
+        output = json.dumps(sampled)
+        for private in ("PRIVATE_RAW_SENTINEL", "NEVER_VISIBLE_SENTINEL",
+                        '["Creature"]', "W,U", "[12,31]", "999998",
+                        str(db), str(log)):
+            self.assertNotIn(private, output)
+        self.assertFalse(sampled["source"]["input_sent"])
+
+    def test_capability_shapes_missing_columns_remain_unknown(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            log, db = root / "Player.log", root / "cards.mtga"
+            fixture_prefix(log)
+            create_card_db(db)
+            result = inspect(log, db, capability_shapes=True)
+        shapes = result["capability_shapes"]
+        self.assertEqual(shapes["field_shapes"], [])
+        self.assertEqual(len(shapes["fields_missing_from_schema"]), 16)
+        self.assertEqual(shapes["card_rows_examined"], 3)
+        self.assertEqual(shapes["localized_visible_stat_coverage"], {
+            "named_visible_card_ids": 3,
+            "numeric_power_literal_ids": 0,
+            "numeric_toughness_literal_ids": 0,
+            "both_numeric_literal_ids": 0,
+            "effective_game_stats_verified": False,
+        })
+        self.assertFalse(shapes["field_semantics_verified"])
+
     def test_cli_unsupported_local_db_reports_path_free_failure(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

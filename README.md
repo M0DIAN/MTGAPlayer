@@ -53,6 +53,22 @@ A separate `scripts/inspect_card_catalog.py --log <Player.log> --card-db <actual
 
 
 
+### MP12 opt-in card capability schema evidence (read-only)
+
+To avoid guessing whether the installed MTGA database contains card types, mana costs, abilities, targets or rules text, the next stage starts with a **schema-only** diagnostic. It opens only the explicitly selected SQLite catalog in immutable/read-only mode and returns `Cards` column names with SQLite **storage affinity** plus names of potentially relevant game-data tables. It never selects card rows, so **no card values, names, IDs, rules text or local paths** enter its JSON output. Table-name filtering and column limits are explicit; column names alone do **not** prove any game-rule meaning or legality.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_card_capability_schema.py --card-db "<Raw_CardDatabase_file.mtga>"
+```
+
+This diagnostic does **not** add an ability parser, modify the existing MP11 card title lookup, touch `RawReducer`, enable strategy, or send MTGA input. The owner's real catalog schema report established 60 `Cards` columns, including `Types`, `Colors`, `Power`, `Toughness` and `AbilityIds` stored as SQLite TEXT; **actual value encoding and ability semantics are still unknown**. For a strictly bounded follow-up, the existing `inspect_card_catalog.py` offers an opt-in `--capability-shapes` mode that queries only card GrpIds already shown in verified own-seat GRE visible objects and reports **aggregate storage grammar types** for a fixed allowlist: null, JSON-array-looking, symbolic text, numeric text, and similar classes. Unlike the schema-only command it does read these *visible* Cards rows, but it never exports their values, card names, GrpIds, local paths or nested content. Shape labels cannot be treated as card abilities or valid mana payments. The owner's real installed-source shape scan found that, among 82 Cards rows for 83 GRE-visible IDs, `Power` and `Toughness` were each **34 bounded integer-like text / 48 empty text**, whereas `Types` and `Colors` were largely opaque numeric codes and `AbilityIds` contained varying string formats. Accordingly MP12 supports one narrow **optional, static catalog-literal overlay** when `replay --format player-log --card-db <file>` is explicitly selected: a uniquely localized, already-visible card may have `local_card.catalog_stats.power/toughness` as bounded ASCII integers; missing/empty/star/fractional/nonliteral values remain `null`. It is a *stored catalog literal*, **not in-game effective power/toughness** and never a rule or legality assertion. Duplicate raw GrpIds continue to be ambiguous and never receive stats. The `--capability-shapes` count-only output additionally reports how many distinct localized visible IDs had parsed numeric literals without exporting numeric card values. No Types/Colors enum mapping, ability resolution, mana legality or native input has been added.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_card_catalog.py --log "<Player.log>" --card-db "<Raw_CardDatabase_file.mtga>" --capability-shapes
+```
+
+ After observing the real installed schema, a later MP12 candidate may decode only confirmed narrow fields as read-only decision metadata; unknown rule semantics remain null.
+
 The benchmark starts its own process and verifies PID, HWND and nonce title. Screenshots find checksummed object markers bound to state/request/layout; log order never supplies screen order. Markers are **a harness-only protocol**, not MTGA vision. Layouts alternate; each mouse event requires a fresh screenshot. GDI capture and SendInput use ctypes. On Windows the harness launches the same base interpreter directly to avoid venv redirector PID ambiguity, loading the installed package source; no external desktop runtime is required.
 
 Handshake does not prove desktop pixels are ready. Startup, each input step and effect confirmation share bounded read-only screenshot waiting. Only missing pixels or an older visual context may be resampled, with a short wait between attempts and unchanged logical state/request/layout before and after capture. Focus loss, takeover, ambiguous identities and context changes refuse immediately. Confirmation locks the exact terminal state and effect; waiting never repeats input or resets the semantic-action timer.
