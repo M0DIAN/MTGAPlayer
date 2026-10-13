@@ -72,7 +72,11 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
             # Record *every* accepted supported request before a later record
             # can invalidate the outward snapshot. A subsequent identical Full
             # recovery must not turn its retransmission into a new opportunity.
-            accepted = reducer.request if reducer.error is None else None
+            # A later failure (even in this same GRE record) does not erase
+            # a previously accepted request. Its identity still belongs in
+            # the deduplication ledger, but can never make an invalid current
+            # snapshot actionable.
+            accepted = reducer.request
             binding = accepted.get('binding') if accepted and accepted.get('supported') else None
             if binding and binding.get('ownership_verified') is True:
                 identity = (binding.get('generation'), binding.get('match'), binding.get('game'),

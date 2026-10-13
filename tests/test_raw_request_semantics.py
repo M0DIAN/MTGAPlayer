@@ -333,5 +333,40 @@ class RawRequestSemanticsTests(unittest.TestCase):
             self.assertFalse(recovered['source']['executor_connected'])
 
 
+    def test_history_request_then_gap_in_same_gre_entry_dedups_after_full_recovery(self):
+        # A request can be accepted and then invalidated by a later message
+        # inside ONE framed raw record; per-record history must still seed it.
+        source = rows()
+        original = copy.deepcopy(request(source[-1]))
+        original['gameStateId'] = 1
+        combined = {'greToClientEvent': {'greToClientMessages': [
+            original,
+            {'type': 'GREMessageType_GameStateMessage', 'systemSeatIds': [1],
+             'gameStateMessage': {'type': 'GameStateType_Diff',
+                                  'gameStateId': 2, 'prevGameStateId': 999}}]}}
+        retransmit = {'greToClientEvent': {'greToClientMessages': [original]}}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_text(''.join(json.dumps(item) + '\n'
+                                    for item in source[:3] + [combined]),
+                            encoding='utf-8')
+            samples = watch(path, interval=0, samples=2)
+            history = next(samples)
+            self.assertEqual(history['error'], 'state_gap_or_missing_full')
+            self.assertFalse(history['current']['valid'])
+            self.assertIsNone(history['source']['candidate_event'])
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(source[2]) + '\n')
+                stream.write(json.dumps(retransmit) + '\n')
+            after = next(samples)
+            self.assertEqual(after['source']['new_records'], 2)
+            self.assertTrue(after['current']['valid'])
+            self.assertEqual(after['current']['request']['id'], 311)
+            self.assertIsNone(after['source']['candidate_event'])
+            self.assertFalse(after['current']['actionable'])
+            self.assertFalse(after['source']['input_sent'])
+            self.assertFalse(after['source']['executor_connected'])
+
+
 if __name__ == '__main__':
     unittest.main()
