@@ -1,5 +1,15 @@
 # MTGAPlayer progress
 
+### MP7: Read-only engine action inventory (local schema evidence)
+
+On 2026-10-13 the user ran `scripts/inspect_actions.py` on their own Player.log and supplied the **sanitized result**, not the underlying log. It reported **6,021 framed records, complete/zero framing errors, 276 ActionsAvailableReq payloads, 3,126 active action rows**, and `inactiveActions` on 205 requests. Observed type counts: `ActionType_Activate_Mana` 1,168; `ActionType_Cast` 766; `ActionType_Activate` 401; `ActionType_Pass` 276; `ActionType_Play` 260; `ActionType_FloatMana` 255. Every request reported an active `ActionType_Pass`; this does **not** prove that passing is always the strategically correct or immediately executable click.
+
+The active `actions` list and optional `inactiveActions` are distinct. The log contains nested mana payment, mana selections, auto-tap and target structures; many reported schema shapes are depth-truncated, so the inventory does **not** resolve those semantics. Only two unambiguous flat shapes are given typed, non-executable *observations*: `ActionType_Pass` (type-only) and `ActionType_Play` (instanceId, grpId, facetId, shouldStop). For an authenticated, own-seat `ActionsAvailableReq` on an accepted GRE state, `current.request.action_inventory` exposes engine-provided **active** type counts plus observed simple shapes; inactive entries are excluded, counted only. Unknown action types and other payload fields do not become guessed instructions. Missing/malformed arrays yield explicit unsupported reason with no inventory.
+
+The request remains `supported=false`, `unsupported_reason=action_details_unverified`, `candidates=[]`, `selection=null`, and `current.legal_actions=null`. `watch.source.candidate_event` stays null for this unimplemented semantic request, and `actionable=false`, `input_sent=false`, `executor_connected=false` remain unchanged. The user's schema JSON does **not** prove the complete real decoder or provide a full original-log replay for this branch; tests use the previously sanitized real GRE state chain with specifically identified **synthetic** action payload injection. The next stage must validate this inventory via the installed CLI on the owner's local original-log **continuous prefix** (not assume the later known state gap is recoverable), then narrow real Cast/Activate/mana/targets behavior based on actual evidence; do not connect the executor.
+
+
+
 ## MP7 ActionsAvailableReq evidence gate (2026-10-13)
 
 Base is MP6's actual squash main `ddcd80a581c71e49834069e4a80ae4dc21861cdd`, with natural `push/main` CI `38352907427` passing both jobs. Existing raw state, watch freshness, SelectN semantics and all no-input boundaries remain frozen.

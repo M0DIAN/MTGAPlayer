@@ -40,6 +40,74 @@ def _timestamp(value):
     return None
 
 
+_OBSERVED_ACTION_TYPES = frozenset({
+    'ActionType_Activate', 'ActionType_Activate_Mana', 'ActionType_Cast',
+    'ActionType_FloatMana', 'ActionType_Pass', 'ActionType_Play',
+})
+
+
+def _available_action_inventory(message):
+    """Observe engine-listed action rows; never infer legality or execution.
+
+    The six type labels and flat Pass/Play shapes are grounded in the local
+    2026-10-13 schema inventory. Other action details remain uninterpreted.
+    """
+    def unsupported(reason):
+        return {'supported': False, 'unsupported_reason': reason,
+                'candidates': [], 'selection': None, 'candidate_evidence': None,
+                'action_inventory': None}
+
+    payload = message.get('actionsAvailableReq')
+    if not isinstance(payload, dict):
+        return unsupported('missing_actions_available_payload')
+    actions = payload.get('actions')
+    inactive = payload.get('inactiveActions')
+    if (not isinstance(actions, list) or len(actions) > 256 or
+            ('inactiveActions' in payload and
+             (not isinstance(inactive, list) or len(inactive) > 512)) or
+            not all(isinstance(row, dict) for row in actions)):
+        return unsupported('invalid_actions_available_shape')
+
+    counts, simple = {}, []
+    type_labels_complete = True
+    for position, row in enumerate(actions):
+        typ = row.get('actionType')
+        if typ not in _OBSERVED_ACTION_TYPES or type(typ) is not str:
+            typ = '_unrecognized_action_type'
+            type_labels_complete = False
+        counts[typ] = counts.get(typ, 0) + 1
+        if typ == 'ActionType_Pass' and set(row) == {'actionType'}:
+            simple.append({'list_position': position, 'action_type': typ})
+        elif (typ == 'ActionType_Play' and
+              set(row) == {'actionType', 'facetId', 'grpId', 'instanceId', 'shouldStop'} and
+              all(_id(row[name]) for name in ('facetId', 'grpId', 'instanceId')) and
+              type(row['shouldStop']) is bool):
+            simple.append({'list_position': position, 'action_type': typ,
+                           'instance_id': row['instanceId'], 'grp_id': row['grpId'],
+                           'facet_id': row['facetId'],
+                           'should_stop_raw': row['shouldStop']})
+
+    # 'supported' stays false: typed observation is NOT proof of the
+    # complete legal response, mana payment, target choice or native action.
+    return {'supported': False, 'unsupported_reason': 'action_details_unverified',
+            'candidates': [], 'selection': None, 'candidate_evidence': None,
+            'action_inventory': {
+                'field': 'actionsAvailableReq.actions',
+                'kind': 'engine_listed_action_types_only',
+                'offered_count': len(actions),
+                'types': [{'action_type': kind, 'count': counts[kind]}
+                          for kind in sorted(counts)],
+                'type_labels_complete': type_labels_complete,
+                'inactive_count': len(inactive) if inactive is not None else None,
+                'inactive_excluded': True,
+                'simple_shapes': simple,
+                'simple_shapes_count': len(simple),
+                'remaining_action_details_unverified': len(actions) - len(simple),
+                'other_payload_fields_present': bool(set(payload) - {'actions', 'inactiveActions'}),
+                'semantics_complete': False, 'legal_actions_complete': False,
+                'executable': False, 'read_only': True}}
+
+
 def _request_semantics(message):
     """Decode only the observed, own-seat SelectN option shape.
 
@@ -49,6 +117,8 @@ def _request_semantics(message):
     def unsupported(reason):
         return {'supported': False, 'unsupported_reason': reason,
                 'candidates': [], 'selection': None, 'candidate_evidence': None}
+    if message.get('type') == 'GREMessageType_ActionsAvailableReq':
+        return _available_action_inventory(message)
     if message.get('type') != 'GREMessageType_SelectNReq':
         return unsupported('unsupported_request_type')
     payload = message.get('selectNReq')
