@@ -213,8 +213,22 @@ def inspect(log_path, card_db_path, max_history_bytes=64 * 1024 * 1024,
         "raw_values_included": False, "legal_actions": None, "actionable": False,
     }
     if capability_shapes:
-        result["capability_shapes"] = visible_capability_shapes(
-            card_db_path, visible_card_ids)
+        shape_report = visible_capability_shapes(card_db_path, visible_card_ids)
+        # Count parsed *stored literal* values only for localized, uniquely
+        # identified visible cards. No values leave the diagnostic.
+        named_stats = [card.get("catalog_stats", {}) for card in names.values()]
+        power_count = sum(x.get("power") is not None for x in named_stats)
+        toughness_count = sum(x.get("toughness") is not None for x in named_stats)
+        both_count = sum(x.get("power") is not None and
+                         x.get("toughness") is not None for x in named_stats)
+        shape_report["localized_visible_stat_coverage"] = {
+            "named_visible_card_ids": len(names),
+            "numeric_power_literal_ids": power_count,
+            "numeric_toughness_literal_ids": toughness_count,
+            "both_numeric_literal_ids": both_count,
+            "effective_game_stats_verified": False,
+        }
+        result["capability_shapes"] = shape_report
     return result
 
 

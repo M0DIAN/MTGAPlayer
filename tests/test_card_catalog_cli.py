@@ -130,6 +130,12 @@ class CardCatalogCLITests(unittest.TestCase):
         self.assertEqual(profile["ambiguous_source_ids"], 0)
         self.assertFalse(profile["field_semantics_verified"])
         self.assertFalse(profile["mana_cost_verified"])
+        coverage = profile["localized_visible_stat_coverage"]
+        self.assertEqual(coverage["named_visible_card_ids"], 3)
+        self.assertEqual(coverage["numeric_power_literal_ids"], 1)
+        self.assertEqual(coverage["numeric_toughness_literal_ids"], 1)
+        self.assertEqual(coverage["both_numeric_literal_ids"], 1)
+        self.assertFalse(coverage["effective_game_stats_verified"])
         self.assertIsNone(profile["legal_actions"])
         self.assertFalse(profile["actionable"])
         shapes = {row["field"]: row["shape_counts"]
@@ -162,6 +168,13 @@ class CardCatalogCLITests(unittest.TestCase):
         self.assertEqual(shapes["field_shapes"], [])
         self.assertEqual(len(shapes["fields_missing_from_schema"]), 16)
         self.assertEqual(shapes["card_rows_examined"], 3)
+        self.assertEqual(shapes["localized_visible_stat_coverage"], {
+            "named_visible_card_ids": 3,
+            "numeric_power_literal_ids": 0,
+            "numeric_toughness_literal_ids": 0,
+            "both_numeric_literal_ids": 0,
+            "effective_game_stats_verified": False,
+        })
         self.assertFalse(shapes["field_semantics_verified"])
 
     def test_cli_unsupported_local_db_reports_path_free_failure(self):

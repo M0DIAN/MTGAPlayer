@@ -138,6 +138,72 @@ class LocalCardTitlesTests(unittest.TestCase):
                     self.assertNotIn("UNFORMATTED_ONLY", json.dumps(projection))
                     self.assertFalse(projection["current"]["actionable"])
 
+    def test_catalog_power_toughness_literals_only_on_visible_unique_cards(self):
+        # Real-source GRE visibility chain, synthetic catalog scalar values.
+        with tempfile.TemporaryDirectory() as directory:
+            db_path = Path(directory) / "cards.mtga"
+            make_db(db_path)
+            with sqlite3.connect(db_path) as db:
+                db.execute("ALTER TABLE Cards ADD COLUMN Power TEXT")
+                db.execute("ALTER TABLE Cards ADD COLUMN Toughness TEXT")
+                for power, toughness, grp in (
+                        ("3", "0", 96839), ("", "*", 92359),
+                        ("-2", "4", 75557), ("999", "999", 999999)):
+                    db.execute(
+                        "UPDATE Cards SET Power=?, Toughness=? WHERE GrpId=?",
+                        (power, toughness, grp))
+            reducer = RawReducer()
+            reducer.reset(1)
+            for row in sample_document():
+                reducer.apply(row)
+            original = reducer.document()
+            enriched = enrich_visible_document(reducer.document(), db_path)
+        current = enriched["current"]
+        by_id = {obj["id"]: obj for obj in current["objects"]}
+        land = by_id[166]["local_card"]["catalog_stats"]
+        self.assertEqual((land["power"], land["toughness"]), (3, 0))
+        self.assertIsNone(by_id[161]["local_card"]["catalog_stats"]["power"])
+        self.assertIsNone(by_id[161]["local_card"]["catalog_stats"]["toughness"])
+        self.assertEqual(by_id[283]["local_card"]["catalog_stats"]["power"], -2)
+        self.assertEqual(by_id[283]["local_card"]["catalog_stats"]["toughness"], 4)
+        self.assertEqual(land["source"], "Cards.Power/Toughness")
+        self.assertTrue(land["numeric_literal_only"])
+        self.assertFalse(land["in_game_modifiers_accounted_for"])
+        self.assertFalse(land["rules_verified"])
+        self.assertFalse(current["request"]["supported"])
+        self.assertEqual(current["request"]["candidates"], [])
+        self.assertIsNone(current["legal_actions"])
+        self.assertFalse(current["actionable"])
+        self.assertNotIn("local_card", json.dumps(original))
+        self.assertNotIn("catalog_stats", json.dumps(enriched["last_valid"]))
+        self.assertNotIn("SECRET_HIDDEN_CARD", json.dumps(enriched))
+        self.assertNotIn('"power": 999', json.dumps(enriched))
+
+    def test_duplicate_card_with_numeric_stats_still_ambiguous(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cards.mtga"
+            make_db(path)
+            with sqlite3.connect(path) as db:
+                db.execute("ALTER TABLE Cards ADD COLUMN Power TEXT")
+                db.execute("ALTER TABLE Cards ADD COLUMN Toughness TEXT")
+                db.execute("UPDATE Cards SET Power='4', Toughness='5' WHERE GrpId=96839")
+                db.execute(
+                    "INSERT INTO Cards (GrpId,TitleId,Power,Toughness) "
+                    "VALUES (96839,999,'99','99')")
+            names, ambiguous = lookup_local_titles(path, [96839, 92359])
+            self.assertEqual(ambiguous, {96839})
+            self.assertNotIn(96839, names)
+            self.assertIn("catalog_stats", names[92359])
+            reducer = RawReducer()
+            reducer.reset(1)
+            for row in sample_document():
+                reducer.apply(row)
+            doc = enrich_visible_document(reducer.document(), path)
+        by_id = {o["id"]: o for o in doc["current"]["objects"]}
+        self.assertEqual(by_id[166]["local_card"], {"status": "ambiguous"})
+        self.assertNotIn("99", json.dumps(by_id[166]["local_card"]))
+        self.assertFalse(doc["current"]["actionable"])
+
     def test_invalid_and_missing_database_blocks_without_synthesized_titles(self):
         with tempfile.TemporaryDirectory() as directory:
             fake = Path(directory) / "missing.mtga"

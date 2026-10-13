@@ -13,6 +13,19 @@ _MAX_IDS = 512
 _MAX_ROWS = 4096
 _MAX_CARD_ID = 2**53 - 1
 _SET = re.compile(r"[A-Za-z0-9_]{1,12}\Z")
+_CATALOG_LITERAL = re.compile(r"[+-]?[0-9]{1,6}\Z")
+
+
+def _catalog_power_toughness(value):
+    """Only bounded ASCII integer literals; * / ratios / buffs remain unknown."""
+    if type(value) is not str or len(value) > 32:
+        return None
+    token = value.strip()
+    if not _CATALOG_LITERAL.fullmatch(token):
+        return None
+    value_int = int(token)
+    return value_int if abs(value_int) <= 99999 else None
+
 
 
 class CardCatalogError(ValueError):
@@ -77,8 +90,12 @@ def lookup_local_titles(card_db_path, visible_card_ids):
             formatted = " AND l.Formatted = 1" if "Formatted" in loc_cols else ""
             expansion = "c.ExpansionCode" if "ExpansionCode" in cols else "NULL"
             collector = "c.CollectorNumber" if "CollectorNumber" in cols else "NULL"
+            stat_columns_known = {"Power", "Toughness"} <= cols
+            raw_power = "c.Power" if stat_columns_known else "NULL"
+            raw_toughness = "c.Toughness" if stat_columns_known else "NULL"
             sql = (
                 "SELECT c.GrpId, l." + name + ", " + expansion + ", " + collector +
+                ", " + raw_power + ", " + raw_toughness +
                 " FROM Cards AS c JOIN " + table +
                 " AS l ON c.TitleId = l.LocId WHERE c.GrpId IN ({})" + formatted)
             # Count original Cards rows before the localization JOIN filters
@@ -97,7 +114,7 @@ def lookup_local_titles(card_db_path, visible_card_ids):
                     if _card_id(duplicate_id) and duplicate_id in ids:
                         duplicates.add(duplicate_id)
                         found.pop(duplicate_id, None)
-                for grp, title, set_code, collector_no in connection.execute(
+                for grp, title, set_code, collector_no, power, toughness in connection.execute(
                         sql.format(placeholders), group):
                     inspected += 1
                     if inspected > _MAX_ROWS:
@@ -119,12 +136,22 @@ def lookup_local_titles(card_db_path, visible_card_ids):
                                  else None)
                     clean_number = (_label(str(collector_no), 32)
                                     if type(collector_no) in (int, str) else None)
-                    found[grp] = {
+                    card = {
                         "name": clean_name, "set_code": clean_set,
                         "collector_number": clean_number,
                         "provenance": "explicit_local_mtga_sqlite",
                         "rules_verified": False,
                     }
+                    if stat_columns_known:
+                        card["catalog_stats"] = {
+                            "power": _catalog_power_toughness(power),
+                            "toughness": _catalog_power_toughness(toughness),
+                            "source": "Cards.Power/Toughness",
+                            "numeric_literal_only": True,
+                            "in_game_modifiers_accounted_for": False,
+                            "rules_verified": False,
+                        }
+                    found[grp] = card
             return found, duplicates
     except (sqlite3.Error, OSError, OverflowError) as exc:
         raise CardCatalogError("catalog_unavailable_or_invalid") from None
