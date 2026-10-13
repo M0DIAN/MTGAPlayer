@@ -58,6 +58,9 @@ def replay(path, dry=False, format='normalized'):
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
+    # History is a baseline, never a new opportunity. A request can be emitted
+    # only on its first complete, supported append observation.
+    seen_requests = set()
     for index in range(samples):
         reset, records = follower.poll()
         if reset:
@@ -71,10 +74,25 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024):
             document['current']['valid'] = False
             document['current']['actionable'] = False
             document['error'] = 'partial_raw_record_waiting'
+        phase = 'history' if index == 0 or reset else 'append'
+        current = document['current']
+        request = (current.get('request')
+                   if current.get('valid') and not follower.framer.partial else None)
+        binding = request.get('binding') if request and request.get('supported') else None
+        candidate_event = None
+        if binding and binding.get('ownership_verified') is True:
+            identity = (binding.get('generation'), binding.get('match'), binding.get('game'),
+                        binding.get('game_state_id'), binding.get('self_seat'), request['id'])
+            if phase == 'append' and records and identity not in seen_requests:
+                candidate_event = {'kind': 'supported_request_observed',
+                                   'binding': binding, 'request_id': request['id'],
+                                   'candidate_count': len(request['candidates']),
+                                   'read_only': True}
+            seen_requests.add(identity)
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
-                              'mode': 'watch', 'phase': 'history' if index == 0 or reset else 'append',
-                              'new_records': len(records), 'input_sent': False,
+                              'mode': 'watch', 'phase': phase, 'new_records': len(records),
+                              'candidate_event': candidate_event, 'input_sent': False,
                               'executor_connected': False, 'stopped': index + 1 == samples,
                               'stop_reason': 'sample_limit' if index + 1 == samples else None}
         yield document
