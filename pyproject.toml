@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtgaplayer"
+version = "0.1.0"
+description = "Independent, fail-closed normalized-state player and Windows test harness"
+requires-python = ">=3.11,<3.12"
+dependencies = []
+
+[project.scripts]
+mtgaplayer = "mtgaplayer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
