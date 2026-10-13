@@ -262,5 +262,40 @@ class RawRequestSemanticsTests(unittest.TestCase):
             self.assertFalse(duplicate['current']['actionable'])
 
 
+    def test_historical_request_partial_tail_cannot_become_new_append_event(self):
+        # Independent-review P1: unrelated completion of a partial tail must
+        # not make an existing request 311 appear newly received.
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'Player.log'
+            path.write_bytes(FIXTURE.read_bytes() + b'{"probe":')
+            samples = watch(path, interval=0, samples=3)
+            baseline = next(samples)
+            self.assertEqual(baseline['source']['phase'], 'history')
+            self.assertTrue(baseline['source']['partial_record'])
+            self.assertFalse(baseline['current']['valid'])
+            self.assertIsNone(baseline['source']['candidate_event'])
+
+            with path.open('ab') as stream:
+                stream.write(b'true}')
+            appended = next(samples)
+            self.assertEqual(appended['source']['phase'], 'append')
+            self.assertEqual(appended['source']['new_records'], 1)
+            self.assertTrue(appended['current']['valid'])
+            self.assertEqual(appended['current']['request']['id'], 311)
+            self.assertIsNone(appended['source']['candidate_event'])
+
+            duplicate = {'greToClientEvent': {'greToClientMessages':
+                         [copy.deepcopy(request(rows()[-1]))]}}
+            with path.open('a', encoding='utf-8') as stream:
+                stream.write(json.dumps(duplicate) + '\n')
+            retransmitted = next(samples)
+            self.assertEqual(retransmitted['source']['new_records'], 1)
+            self.assertTrue(retransmitted['current']['valid'])
+            self.assertIsNone(retransmitted['source']['candidate_event'])
+            self.assertFalse(retransmitted['current']['actionable'])
+            self.assertFalse(retransmitted['source']['input_sent'])
+            self.assertFalse(retransmitted['source']['executor_connected'])
+
+
 if __name__ == '__main__':
     unittest.main()
