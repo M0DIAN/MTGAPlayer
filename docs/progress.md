@@ -2,19 +2,19 @@
 
 ## MP7 ActionsAvailableReq evidence gate (2026-10-13)
 
-Base is MP6's actual squash main \`ddcd80a581c71e49834069e4a80ae4dc21861cdd\`, with natural \`push/main\` CI \`38352907427\` passing both jobs. Existing raw state, watch freshness, SelectN semantics and all no-input boundaries remain frozen.
+Base is MP6's actual squash main `ddcd80a581c71e49834069e4a80ae4dc21861cdd`, with natural `push/main` CI `38352907427` passing both jobs. Existing raw state, watch freshness, SelectN semantics and all no-input boundaries remain frozen.
 
-The only in-repo **real-source** action requests in \`tests/fixtures/player_log_selectn.jsonl\` are **nine \`GREMessageType_ActionsAvailableReq\` headers** (type, recipient, request and state IDs). Their \`actionsAvailableReq\` payloads were intentionally removed during MP5 sanitization. Thus no real action type, cost, target, mana option or legality can be inferred from the committed fixture. Older public examples of \`actionsAvailableReq.actions\` are background, not confirmation of the currently installed client schema.
+The only in-repo **real-source** action requests in `tests/fixtures/player_log_selectn.jsonl` are **nine `GREMessageType_ActionsAvailableReq` headers** (type, recipient, request and state IDs). Their `actionsAvailableReq` payloads were intentionally removed during MP5 sanitization. Thus no real action type, cost, target, mana option or legality can be inferred from the committed fixture. Older public examples of `actionsAvailableReq.actions` are background, not confirmation of the currently installed client schema.
 
-This candidate supplies **\`scripts/inspect_actions.py\`**, a bounded, local, read-only schema probe using the existing Player.log brace framer. It reports the number of ActionsAvailableReq messages, count with/without \`actionsAvailableReq.actions\`, safe enum action type labels, and **field names / scalar types** of nested action shapes. It never prints prompt values, action/instance/card IDs, original records, match/account identifiers, paths, or credentials. No new runtime dependency or core product interfaces; \`legal_actions=null\`, \`actionable=false\`, \`input_sent=false\`. Completeness, malformed framing and shape truncation are explicit.
+This candidate supplies **`scripts/inspect_actions.py`**, a bounded, local, read-only schema probe using the existing Player.log brace framer. It reports the number of ActionsAvailableReq messages, count with/without `actionsAvailableReq.actions`, safe enum action type labels, and **field names / scalar types** of nested action shapes. It never prints prompt values, action/instance/card IDs, original records, match/account identifiers, paths, or credentials. No new runtime dependency or core product interfaces; `legal_actions=null`, `actionable=false`, `input_sent=false`. Completeness, malformed framing and shape truncation are explicit.
 
 From the repository root (installed Python 3.11), run on the local original file without copying it:
 
-\`\`\`powershell
+```powershell
 & '.\.venv\Scripts\python.exe' 'scripts\inspect_actions.py' 'C:\Users\Administrator\AppData\LocalLow\Wizards Of The Coast\MTGA\Player.log'
-\`\`\`
+```
 
-The console emits **one sanitized JSON object**. Supply that JSON to the next decoder work; do **not** commit or upload the original log. The current MP7 deliverable is **evidence discovery**, not complete \`ActionsAvailableReq\` decoding, real rules/strategy, native localization, or live input. Further code should be defined from the output of the actual local log, not fabricated synthetic action data.
+The console emits **one sanitized JSON object**. Supply that JSON to the next decoder work; do **not** commit or upload the original log. The current MP7 deliverable is **evidence discovery**, not complete `ActionsAvailableReq` decoding, real rules/strategy, native localization, or live input. Further code should be defined from the output of the actual local log, not fabricated synthetic action data.
 
 
 
