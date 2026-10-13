@@ -81,18 +81,31 @@ def lookup_local_titles(card_db_path, visible_card_ids):
                 "SELECT c.GrpId, l." + name + ", " + expansion + ", " + collector +
                 " FROM Cards AS c JOIN " + table +
                 " AS l ON c.TitleId = l.LocId WHERE c.GrpId IN ({})" + formatted)
+            # Count original Cards rows before the localization JOIN filters
+            # missing or non-formatted names out of the result set.
+            duplicate_sql = (
+                "SELECT GrpId FROM Cards WHERE GrpId IN ({}) "
+                "GROUP BY GrpId HAVING COUNT(*) > 1")
             found, duplicates, seen = {}, set(), set()
             inspected = 0
             values = sorted(ids)
             for start in range(0, len(values), 200):
                 group = values[start:start + 200]
+                placeholders = ",".join("?" for _ in group)
+                for (duplicate_id,) in connection.execute(
+                        duplicate_sql.format(placeholders), group):
+                    if _card_id(duplicate_id) and duplicate_id in ids:
+                        duplicates.add(duplicate_id)
+                        found.pop(duplicate_id, None)
                 for grp, title, set_code, collector_no in connection.execute(
-                        sql.format(",".join("?" for _ in group)), group):
+                        sql.format(placeholders), group):
                     inspected += 1
                     if inspected > _MAX_ROWS:
                         raise CardCatalogError("catalog_row_limit")
                     if not _card_id(grp) or grp not in ids:
                         continue
+                    if grp in duplicates:
+                        continue  # Never re-resolve an ambiguous source GrpId.
                     if grp in seen:
                         duplicates.add(grp)
                         found.pop(grp, None)

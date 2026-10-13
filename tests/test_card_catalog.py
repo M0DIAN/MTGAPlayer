@@ -103,6 +103,41 @@ class LocalCardTitlesTests(unittest.TestCase):
         self.assertNotIn("SECRET_HIDDEN_CARD", json.dumps(snapshot))
         self.assertFalse(snapshot["current"]["actionable"])
 
+    def test_duplicate_raw_cards_row_filtered_by_localization_remains_ambiguous(self):
+        # B1: JOIN output has one row, but Cards itself has two rows.
+        for title_id in (999, 5):
+            with self.subTest(duplicate_title_id=title_id):
+                with tempfile.TemporaryDirectory() as directory:
+                    db_path = Path(directory) / "cards.mtga"
+                    make_db(db_path)
+                    with sqlite3.connect(db_path) as db:
+                        if title_id == 5:
+                            db.execute(
+                                "INSERT INTO Localizations_enUS "
+                                "(LocId, Formatted, Loc) VALUES (?, ?, ?)",
+                                (5, 0, "UNFORMATTED_ONLY"))
+                        db.execute(
+                            "INSERT INTO Cards "
+                            "(GrpId, TitleId, ExpansionCode, CollectorNumber) "
+                            "VALUES (?, ?, ?, ?)",
+                            (96839, title_id, "ALT", "999"))
+                    titles, ambiguous = lookup_local_titles(
+                        db_path, [96839, 92359])
+                    self.assertEqual(ambiguous, {96839})
+                    self.assertNotIn(96839, titles)
+                    self.assertEqual(titles[92359]["name"], "Sample Spell")
+                    reducer = RawReducer()
+                    reducer.reset(1)
+                    for entry in sample_document():
+                        reducer.apply(entry)
+                    projection = enrich_visible_document(reducer.document(), db_path)
+                    cards = {o["id"]: o["local_card"]
+                             for o in projection["current"]["objects"]}
+                    self.assertEqual(cards[166], {"status": "ambiguous"})
+                    self.assertNotIn("Sample Land", json.dumps(cards[166]))
+                    self.assertNotIn("UNFORMATTED_ONLY", json.dumps(projection))
+                    self.assertFalse(projection["current"]["actionable"])
+
     def test_invalid_and_missing_database_blocks_without_synthesized_titles(self):
         with tempfile.TemporaryDirectory() as directory:
             fake = Path(directory) / "missing.mtga"
