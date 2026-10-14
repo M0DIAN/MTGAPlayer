@@ -31,6 +31,60 @@ def state(entry):
 
 
 class RawLogTests(unittest.TestCase):
+    def test_noninteger_request_recipients_cannot_enter_accepted_ledger(self):
+        rows = entries()[:3]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'synthetic.jsonl'
+            for typ in ('GREMessageType_DeclareAttackersReq', 'GREMessageType_DeclareBlockersReq'):
+                for seats in ([True], [1.0]):
+                    with self.subTest(typ=typ, recipient_type=type(seats[0]).__name__):
+                        reducer = RawReducer()
+                        for row in rows:
+                            reducer.apply(row)
+                        message = {'type': typ, 'msgId': 990, 'gameStateId': 1,
+                                   'systemSeatIds': seats}
+                        frame = {'greToClientEvent': {'greToClientMessages': [message]}}
+                        reducer.apply(frame)
+                        self.assertIsNone(reducer.request)
+                        self.assertNotIn(990, reducer.request_ids)
+                        self.assertTrue(reducer.document()['current']['valid'])
+                        self.assertEqual(reducer.unsupported_broadcast_requests, 0)
+                        path.write_text(''.join(json.dumps(row) + '\n' for row in rows + [frame]),
+                                        encoding='utf-8')
+                        result = subprocess.run([sys.executable, '-m', 'mtgaplayer', 'replay', str(path),
+                            '--format', 'player-log', '--decision-input'],
+                            capture_output=True, text=True, timeout=8)
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        document = json.loads(result.stdout)
+                        self.assertIsNone(document['current']['request'])
+                        self.assertIsNone(document['decision_input'])
+                        message['systemSeatIds'] = [1]
+                        reducer.apply(frame)
+                        accepted = copy.deepcopy(reducer.request)
+                        ledger = reducer.request_ids.copy()
+                        self.assertEqual(accepted['id'], 990)
+                        message['systemSeatIds'], message['msgId'] = seats, 991
+                        reducer.apply(frame)
+                        self.assertEqual(reducer.request, accepted)
+                        self.assertEqual(reducer.request_ids, ledger)
+
+    def test_noninteger_state_recipients_cannot_authenticate_full_or_diff(self):
+        for mode in ('full', 'diff'):
+            for seats in ([True], [1.0]):
+                with self.subTest(mode=mode, recipient_type=type(seats[0]).__name__):
+                    rows = entries()
+                    reducer = RawReducer()
+                    for row in rows[:2 if mode == 'full' else 3]:
+                        reducer.apply(row)
+                    frame = rows[2 if mode == 'full' else 3]
+                    for message in frame['greToClientEvent']['greToClientMessages']:
+                        if 'gameStateMessage' in message:
+                            message['systemSeatIds'] = seats
+                    reducer.apply(frame)
+                    self.assertEqual(reducer.error, 'gre_recipient_or_self_seat_unverified')
+                    self.assertFalse(reducer.document()['current']['valid'])
+                    self.assertIsNone(reducer.request)
+
     def test_real_chain_full_diff_visibility_and_submission(self):
         rows = entries()
         reducer = RawReducer()
