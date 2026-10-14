@@ -26,7 +26,9 @@ class ChoiceConstraint(TypedDict):
     verified_structural_constraints: list[str]
     unresolved: list[str]
     provenance: dict
-    validation_level: Literal['observed_structure', 'unsupported']
+    validation_level: Literal['observed_structure', 'unsupported',
+                              'verified_known_constraints', 'violated_known_constraints',
+                              'insufficient_evidence', 'unsupported_protocol']
 
 
 class ActionNode(TypedDict):
@@ -290,4 +292,120 @@ def build_choice_graph(decision_input, action_frontier, request):
         'execution_ready': False,
         'input_sent': False,
         'read_only': True,
+    }
+
+
+CHOICE_VALIDATION_LEVELS = ('verified_known_constraints', 'violated_known_constraints',
+                          'insufficient_evidence', 'unsupported_protocol')
+_SELECTN_UNRESOLVED = ['min_sel_unknown', 'complete_choice_legality_unverified',
+                      'response_encoding_unverified', 'server_acceptance_unverified',
+                      'successor_causality_unverified']
+_SELECTN_DISABLED = {'complete_legality_verified': False, 'legal_choice_verified': False,
+                     'response_encoding_verified': False, 'server_acceptance_verified': False,
+                     'execution_ready': False, 'input_sent': False}
+
+
+def _selectn_known_constraints(request, payload):
+    """Validate only AFTER the existing exact own-request/consumption gate.
+
+    Request semantics come from RawReducer, never a second GRE parser. Neither
+    an empty selection nor allow_cancel=False proves an unknown minimum.
+    """
+    def result(level, checks=(), count=None):
+        return {'validation_level': level, 'checks': list(checks), 'selected_count': count}
+
+    if request.get('supported') is not True:
+        return result('unsupported_protocol')
+    selection, candidates = request.get('selection'), request.get('candidates')
+    evidence = request.get('candidate_evidence')
+    if (not isinstance(selection, dict) or not isinstance(candidates, list) or
+            not candidates or not isinstance(evidence, dict)):
+        return result('insufficient_evidence')
+    if (selection.get('validation_type') != 'SelectionValidationType_NonRepeatable' or
+            evidence.get('field') != 'selectNReq.ids' or
+            type(selection.get('min_weight')) is not int or
+            type(selection.get('max_weight')) is not int):
+        return result('unsupported_protocol')
+    ids = [c.get('instance_id') if isinstance(c, dict) else None for c in candidates]
+    def identifier(value):
+        return type(value) is int and 0 <= value <= 2**53 - 1
+    maximum = selection.get('max_sel')
+    if (not all(identifier(i) for i in ids) or len(set(ids)) != len(ids) or
+            type(maximum) is not int or not 1 <= maximum <= len(ids)):
+        return result('insufficient_evidence')
+    if set(payload) - {'type', 'respId', 'gameStateId', 'selectNResp'}:
+        return result('unsupported_protocol')
+    if 'selectNResp' not in payload:
+        return result('insufficient_evidence')
+    response = payload['selectNResp']
+    if not isinstance(response, dict):
+        return result('violated_known_constraints', [('response_ids_strict_integer_array', False)])
+    if set(response) - {'ids'}:
+        return result('unsupported_protocol')
+    if 'ids' not in response:
+        return result('insufficient_evidence')
+    selected = response['ids']
+    strict = isinstance(selected, list) and all(identifier(i) for i in selected)
+    checks = [('exact_current_own_request_and_reducer_consumption', True),
+              ('response_ids_strict_integer_array', strict)]
+    if not strict:
+        return result('violated_known_constraints', checks)
+    domain = set(ids)
+    checks.extend((('selected_ids_in_current_request_ids', all(i in domain for i in selected)),
+                   ('selected_count_lte_confirmed_max_sel', len(selected) <= maximum),
+                   ('nonrepeatable_ids_distinct', len(selected) == len(set(selected)))))
+    level = ('verified_known_constraints' if all(ok for _, ok in checks)
+             else 'violated_known_constraints')
+    return result(level, checks, len(selected))
+
+
+def _build_selectn_constraint_graph(request, validation):
+    """Historical request snapshot; caller owns exact gate and source integrity.
+
+    Export only request-offered IDs, never raw object identity or response IDs
+    outside that domain. No fabricated ActionsAvailable list_position or edge.
+    """
+    if (request.get('supported') is not True or
+            validation['validation_level'] == 'unsupported_protocol'):
+        return None
+    binding, selection = request['binding'], request['selection']
+    identity = {k: binding[k] for k in
+                ('generation', 'match', 'game', 'game_state_id', 'self_seat')}
+    identity.update(request_id=request['id'], request_type=request['type'])
+    key = {'request_identity': identity.copy()}
+    level = validation['validation_level']
+    constraint: ChoiceConstraint = {
+        'action_key': key, 'parameter_category': 'select_n_instance_ids',
+        'observed_structure': {'kind': 'array', 'id_type': selection['id_type'],
+                               'validation_type': selection['validation_type']},
+        'observed_quantity_or_domain': {
+            'candidate_instance_ids': [c['instance_id'] for c in request['candidates']],
+            'max_sel': selection['max_sel'], 'min_sel': None},
+        'verified_structural_constraints': [name for name, ok in validation['checks'] if ok],
+        'unresolved': _SELECTN_UNRESOLVED.copy(),
+        'provenance': {'source': 'historical_authenticated_own_gre_request',
+                       'field': 'selectNReq.ids', 'request_identity': identity.copy()},
+        'validation_level': level,
+    }
+    return {
+        'schema_version': 'mtga-selectn-choice-constraints-v1',
+        'request_identity': identity, 'current_request': False,
+        'selection_source': {'field': 'selectNReq.ids',
+                             'source_instance_id': selection['source_id'],
+                             'identities_enriched_from_raw_objects': False},
+        'constraints': [constraint],
+        'historical_validation': {
+            **validation, 'selection_field': 'selectNResp.ids',
+            'request_snapshot_at_response': True,
+            'checks': [{'constraint': name, 'satisfied': ok}
+                       for name, ok in validation['checks']]},
+        'engine_offered': True,
+        'known_constraint_satisfied': level == 'verified_known_constraints',
+        'validation_level': level, 'completeness': 'partial',
+        'expanded_choices': {'completeness': 'unknown', 'legal_combinations': None},
+        'observed_successors': [], 'unresolved': _SELECTN_UNRESOLVED.copy(),
+        'provenance': {'source': 'historical_authenticated_own_gre_request',
+                       'exact_request_response_consumption_gate': True,
+                       'matched_client_submission_only': True},
+        **_SELECTN_DISABLED, 'read_only': True,
     }

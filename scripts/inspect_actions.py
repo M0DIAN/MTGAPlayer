@@ -578,11 +578,16 @@ def main(argv=None):
                          help="MP16 Phase 2: value-free complex same-request action identity correlation")
     choices.add_argument("--choice-graph-history", action="store_true",
                          help="MP16 Phase 3: count-only complex constraints and temporal successors")
+    choices.add_argument("--verified-choice-constraints", action="store_true",
+                         help="MP16 Phase 4: count-only historical SelectN necessary-constraint checks")
     args = parser.parse_args(argv)
     if not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024:
         parser.error("max-history-bytes must be between 1 and 1073741824")
     try:
-        if args.choice_graph_history:
+        if args.verified_choice_constraints:
+            result = inspect_response_envelopes(
+                args.input, args.max_history_bytes, verified_choice_constraints=True)
+        elif args.choice_graph_history:
             result = inspect_response_envelopes(
                 args.input, args.max_history_bytes, choice_graph_history=True)
         elif args.complex_response_choice_correlation:
@@ -605,7 +610,8 @@ def main(argv=None):
         else:
             result = inspect(args.input, args.max_history_bytes)
     except (OSError, ValueError):
-        print(json.dumps({"probe": ("mtga-choice-graph-history-v1" if args.choice_graph_history
+        print(json.dumps({"probe": ("mtga-verified-choice-constraints-v1" if args.verified_choice_constraints
+                                   else "mtga-choice-graph-history-v1" if args.choice_graph_history
                                    else "mtga-client-response-complex-correlation-v1" if args.complex_response_choice_correlation
                                    else "mtga-client-response-semantic-correlation-v1" if args.response_choice_correlation
                                    else "mtga-client-response-action-shapes-v1" if args.response_action_shapes
