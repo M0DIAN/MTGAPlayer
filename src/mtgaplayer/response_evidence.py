@@ -21,6 +21,16 @@ _RESPONSE_KINDS = {
     "ClientMessageType_SelectTargetsResp": "select_targets_resp",
     "ClientMessageType_DeclareBlockersResp": "declare_blockers_resp",
 }
+# Only these observed GRE request/client response type pairs may be counted
+# as matched evidence. RawReducer still owns request consumption by ID/state.
+_RESPONSE_BY_REQUEST = {
+    "GREMessageType_ActionsAvailableReq": "ClientMessageType_PerformActionResp",
+    "GREMessageType_SelectNReq": "ClientMessageType_SelectNResp",
+    "GREMessageType_MulliganReq": "ClientMessageType_MulliganResp",
+    "GREMessageType_GroupReq": "ClientMessageType_GroupResp",
+    "GREMessageType_SelectTargetsReq": "ClientMessageType_SelectTargetsResp",
+    "GREMessageType_DeclareBlockersReq": "ClientMessageType_DeclareBlockersResp",
+}
 _FIELDS = frozenset({
     "type", "respId", "gameStateId", "performActionResp",
     "actionResp", "selectNResp", "mulliganResp", "groupResp",
@@ -354,6 +364,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
             counts["malformed_response_envelopes"] += 1
             continue
         paired = (before is not None and
+                  typ == _RESPONSE_BY_REQUEST.get(before.get("type")) and
                   payload["respId"] == before["id"] and
                   payload["gameStateId"] == before["game_state_id"] and
                   reducer.error is None and

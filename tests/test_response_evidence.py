@@ -163,6 +163,83 @@ class ResponseEvidenceTests(unittest.TestCase):
                 self.assertEqual(report["matched_actions_available_responses"], 0)
                 self.assertEqual(report["unmatched_or_noncurrent_responses"], 1)
 
+    def test_wrong_or_unknown_response_type_cannot_match_or_reopen_request(self):
+        cases = (
+            ("GREMessageType_ActionsAvailableReq", "ClientMessageType_SelectNResp"),
+            ("GREMessageType_SelectNReq", "ClientMessageType_PerformActionResp"),
+            ("GREMessageType_ActionsAvailableReq", "ClientMessageType_UnknownResp"),
+            ("GREMessageType_UnknownReq", "ClientMessageType_UnknownResp"),
+        )
+        for request_type, response_type in cases:
+            with self.subTest(request_type=request_type, response_type=response_type):
+                frame = action_request([{"actionType": "ActionType_Pass"}])
+                request = next(
+                    message for message in frame["greToClientEvent"]["greToClientMessages"]
+                    if message.get("type") == "GREMessageType_ActionsAvailableReq")
+                request["type"] = request_type
+                wrong = reply(details={"actions": [{"actionType": "PRIVATE_WRONG_TYPE"}]})
+                wrong["payload"]["type"] = response_type
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "Player.log"
+                    save(path, source_rows()[:9] + [frame, wrong, reply()])
+                    report = inspect_response_envelopes(path, action_shapes=True)
+                # RawReducer records a client submission by ID/state alone. The
+                # evidence layer must reject the wrong type; consumption then
+                # prevents a later reply from reviving this request.
+                self.assertEqual(report["matched_current_own_responses"], 1)
+                self.assertEqual(report["matched_actions_available_responses"], 0)
+                self.assertEqual(report["unmatched_or_noncurrent_responses"], 2)
+                self.assertEqual(report["action_array_structure"]
+                                 ["matched_action_responses_examined"], 0)
+                self.assertNotIn("PRIVATE_WRONG_TYPE", json.dumps(report))
+
+    def test_known_request_response_pairs_and_real_mulligan_selectn_survive(self):
+        pairs = (
+            ("GREMessageType_ActionsAvailableReq",
+             "ClientMessageType_PerformActionResp"),
+            ("GREMessageType_SelectNReq", "ClientMessageType_SelectNResp"),
+            ("GREMessageType_MulliganReq", "ClientMessageType_MulliganResp"),
+            ("GREMessageType_GroupReq", "ClientMessageType_GroupResp"),
+            ("GREMessageType_SelectTargetsReq",
+             "ClientMessageType_SelectTargetsResp"),
+            ("GREMessageType_DeclareBlockersReq",
+             "ClientMessageType_DeclareBlockersResp"),
+        )
+        for request_type, response_type in pairs:
+            with self.subTest(request_type=request_type):
+                frame = action_request([{"actionType": "ActionType_Pass"}])
+                request = next(
+                    message for message in frame["greToClientEvent"]["greToClientMessages"]
+                    if message.get("type") == "GREMessageType_ActionsAvailableReq")
+                request["type"] = request_type
+                response = reply()
+                response["payload"]["type"] = response_type
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "Player.log"
+                    save(path, source_rows()[:9] + [frame, response])
+                    report = inspect_response_envelopes(path)
+                self.assertEqual(report["matched_current_own_responses"], 2)
+                self.assertEqual(report["unmatched_or_noncurrent_responses"], 0)
+                self.assertEqual(report["matched_actions_available_responses"],
+                                 int(request_type == "GREMessageType_ActionsAvailableReq"))
+
+        original = source_rows()
+        selectn_response = json.loads(
+            (FIXTURE.parent / "player_log_selectn_response.jsonl").read_text(
+                encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Player.log"
+            save(path, original + [selectn_response])
+            report = inspect_response_envelopes(path)
+        self.assertIn(
+            {"request_kind": "other_own_request",
+             "response_type_class": "mulligan_resp", "count": 1},
+            report["matched_response_types"])
+        self.assertIn(
+            {"request_kind": "select_n",
+             "response_type_class": "select_n_resp", "count": 1},
+            report["matched_response_types"])
+
     def test_action_array_items_are_type_only_and_old_probe_unchanged(self):
         offered = [
             {"actionType": "ActionType_Pass"},
