@@ -77,6 +77,17 @@ It reports only bucketed lengths of already matched `performActionResp.actions` 
 
 **Historical client responses observed in a log are not messages sent by this tool.** `response_encoding_verified=false`, `selected_action_type_verified=false`, `pass_vs_play_selection_verified=false`, `gameplay_effect_verified=false`, `legal_actions=null`, `actionable=false` and `input_sent=false` remain. No MTGA input, native automation, inferred action encoding, mana/target contract or <3 s live-performance claim is introduced. The owner may supply only the count-only JSON from the original locally installed Player.log to determine the next evidence-focused implementation.
 
+### MP15 opt-in first engine-offered action frontier (read-only)
+
+`--action-frontier` requires `--decision-input` and a Player.log replay or finite watch. It adds a separate `action_frontier` property with one `ActionTemplate` for **each position in the current authenticated own-seat** `ActionsAvailableReq.actions` array, including duplicate rows, `FloatMana`, unknown types and malformed shapes. The template contains the request identity, original array position, recognized type or a fixed unknown label, existing verified visible-source link when available, whitelisted opaque parameter container sizes, and explicit unresolved evidence. Private values, unknown field names and raw action IDs are excluded. `inactiveActions` never become templates. The existing raw inventory, decision input and gap report keep their prior meanings and default output stays unchanged.
+
+```powershell
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log --decision-input --action-frontier "<Player.log>"
+.\.venv\Scripts\mtgaplayer.exe watch --decision-input --action-frontier "<Player.log>" --samples 5
+```
+
+Coverage reports `engine_active_action_count = interpreted_action_count + unsupported_action_count`. “Interpreted” means only an existing reviewed structural description; malformed or unreviewed rows are explicit unsupported templates. Immediate completeness is `partial` even when every row has a description, since payment, targets and response encoding remain unverified. Future choice expansion stays `unknown`; no later request is presumed. Missing/invalid action payloads and other current request types yield `unknown` coverage with null counts and null templates, not a fabricated zero. Invalid or partial current snapshots yield `action_frontier: null`; diagnostic `last_valid` is never reused. Finite watch may finish with `stopped=true` while retaining a historical diagnostic frontier, always `actionable=false`, `execution_ready=false` and `input_sent=false`. This is level-one engine-offered structure, not verified legal choices or MTGA input.
+
 ### MP14 action evidence/gap classification (still read-only)
 
 MP13 produced a **request-bound observation**, not an action-execution contract. MP14 optionally classifies only **engine-described active action positions** into typed *engineering evidence gaps*; it never marks Pass, Play, Cast, Activate or Activate_Mana as executable, legal, strategically good or complete. An unknown/undetailed action such as `FloatMana` is counted by its observed type but gets **no invented position or response parameters**. A visible source join is not a Magic permission; even an explicit same-request mana pair/target slot is only raw structural equality, **not** a validated payment or target.

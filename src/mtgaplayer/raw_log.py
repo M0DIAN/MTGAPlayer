@@ -186,6 +186,33 @@ def _complex_raw_shape(position, action_type, row, mana_index):
         'executable': False, 'read_only': True}
 
 
+def _frontier_row(position, action_type, row):
+    """Safe per-active-position metadata for the opt-in frontier only."""
+    parameters = {}
+    for field in _OPAQUE_LIST_FIELDS:
+        if field in row:
+            value = row[field]
+            parameters[field] = {
+                'kind': 'array' if isinstance(value, list) else 'unexpected',
+                'element_count': len(value) if isinstance(value, list) else None,
+            }
+    if 'autoTapSolution' in row:
+        value = row['autoTapSolution']
+        nested = value.get('autoTapActions') if isinstance(value, dict) else None
+        parameters['autoTapSolution'] = {
+            'kind': 'object' if isinstance(value, dict) else 'unexpected',
+            'auto_tap_actions_count': len(nested) if isinstance(nested, list) else None,
+        }
+    accounted = ({'actionType', 'autoTapSolution'} |
+                 {key for key, _ in _RAW_ID_FIELDS} |
+                 {key for key, _ in _RAW_FLAG_FIELDS} |
+                 set(_OPAQUE_LIST_FIELDS))
+    return {'list_position': position, 'action_type': action_type,
+            'known_parameter_shapes': parameters,
+            'other_top_level_fields_present': bool(set(row) - accounted),
+            'structurally_interpreted': False}
+
+
 def _available_action_inventory(message):
     """Observe engine-listed action rows; never infer legality or execution.
 
@@ -208,7 +235,7 @@ def _available_action_inventory(message):
             not all(isinstance(row, dict) for row in actions)):
         return unsupported('invalid_actions_available_shape')
 
-    counts, simple, complex_shapes = {}, [], []
+    counts, simple, complex_shapes, frontier_rows = {}, [], [], []
     mana_index = _mana_position_index(actions)
     type_labels_complete = True
     for position, row in enumerate(actions):
@@ -217,8 +244,10 @@ def _available_action_inventory(message):
             typ = '_unrecognized_action_type'
             type_labels_complete = False
         counts[typ] = counts.get(typ, 0) + 1
+        frontier_rows.append(_frontier_row(position, typ, row))
         if typ == 'ActionType_Pass' and set(row) == {'actionType'}:
             simple.append({'list_position': position, 'action_type': typ})
+            frontier_rows[-1]['structurally_interpreted'] = True
         elif (typ == 'ActionType_Play' and
               set(row) == {'actionType', 'facetId', 'grpId', 'instanceId', 'shouldStop'} and
               all(_id(row[name]) for name in ('facetId', 'grpId', 'instanceId')) and
@@ -227,8 +256,22 @@ def _available_action_inventory(message):
                            'instance_id': row['instanceId'], 'grp_id': row['grpId'],
                            'facet_id': row['facetId'],
                            'should_stop_raw': row['shouldStop']})
+            frontier_rows[-1]['structurally_interpreted'] = True
         elif typ in _COMPLEX_ACTION_TYPES:
-            complex_shapes.append(_complex_raw_shape(position, typ, row, mana_index))
+            shape = _complex_raw_shape(position, typ, row, mana_index)
+            complex_shapes.append(shape)
+            targets = shape['raw_relations']['target_slots']
+            frontier_rows[-1]['structurally_interpreted'] = (
+                not shape['invalid_known_field_types'] and
+                not shape['other_top_level_fields_present'] and
+                all(parameter['kind'] == ('object' if name == 'autoTapSolution'
+                                               else 'array') and
+                    (name != 'autoTapSolution' or
+                     parameter['auto_tap_actions_count'] is not None)
+                    for name, parameter in shape['opaque_parameter_shapes'].items()) and
+                (targets is None or targets['valid_array'] and
+                 all(item['valid_shape'] for item in targets['entries']) and
+                 not targets['truncated']))
 
     # 'supported' stays false: typed observation is NOT proof of the
     # complete legal response, mana payment, target choice or native action.
@@ -247,6 +290,7 @@ def _available_action_inventory(message):
                 'simple_shapes_count': len(simple),
                 'complex_raw_shapes': complex_shapes,
                 'complex_raw_shapes_count': len(complex_shapes),
+                '_frontier_rows': frontier_rows,
                 'remaining_action_details_unverified': len(actions) - len(simple),
                 'other_payload_fields_present': bool(set(payload) - {'actions', 'inactiveActions'}),
                 'semantics_complete': False, 'legal_actions_complete': False,
@@ -817,7 +861,7 @@ class RawReducer:
         self.error = None
         self.last_valid = projection
 
-    def _current(self):
+    def _current(self, include_frontier_rows=False):
         visible, hidden = [], {}
         for zone in self.zones.values():
             kind = zone.get('type')
@@ -846,6 +890,18 @@ class RawReducer:
                     hidden[label] = hidden.get(label, 0) + 1
         request = copy.deepcopy(self.request)
         if request and isinstance(request.get('action_inventory'), dict):
+            inventory = request['action_inventory']
+            if include_frontier_rows:
+                inventory['_frontier_request_identity'] = {
+                    'generation': request['binding']['generation'],
+                    'match': request['binding']['match'],
+                    'game': request['binding']['game'],
+                    'game_state_id': request['binding']['game_state_id'],
+                    'self_seat': request['binding']['self_seat'],
+                    'request_id': request['id'],
+                }
+            else:
+                inventory.pop('_frontier_rows', None)
             request['action_inventory']['visible_source_links'] = (
                 _join_action_sources_to_visible(request['action_inventory'], visible))
         return {'valid': True, 'match': self.match, 'game': self.game,
@@ -862,8 +918,8 @@ class RawReducer:
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}
 
-    def document(self):
-        current = self._current() if self.error is None and self.version is not None else {
+    def document(self, include_frontier_rows=False):
+        current = self._current(include_frontier_rows) if self.error is None and self.version is not None else {
             'valid': False, 'match': self.match, 'game': self.game,
             'self_seat': self.seat, 'game_state_id': self.version, 'actionable': False}
         return {'current': current, 'last_valid': copy.deepcopy(self.last_valid),
