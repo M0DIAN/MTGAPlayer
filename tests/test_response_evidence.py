@@ -163,6 +163,126 @@ class ResponseEvidenceTests(unittest.TestCase):
                 self.assertEqual(report["matched_actions_available_responses"], 0)
                 self.assertEqual(report["unmatched_or_noncurrent_responses"], 1)
 
+    def test_action_array_items_are_type_only_and_old_probe_unchanged(self):
+        offered = [
+            {"actionType": "ActionType_Pass"},
+            {"actionType": "ActionType_Play", "instanceId": 166,
+             "grpId": 96839, "facetId": 0, "shouldStop": False},
+        ]
+        nested = {
+            "actions": [
+                {"actionType": "SECRET_SELECTED_ACTION_VALUE",
+                 "instanceId": 12345678,
+                 "action": {"actionType": "SECRET_NESTED_ACTION_VALUE",
+                            "grpId": 98765432, "secretChild": "HIDDEN_INNER"},
+                 "privateSelectedValue": "HIDDEN_ACTION_FIELD"},
+                {"targets": [{"secret": "HIDDEN_TARGET_VALUE"}],
+                 "privateFieldTwo": {"secret": "HIDDEN_DATA"}},
+            ],
+            "privateSiblingKey": {"user": "HIDDEN_SIBLING_CONTENT"},
+        }
+        rows = source_rows()[:9] + [action_request(offered)] + [
+            reply(details=nested),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Player.log"
+            save(path, rows)
+            old = inspect_response_envelopes(path)
+            detailed = inspect_response_envelopes(path, action_shapes=True)
+            cli = subprocess.run(
+                [sys.executable, str(SCRIPT), str(path),
+                 "--response-action-shapes"],
+                cwd=ROOT, text=True, capture_output=True, check=False)
+        self.assertNotIn("action_array_structure", old)
+        self.assertEqual(old["probe"], "mtga-client-response-envelopes-v1")
+        self.assertEqual(cli.returncode, 0, cli.stderr)
+        self.assertEqual(detailed, json.loads(cli.stdout))
+        self.assertEqual(detailed["probe"], "mtga-client-response-action-shapes-v1")
+        sample = detailed["action_array_structure"]
+        self.assertEqual(sample["matched_action_responses_examined"], 1)
+        self.assertEqual(sample["container_status_counts"], [
+            {"status": "actions_array", "response_count": 1}])
+        self.assertEqual(sample["array_length_buckets_by_offered_context"], [
+            {"offered_context_not_selected_action": "pass_and_play_offered",
+             "length_bucket": "two", "response_count": 1}])
+        self.assertEqual(sample["suppressed_sibling_field_storage_types"], [
+            {"kind": "object", "field_occurrences": 1}])
+        self.assertEqual(sample["array_item_storage_kinds"], [
+            {"kind": "object", "item_count": 2}])
+        self.assertEqual(sample["array_items_examined"], 2)
+        self.assertEqual(sample["array_items_unexamined_due_to_cap"], 0)
+        variants = sample["array_element_shape_variants"]
+        self.assertEqual(sum(v["count"] for v in variants), 2)
+        known = [entry for v in variants for entry in v["known_field_kinds"]]
+        self.assertIn({"field": "actionType", "kind": "text"}, known)
+        self.assertIn({"field": "instanceId", "kind": "integer"}, known)
+        self.assertIn({"field": "targets", "kind": "array"}, known)
+        nested_fields = [f for v in variants
+                         for n in v["nested_known_object_fields"]
+                         for f in n["known_field_kinds"]]
+        self.assertIn({"field": "grpId", "kind": "integer"}, nested_fields)
+        self.assertFalse(sample["selected_action_type_verified"])
+        self.assertFalse(sample["pass_vs_play_selection_verified"])
+        self.assertFalse(sample["complete_response_encoding_verified"])
+        self.assertIsNone(sample["legal_actions"])
+        self.assertFalse(sample["input_sent"])
+        output = json.dumps(detailed)
+        for private in ("SECRET_SELECTED_ACTION_VALUE",
+                        "SECRET_NESTED_ACTION_VALUE",
+                        "HIDDEN_INNER", "HIDDEN_ACTION_FIELD",
+                        "HIDDEN_TARGET_VALUE", "HIDDEN_DATA",
+                        "HIDDEN_SIBLING_CONTENT", "privateSiblingKey",
+                        "privateSelectedValue", "privateFieldTwo",
+                        "secretChild", "12345678", "98765432", str(path)):
+            self.assertNotIn(private, output)
+
+    def test_action_item_limit_and_wrong_container_are_marked_unknown(self):
+        offered = [{"actionType": "ActionType_Pass"}]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Player.log"
+            save(path, source_rows()[:9] + [action_request(offered)] + [
+                reply(details={"actions": [
+                    {"actionType": "SECRET_PASS_OR_PLAY"}
+                    for _ in range(67)]})])
+            large = inspect_response_envelopes(path, action_shapes=True)
+            save(path, source_rows()[:9] + [action_request(offered)] + [
+                reply(details={"actions": "DO_NOT_EXPORT_NON_ARRAY"})])
+            wrong = inspect_response_envelopes(path, action_shapes=True)
+        first = large["action_array_structure"]
+        self.assertEqual(first["array_items_examined"], 64)
+        self.assertEqual(first["array_items_unexamined_due_to_cap"], 3)
+        self.assertEqual(first["array_length_buckets_by_offered_context"][0]
+                         ["length_bucket"], "over_64_truncated")
+        self.assertEqual(first["array_element_shape_variants"][0]["count"], 64)
+        second = wrong["action_array_structure"]
+        self.assertEqual(second["matched_action_responses_examined"], 1)
+        self.assertEqual(second["container_status_counts"], [
+            {"status": "unexpected_actions_container", "response_count": 1}])
+        self.assertEqual(second["array_items_examined"], 0)
+        self.assertNotIn("DO_NOT_EXPORT_NON_ARRAY", json.dumps(wrong))
+        self.assertNotIn("SECRET_PASS_OR_PLAY", json.dumps(large))
+
+    def test_only_exact_current_own_action_replies_are_drilled_down(self):
+        offered = [{"actionType": "ActionType_Pass"}]
+        unmatched = reply(9999, 23, {"actions": [
+            {"privateField": "SECRET_UNMATCHED_VALUE"}]})
+        matched = reply(37, 23, {"actions": [
+            {"actionType": "PRIVATE_SELECTED_VALUE"}]})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Player.log"
+            save(path, source_rows()[:9] + [action_request(offered),
+                                            unmatched, matched])
+            result = inspect_response_envelopes(path, action_shapes=True)
+        self.assertEqual(result["matched_actions_available_responses"], 1)
+        self.assertEqual(result["unmatched_or_noncurrent_responses"], 1)
+        self.assertEqual(result["action_array_structure"]
+                         ["matched_action_responses_examined"], 1)
+        self.assertEqual(result["action_array_structure"]
+                         ["array_items_examined"], 1)
+        self.assertNotIn("SECRET_UNMATCHED_VALUE", json.dumps(result))
+        self.assertNotIn("PRIVATE_SELECTED_VALUE", json.dumps(result))
+        self.assertFalse(result["response_encoding_verified"])
+
     def test_count_only_cli_and_partial_tail_never_claim_verified_encoding(self):
         original = source_rows()
         with tempfile.TemporaryDirectory() as directory:

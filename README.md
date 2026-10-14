@@ -65,6 +65,16 @@ The optional schema-only counter reuses `scripts/inspect_actions.py`, RawFollowe
 
 It links a historical `ClientMessageType_*Resp` **only when the immediately preceding reducer state has a current authenticated own-seat request whose request ID and game-state ID exactly match the response**, and the reducer records the client submission. Superseded, mismatched, broadcast, other-seat or duplicate responses stay unlinked. It aggregates safe response-type categories, counts of matching requests, the known **offered** Pass/Play context (never a claimed chosen move), whitelisted field **names and storage type classes**, opaque nested field shapes and the count of intervening UIMessage envelopes. It never prints request/card/player IDs, raw scalar values, private keys, file paths, action-selection values or complete payloads. Shape variation is capped and truncation is explicit.
 
+**Actual installed-log update (owner-executed, aggregate only):** the owner's 6,021-frame Player.log yielded 423 accepted own requests, 485 historical client response records, 369 exactly paired own responses and 116 unmatched/noncurrent. All **216** paired ActionsAvailable requests had `performActionResp.actions` arrays. Of these, **122** offered Pass without Play and **94** offered Pass together with Play; this is **offer context, not the action chosen**. A further **167/216** action responses contained one nonallowlisted sibling field under `performActionResp`, whose name/value were intentionally suppressed.
+
+To understand the remaining real response **array element format** without guessing, MP15 adds a second, *explicit* read-only diagnostic mode using the **same** probe and own-request matching chain:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "<Player.log>" --response-action-shapes
+```
+
+It reports only bucketed lengths of already matched `performActionResp.actions` arrays, aggregate per-element JSON storage types, a **fixed whitelist** of field names and their storage kinds (including one level of nested known object fields), and **types but not names or values** of suppressed unknown fields. Limits: 64 array items per matched response, 24 fields per element, 16 fields per nested known object, and 48 aggregate shape variants; overflows are explicit. Unlike `--response-envelopes`, the detailed option reads array elements **in memory** but never prints raw content, card/action IDs, selected action values, hidden fields or local paths. Prior `--response-envelopes` output is unchanged. Even if the response contains `actionType`, its scalar value stays unobserved: no Pass-vs-Play selection, legal action or response encoding is asserted.
+
 **Historical client responses observed in a log are not messages sent by this tool.** `response_encoding_verified=false`, `selected_action_type_verified=false`, `pass_vs_play_selection_verified=false`, `gameplay_effect_verified=false`, `legal_actions=null`, `actionable=false` and `input_sent=false` remain. No MTGA input, native automation, inferred action encoding, mana/target contract or <3 s live-performance claim is introduced. The owner may supply only the count-only JSON from the original locally installed Player.log to determine the next evidence-focused implementation.
 
 ### MP14 action evidence/gap classification (still read-only)

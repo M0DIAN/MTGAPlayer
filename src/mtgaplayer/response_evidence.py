@@ -149,7 +149,164 @@ def _ui_bucket(total):
     return "two_or_more"
 
 
-def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
+
+# MP15 value-free drill-down, only when explicitly requested.
+_ACTION_ITEMS_LIMIT = 64
+_ACTION_FIELDS_LIMIT = 24
+_ACTION_NESTED_FIELDS_LIMIT = 16
+_ACTION_VARIANT_LIMIT = 48
+
+
+def _array_length_bucket(size):
+    """Fixed labels, not per-response cardinalities or selected action IDs."""
+    if size == 0:
+        return "zero"
+    if size == 1:
+        return "one"
+    if size == 2:
+        return "two"
+    if size <= _ACTION_ITEMS_LIMIT:
+        return "three_to_64"
+    return "over_64_truncated"
+
+
+def _known_fields_signature(item, limit):
+    """Names are emitted ONLY from our static, previously reviewed allowlist."""
+    found, hidden_kinds = [], Counter()
+    for name in sorted(item, key=str)[:limit]:
+        kind = _kind(item[name])
+        if isinstance(name, str) and name in _FIELDS:
+            found.append((name, kind))
+        else:
+            hidden_kinds[kind] += 1
+    return tuple(found), tuple(sorted(hidden_kinds.items())), len(item) > limit
+
+
+def _action_item_shape(item):
+    """At most two levels of fixed field names; no scalar or array elements."""
+    if not isinstance(item, dict):
+        return (_kind(item), (), (), (), False)
+    known, other_kinds, truncated = _known_fields_signature(
+        item, _ACTION_FIELDS_LIMIT)
+    nested = []
+    for name, kind in known:
+        value = item[name]
+        if kind == "object":
+            child_fields, child_others, cut = _known_fields_signature(
+                value, _ACTION_NESTED_FIELDS_LIMIT)
+            nested.append((name, child_fields, child_others))
+            truncated |= cut
+    return ("object", known, other_kinds, tuple(nested), truncated)
+
+
+class _ActionShapeCounts:
+    """Aggregate matched PerformActionResp.actions only, strictly no values."""
+
+    def __init__(self):
+        self.responses = 0
+        self.container = Counter()
+        self.lengths = Counter()
+        self.sibling_kinds = Counter()
+        self.item_kinds = Counter()
+        self.variants = {}
+        self.unshown_variants = 0
+        self.items_examined = 0
+        self.items_unexamined = 0
+        self.fields_truncated = 0
+
+    def add(self, payload, offered):
+        self.responses += 1
+        response = payload.get("performActionResp")
+        if response is None:
+            self.container["missing_or_null_perform_action_resp"] += 1
+            return
+        if not isinstance(response, dict):
+            self.container["unexpected_perform_action_resp_container"] += 1
+            return
+        for field, value in response.items():
+            if field != "actions":
+                # Suppress arbitrary field names, types only.
+                self.sibling_kinds[_kind(value)] += 1
+        if "actions" not in response:
+            self.container["missing_actions"] += 1
+            return
+        actions = response["actions"]
+        if not isinstance(actions, list):
+            self.container["unexpected_actions_container"] += 1
+            return
+        self.container["actions_array"] += 1
+        self.lengths[(offered, _array_length_bucket(len(actions)))] += 1
+        self.items_unexamined += max(0, len(actions) - _ACTION_ITEMS_LIMIT)
+        for item in actions[:_ACTION_ITEMS_LIMIT]:
+            self.items_examined += 1
+            signature = _action_item_shape(item)
+            self.item_kinds[signature[0]] += 1
+            if signature[4]:
+                self.fields_truncated += 1
+            if signature in self.variants:
+                self.variants[signature] += 1
+            elif len(self.variants) < _ACTION_VARIANT_LIMIT:
+                self.variants[signature] = 1
+            else:
+                self.unshown_variants += 1
+
+    def report(self):
+        variants = []
+        for signature, count in sorted(
+                self.variants.items(), key=lambda x: (-x[1], x[0])):
+            kind, fields, other, nested, truncated = signature
+            variants.append({
+                "item_kind": kind,
+                "known_field_kinds": [
+                    {"field": key, "kind": value} for key, value in fields],
+                "suppressed_unknown_field_kinds": [
+                    {"kind": category, "count": total}
+                    for category, total in other],
+                "nested_known_object_fields": [
+                    {"parent": parent,
+                     "known_field_kinds": [
+                         {"field": key, "kind": value}
+                         for key, value in child_fields],
+                     "suppressed_unknown_field_kinds": [
+                         {"kind": category, "count": total}
+                         for category, total in child_other]}
+                    for parent, child_fields, child_other in nested],
+                "fields_truncated": truncated,
+                "count": count,
+            })
+        return {
+            "scope": "matched_own_actions_available_perform_action_resp_only",
+            "matched_action_responses_examined": self.responses,
+            "container_status_counts": [
+                {"status": kind, "response_count": total}
+                for kind, total in sorted(self.container.items())],
+            "array_length_buckets_by_offered_context": [
+                {"offered_context_not_selected_action": offered,
+                 "length_bucket": length_bucket, "response_count": total}
+                for (offered, length_bucket), total in sorted(self.lengths.items())],
+            "suppressed_sibling_field_storage_types": [
+                {"kind": kind, "field_occurrences": count}
+                for kind, count in sorted(self.sibling_kinds.items())],
+            "array_item_storage_kinds": [
+                {"kind": kind, "item_count": count}
+                for kind, count in sorted(self.item_kinds.items())],
+            "array_items_examined": self.items_examined,
+            "array_items_unexamined_due_to_cap": self.items_unexamined,
+            "items_with_truncated_fields": self.fields_truncated,
+            "array_element_shape_variants": variants,
+            "shape_variant_limit": _ACTION_VARIANT_LIMIT,
+            "unshown_variant_item_occurrences": self.unshown_variants,
+            "raw_values_or_unknown_field_names_exported": False,
+            "selected_action_type_verified": False,
+            "pass_vs_play_selection_verified": False,
+            "complete_response_encoding_verified": False,
+            "legal_actions": None,
+            "read_only": True, "actionable": False, "input_sent": False,
+        }
+
+
+def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
+                               action_shapes=False):
     """Count exact-current-own-request response-envelope matches, offline.
 
     The reducer must already have accepted a current authenticated request
@@ -165,6 +322,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
         Counter(), Counter(), Counter(), Counter())
     variants = {}
     unshown = 0
+    action_shape_counts = _ActionShapeCounts() if action_shapes else None
     ui_token, ui_count = None, 0
     for entry in records:
         before = _current_verified_request(reducer)
@@ -213,6 +371,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
         kind = _request_kind(before)
         if kind == "actions_available":
             counts["matched_actions_available_responses"] += 1
+            if action_shape_counts is not None and typ == "ClientMessageType_PerformActionResp":
+                action_shape_counts.add(payload, _offers(before))
         response_kind = _RESPONSE_KINDS.get(typ, "other_client_response")
         by_response[(kind, response_kind)] += 1
         bucket = _ui_bucket(ui_count)
@@ -245,7 +405,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
             "shape_truncated": truncated,
             "count": count,
         })
-    return {
+    report = {
         "probe": "mtga-client-response-envelopes-v1",
         "source": {
             "mode": "offline", "format": "player-log-gre-v1",
@@ -288,3 +448,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
         "executor_connected": False, "raw_values_included": False,
         "paths_or_identifiers_included": False,
     }
+    if action_shape_counts is not None:
+        report["probe"] = "mtga-client-response-action-shapes-v1"
+        report["action_array_structure"] = action_shape_counts.report()
+    return report
