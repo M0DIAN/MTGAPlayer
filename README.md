@@ -77,6 +77,12 @@ It reports only bucketed lengths of already matched `performActionResp.actions` 
 
 **Historical client responses observed in a log are not messages sent by this tool.** `response_encoding_verified=false`, `selected_action_type_verified=false`, `pass_vs_play_selection_verified=false`, `gameplay_effect_verified=false`, `legal_actions=null`, `actionable=false` and `input_sent=false` remain. No MTGA input, native automation, inferred action encoding, mana/target contract or <3 s live-performance claim is introduced. The owner may supply only the count-only JSON from the original locally installed Player.log to determine the next evidence-focused implementation.
 
+### MP16 historical response-choice correlation (read-only)
+
+`python scripts/inspect_actions.py "<Player.log>" --response-choice-correlation` reuses the MP15 exact current-own request and compatible-response gate. It reports aggregate `unique`, `multiple`, `no_match` and `incomplete_or_unsupported` counts for historical client submissions. Only exact flat Pass/Play fields are compared with active candidates in the same request. Incomplete same-type source coverage, unknown shapes, complex actions and oversized arrays stay unsupported. Inactive actions are excluded. Output contains fixed action-type categories and counts, without raw identifiers, private values or paths.
+
+`unique` means request-candidate equality only; it does not establish server acceptance, complete response encoding, legal actions or gameplay effects. No input is sent. The new mode is mutually exclusive with other diagnostic modes; default MP15 envelope and action-shape output remain unchanged.
+
 ### MP15 opt-in first engine-offered action frontier (read-only)
 
 `--action-frontier` requires `--decision-input` and a Player.log replay or finite watch. It adds a separate `action_frontier` property with one `ActionTemplate` for **each position in the current authenticated own-seat** `ActionsAvailableReq.actions` array, including duplicate rows, `FloatMana`, unknown types and malformed shapes. The template contains the request identity, original array position, recognized type or a fixed unknown label, existing verified visible-source link when available, whitelisted opaque parameter container sizes, and explicit unresolved evidence. Private values, unknown field names and raw action IDs are excluded. `inactiveActions` never become templates. The existing raw inventory, decision input and gap report keep their prior meanings and default output stays unchanged.
