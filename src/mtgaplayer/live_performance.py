@@ -346,6 +346,10 @@ def run(path, duration=600, interval=.25, max_history_bytes=64 * 1024 * 1024,
             if now < scheduled:
                 sleep((scheduled - now) / 1_000_000_000)
             if clock_ns() >= deadline:
+                # Oversleep can leave scheduled slots unexecuted. Earlier
+                # pending skips also have no subsequent poll to own them.
+                trailing_missed = pending_missed + (
+                    deadline - scheduled + monitor.interval_ns - 1) // monitor.interval_ns
                 break
             monitor.poll(scheduled, pending_missed)
             scheduled += monitor.interval_ns

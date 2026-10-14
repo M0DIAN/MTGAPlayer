@@ -307,6 +307,32 @@ class LivePerformanceTests(unittest.TestCase):
         self.assertLess(total['counts']['polls'], 12)
         self.assert_group_reconciliation(report)
 
+    def test_deadline_oversleep_preserves_all_unexecuted_schedule_slots(self):
+        for extras, duration, expected in (
+                ([0, 0, .26], 1, (3, 0, 1)),
+                ([.26, .26], 1, (2, 0, 2)),
+                ([.26, 0, .26], 1.25, (3, 1, 1))):
+            with self.subTest(extras=extras):
+                clock = FakeClock(tick_ns=0)
+                oversleeps = iter(extras)
+
+                def sleep(seconds):
+                    clock.sleep(seconds)
+                    clock.now += round(next(oversleeps, 0) * 1_000_000_000)
+
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / 'synthetic.log'
+                    save(path, entries()[:3])
+                    report = run(path, duration=duration, interval=.25,
+                                 clock_ns=clock, sleep=sleep)
+                counts = report['groups']['all_polls']['counts']
+                actual = (counts['polls'], counts['missed_deadlines'],
+                          report['trailing_missed_deadlines'])
+                self.assertEqual(actual, expected)
+                self.assertEqual(sum(actual), round(duration / .25))
+                self.assertEqual(report['stop_reason'], 'duration_elapsed')
+                self.assert_group_reconciliation(report)
+
     def test_safe_error_interrupt_and_serialization_are_separate(self):
         clock = FakeClock()
         private_path = 'PRIVATE_ACCOUNT_PATH_SENTINEL.log'
