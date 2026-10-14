@@ -32,6 +32,38 @@ def _viewer_list(value):
     return isinstance(value, list) and all(_seat(seat) for seat in value)
 
 
+def _supported_revealed_view(obj, zones, self_seat):
+    """Recognize only the observed nonself Hand/Revealed opaque view.
+
+    This preserves both GRE relations without treating the view as a physical
+    card or inferring which Card it represents. Created annotations establish
+    the sampled protocol shape, but need not recur on later unchanged Diffs.
+    """
+    if (obj.get('type') != 'GameObjectType_RevealedCard' or
+            obj.get('visibility') != 'Visibility_Private' or
+            not _seat(obj.get('ownerSeatId')) or obj['ownerSeatId'] == self_seat or
+            not _seat(obj.get('controllerSeatId')) or
+            obj['controllerSeatId'] != obj['ownerSeatId'] or
+            not _id(obj.get('zoneId'))):
+        return False
+    owner = obj['ownerSeatId']
+    hand = zones.get(obj['zoneId'])
+    if (not isinstance(hand, dict) or hand.get('type') != 'ZoneType_Hand' or
+            hand.get('visibility') != 'Visibility_Private' or
+            not _seat(hand.get('ownerSeatId')) or hand['ownerSeatId'] != owner or
+            not isinstance(hand.get('objectInstanceIds'), list)):
+        return False
+    memberships = [zone for zone in zones.values()
+                   if isinstance(zone.get('objectInstanceIds'), list) and
+                   obj['instanceId'] in zone['objectInstanceIds']]
+    if len(memberships) != 1:
+        return False
+    revealed = memberships[0]
+    return (revealed.get('type') == 'ZoneType_Revealed' and
+            revealed.get('visibility') == 'Visibility_Public' and
+            _seat(revealed.get('ownerSeatId')) and revealed['ownerSeatId'] == owner)
+
+
 def _timestamp(value):
     if type(value) is int and value >= 0:
         return value
@@ -812,11 +844,14 @@ class RawReducer:
                             members = zone.get('objectInstanceIds')
                             if isinstance(members, list) and item in members:
                                 zone['objectInstanceIds'] = [x for x in members if x != item]
+            revealed_views = {instance for instance, obj in objects.items()
+                              if _supported_revealed_view(obj, zones, self.seat)}
             for zone_id, zone in zones.items():
                 ids = zone.get('objectInstanceIds', [])
                 if not isinstance(ids, list) or not all(_id(x) for x in ids) or len(ids) != len(set(ids)):
                     raise ValueError('invalid_zone_membership')
-                if any(instance in objects and objects[instance].get('zoneId') != zone_id for instance in ids):
+                if any(instance in objects and objects[instance].get('zoneId') != zone_id and
+                       instance not in revealed_views for instance in ids):
                     raise ValueError('object_zone_conflict')
                 if not _label(zone.get('type'), 'ZoneType_'):
                     raise ValueError('invalid_zone_type')
@@ -827,6 +862,11 @@ class RawReducer:
                 if any(instance in objects and 'visibility' not in objects[instance] for instance in ids):
                     raise ValueError('missing_object_visibility')
             for obj in objects.values():
+                if (obj.get('type') == 'GameObjectType_RevealedCard' and
+                        obj['instanceId'] not in revealed_views and
+                        any(obj['instanceId'] in zone.get('objectInstanceIds', [])
+                            for zone in zones.values())):
+                    raise ValueError('unsupported_revealed_card')
                 if 'zoneId' in obj and not _id(obj['zoneId']):
                     raise ValueError('invalid_object_zone')
                 if 'grpId' in obj and not _id(obj['grpId']):
@@ -910,6 +950,8 @@ class RawReducer:
                     label = f'{owner if owner in (1, 2) else "unknown"}:{kind}'
                     hidden[label] = hidden.get(label, 0) + 1
                     continue
+                if obj.get('type') == 'GameObjectType_RevealedCard':
+                    continue  # Opaque view: neither a physical card nor a hidden card count.
                 can_see = (public_zone and obj.get('visibility') == 'Visibility_Public') or (
                     own_hand and (self.seat in obj.get('viewers', []) or
                                   obj.get('visibility') == 'Visibility_Public'))
