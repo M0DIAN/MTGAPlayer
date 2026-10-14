@@ -11,6 +11,8 @@ import re
 
 from .raw_log import RawFollower, RawReducer
 from .semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
+from .choice_graph import (CHOICE_VALIDATION_LEVELS, _selectn_known_constraints,
+                           _build_selectn_constraint_graph)
 
 
 _RESP = re.compile(r"ClientMessageType_[A-Za-z_]{1,64}Resp\Z")
@@ -316,11 +318,51 @@ class _ActionShapeCounts:
         }
 
 
+class _ChoiceConstraintCounts:
+    """Every observed response stays in the denominator, including early rejects."""
+
+    def __init__(self, complete, graphs=None):
+        self.complete, self.graphs = complete, graphs
+        self.all_counts, self.selectn_counts = Counter(), Counter()
+
+    def add(self, request, payload, paired):
+        selectn = payload['type'] == 'ClientMessageType_SelectNResp'
+        if not selectn:
+            validation = {'validation_level': 'unsupported_protocol'}
+        elif not self.complete or not paired:
+            validation = {'validation_level': 'insufficient_evidence'}
+        else:
+            validation = _selectn_known_constraints(request, payload)
+            if self.graphs is not None:
+                graph = _build_selectn_constraint_graph(request, validation)
+                if graph is not None:
+                    self.graphs.append(graph)
+        level = validation['validation_level']
+        self.all_counts[level] += 1
+        if selectn:
+            self.selectn_counts[level] += 1
+
+    def report(self, source):
+        def counts(counter):
+            return {'total': sum(counter.values()),
+                    'counts': {name: counter[name] for name in CHOICE_VALIDATION_LEVELS}}
+        return {'probe': 'mtga-verified-choice-constraints-v1',
+                'all_observed_client_responses': counts(self.all_counts),
+                'select_n_responses': counts(self.selectn_counts),
+                'source': source, 'raw_values_included': False,
+                'paths_or_identifiers_included': False,
+                'complete_legality_verified': False, 'legal_choice_verified': False,
+                'response_encoding_verified': False, 'server_acceptance_verified': False,
+                'execution_ready': False, 'input_sent': False, 'read_only': True}
+
+
 def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
                                action_shapes=False, semantic_choices=False,
                                complex_semantic_choices=False,
                                choice_graph_history=False,
-                               _history_collector=None):
+                               _history_collector=None,
+                               verified_choice_constraints=False,
+                               _constraint_graphs=None):
     """Count exact-current-own-request response-envelope matches, offline.
 
     The reducer must already have accepted a current authenticated request
@@ -328,10 +370,19 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
     replies are never promoted to a matched request.
     """
     if sum(bool(mode) for mode in (action_shapes, semantic_choices,
-                                  complex_semantic_choices, choice_graph_history)) > 1:
+                                  complex_semantic_choices, choice_graph_history,
+                                  verified_choice_constraints)) > 1:
         raise ValueError('MP15 shape and MP16 semantic modes are mutually exclusive')
     follower = RawFollower(Path(path), max_history_bytes=max_history_bytes)
     _, records = follower.poll()
+    source = {'mode': 'offline', 'format': 'player-log-gre-v1',
+              'framed_records': len(records),
+              'complete': follower.framer.errors == 0 and not follower.framer.partial,
+              'framing_errors': follower.framer.errors,
+              'partial_record': follower.framer.partial,
+              'tool_input_sent': False, 'executor_connected': False}
+    constraint_counts = (_ChoiceConstraintCounts(source['complete'], _constraint_graphs)
+                         if verified_choice_constraints else None)
     reducer = RawReducer()
     reducer.reset(follower.generation)
     seen_requests = set()
@@ -380,10 +431,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
         if not candidate:
             continue
         counts["observed_client_response_records"] += 1
-        if not valid_response:
-            counts["malformed_response_envelopes"] += 1
-            continue
-        paired = (before is not None and
+        paired = (valid_response and before is not None and
                   typ == _RESPONSE_BY_REQUEST.get(before.get("type")) and
                   payload["respId"] == before["id"] and
                   payload["gameStateId"] == before["game_state_id"] and
@@ -395,6 +443,11 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
                   (reducer.match, reducer.game) ==
                   (before["binding"]["match"], before["binding"]["game"]) and
                   (reducer.match, reducer.game, payload["respId"]) in reducer.consumed)
+        if constraint_counts is not None:
+            constraint_counts.add(before, payload, paired)
+        if not valid_response:
+            counts["malformed_response_envelopes"] += 1
+            continue
         if not paired:
             counts["unmatched_or_noncurrent_responses"] += 1
             continue
@@ -424,6 +477,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
             unshown += 1
         ui_token, ui_count = None, 0
 
+    if constraint_counts is not None:
+        return constraint_counts.report(source)
     displayed = []
     for (request_kind, offered, response_kind, shape), count in sorted(
             variants.items(), key=lambda x: (-x[1], x[0])):
@@ -520,3 +575,21 @@ def inspect_historical_choice_graphs(path, max_history_bytes=64 * 1024 * 1024):
             'read_only': True, 'legal_choice_verified': False,
             'response_encoding_verified': False, 'execution_ready': False,
             'input_sent': False}
+
+
+def inspect_verified_choice_constraints(path, max_history_bytes=64 * 1024 * 1024):
+    """Explicit local opt-in for identity-bearing historical SelectN graphs.
+
+    Never used by the count-only CLI or default replay/watch. Graphs refer to
+    authenticated request snapshots at response time, not current candidates.
+    """
+    graphs = []
+    summary = inspect_response_envelopes(
+        path, max_history_bytes=max_history_bytes, verified_choice_constraints=True,
+        _constraint_graphs=graphs)
+    return {'schema_version': 'mtga-historical-selectn-constraints-v1',
+            'source_complete': summary['source']['complete'],
+            'graphs': graphs, 'summary': summary,
+            'legal_choice_verified': False, 'complete_legality_verified': False,
+            'response_encoding_verified': False, 'server_acceptance_verified': False,
+            'execution_ready': False, 'input_sent': False, 'read_only': True}
