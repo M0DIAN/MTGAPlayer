@@ -32,6 +32,38 @@ def _viewer_list(value):
     return isinstance(value, list) and all(_seat(seat) for seat in value)
 
 
+def _supported_revealed_view(obj, zones, self_seat):
+    """Recognize only the observed nonself Hand/Revealed opaque view.
+
+    This preserves both GRE relations without treating the view as a physical
+    card or inferring which Card it represents. Created annotations establish
+    the sampled protocol shape, but need not recur on later unchanged Diffs.
+    """
+    if (obj.get('type') != 'GameObjectType_RevealedCard' or
+            obj.get('visibility') != 'Visibility_Private' or
+            not _seat(obj.get('ownerSeatId')) or obj['ownerSeatId'] == self_seat or
+            not _seat(obj.get('controllerSeatId')) or
+            obj['controllerSeatId'] != obj['ownerSeatId'] or
+            not _id(obj.get('zoneId'))):
+        return False
+    owner = obj['ownerSeatId']
+    hand = zones.get(obj['zoneId'])
+    if (not isinstance(hand, dict) or hand.get('type') != 'ZoneType_Hand' or
+            hand.get('visibility') != 'Visibility_Private' or
+            not _seat(hand.get('ownerSeatId')) or hand['ownerSeatId'] != owner or
+            not isinstance(hand.get('objectInstanceIds'), list)):
+        return False
+    memberships = [zone for zone in zones.values()
+                   if isinstance(zone.get('objectInstanceIds'), list) and
+                   obj['instanceId'] in zone['objectInstanceIds']]
+    if len(memberships) != 1:
+        return False
+    revealed = memberships[0]
+    return (revealed.get('type') == 'ZoneType_Revealed' and
+            revealed.get('visibility') == 'Visibility_Public' and
+            _seat(revealed.get('ownerSeatId')) and revealed['ownerSeatId'] == owner)
+
+
 def _timestamp(value):
     if type(value) is int and value >= 0:
         return value
@@ -500,8 +532,20 @@ class RawFollower:
 
 
 class RawReducer:
-    def __init__(self):
+    def __init__(self, observer=None):
+        # Opt-in instrumentation only. Private request identities stay in the
+        # caller's memory; default replay/watch have no observer.
+        self.observer = observer
         self.reset(0)
+
+    def _observe(self, event, **details):
+        if self.observer is not None:
+            self.observer(event, details)
+
+    def _request_ended(self, disposition):
+        if self.observer is not None and self.request is not None:
+            self._observe('request_ended', request=self.request,
+                          disposition=disposition)
 
     def reset(self, generation):
         self.generation = generation
@@ -528,6 +572,8 @@ class RawReducer:
         self.unsupported_broadcast_requests = 0
 
     def _invalidate(self, reason):
+        if self.observer is not None:
+            self._observe('continuity_error', reason=reason)
         if reason in ('room_seat_conflict', 'gre_recipient_or_self_seat_unverified',
                       'client_identity_changed', 'conflicting_duplicate_state'):
             self.conflict = True
@@ -550,6 +596,7 @@ class RawReducer:
         self.version = None
         self.objects, self.zones, self.players = {}, {}, {}
         self.turn, self.game_info = {}, {}
+        self._request_ended('superseded')
         self.request = None
         self.accepted_digest = None
         self.accepted_kind = None
@@ -597,6 +644,7 @@ class RawReducer:
             if request_state is not None and payload.get('gameStateId') == request_state:
                 self.consumed.add((self.match, self.game, response_id))
                 if self.request and self.request['id'] == response_id:
+                    self._request_ended('consumed')
                     self.request = None
                 self.submitted = {'request_id': response_id, 'game_state_id': request_state,
                                   'confirmation': 'client_submission_only'}
@@ -637,6 +685,7 @@ class RawReducer:
                 self.room_state = state_type
                 if state_type == 'MatchGameRoomStateType_MatchCompleted' and self.request:
                     self.superseded.add(self.request['id'])
+                    self._request_ended('superseded')
                     self.request = None
         gre = entry.get('greToClientEvent')
         if isinstance(gre, dict):
@@ -644,6 +693,8 @@ class RawReducer:
             if not isinstance(messages, list):
                 self._invalidate('invalid_gre_messages')
                 return
+            if self.observer is not None:
+                self._observe('gre_messages', count=len(messages))
             for message in messages:
                 if isinstance(message, dict):
                     self._message(message, entry.get('timestamp'))
@@ -663,6 +714,8 @@ class RawReducer:
         if state is None and recipients != [self.room_seat]:
             if isinstance(recipients, list) and self.room_seat in recipients:
                 self.unsupported_broadcast_requests += 1
+                if self.observer is not None:
+                    self._observe('unsupported_broadcast_request')
             return  # Broadcast and other-seat prompts are not own requests.
         if self.room_seat not in (1, 2):
             self._invalidate('self_seat_unverified')
@@ -696,6 +749,7 @@ class RawReducer:
                     msg_id not in self.superseded):
                 if self.request and self.request['id'] != msg_id:
                     self.superseded.add(self.request['id'])
+                    self._request_ended('superseded')
                 self.request = {'id': msg_id, 'type': message['type'],
                                 'game_state_id': state_id, 'current': True,
                                 'binding': {'generation': self.generation,
@@ -704,6 +758,8 @@ class RawReducer:
                                             'self_seat': self.seat,
                                             'ownership_verified': True},
                                 **_request_semantics(message)}
+                if self.observer is not None:
+                    self._observe('request_accepted', request=self.request)
 
     def _state(self, gs, timestamp):
         if not isinstance(gs, dict) or gs.get('type') not in ('GameStateType_Full', 'GameStateType_Diff'):
@@ -754,6 +810,9 @@ class RawReducer:
                 self._invalidate('conflicting_duplicate_state')
             elif not self.conflict and self.error in ('malformed_raw_record', 'state_gap_or_missing_full'):
                 self.error = None  # identical retransmit repairs continuity, never freshness
+                if self.observer is not None:
+                    self._observe('state_accepted', kind='full_retransmit',
+                                  baseline='recovered')
             return
         objects = {} if full else copy.deepcopy(self.objects)
         zones = {} if full else copy.deepcopy(self.zones)
@@ -785,11 +844,14 @@ class RawReducer:
                             members = zone.get('objectInstanceIds')
                             if isinstance(members, list) and item in members:
                                 zone['objectInstanceIds'] = [x for x in members if x != item]
+            revealed_views = {instance for instance, obj in objects.items()
+                              if _supported_revealed_view(obj, zones, self.seat)}
             for zone_id, zone in zones.items():
                 ids = zone.get('objectInstanceIds', [])
                 if not isinstance(ids, list) or not all(_id(x) for x in ids) or len(ids) != len(set(ids)):
                     raise ValueError('invalid_zone_membership')
-                if any(instance in objects and objects[instance].get('zoneId') != zone_id for instance in ids):
+                if any(instance in objects and objects[instance].get('zoneId') != zone_id and
+                       instance not in revealed_views for instance in ids):
                     raise ValueError('object_zone_conflict')
                 if not _label(zone.get('type'), 'ZoneType_'):
                     raise ValueError('invalid_zone_type')
@@ -800,6 +862,11 @@ class RawReducer:
                 if any(instance in objects and 'visibility' not in objects[instance] for instance in ids):
                     raise ValueError('missing_object_visibility')
             for obj in objects.values():
+                if (obj.get('type') == 'GameObjectType_RevealedCard' and
+                        obj['instanceId'] not in revealed_views and
+                        any(obj['instanceId'] in zone.get('objectInstanceIds', [])
+                            for zone in zones.values())):
+                    raise ValueError('unsupported_revealed_card')
                 if 'zoneId' in obj and not _id(obj['zoneId']):
                     raise ValueError('invalid_object_zone')
                 if 'grpId' in obj and not _id(obj['grpId']):
@@ -849,6 +916,8 @@ class RawReducer:
         except (ValueError, TypeError, KeyError, AttributeError) as exc:
             self._invalidate(str(exc))
             return
+        baseline = ('acquired' if self.version is None else
+                    'recovered' if self.error is not None else 'none') if full else 'none'
         self.objects, self.zones, self.players = objects, zones, players
         self.turn, self.game_info = turn, game_info
         self.version = version
@@ -857,9 +926,13 @@ class RawReducer:
         self.last_state_timestamp = _timestamp(timestamp)
         if self.request:
             self.superseded.add(self.request['id'])
+            self._request_ended('superseded')
         self.request = None
         self.error = None
         self.last_valid = projection
+        if self.observer is not None:
+            self._observe('state_accepted', kind='full' if full else 'diff',
+                          baseline=baseline)
 
     def _current(self, include_frontier_rows=False):
         visible, hidden = [], {}
@@ -877,6 +950,8 @@ class RawReducer:
                     label = f'{owner if owner in (1, 2) else "unknown"}:{kind}'
                     hidden[label] = hidden.get(label, 0) + 1
                     continue
+                if obj.get('type') == 'GameObjectType_RevealedCard':
+                    continue  # Opaque view: neither a physical card nor a hidden card count.
                 can_see = (public_zone and obj.get('visibility') == 'Visibility_Public') or (
                     own_hand and (self.seat in obj.get('viewers', []) or
                                   obj.get('visibility') == 'Visibility_Public'))
