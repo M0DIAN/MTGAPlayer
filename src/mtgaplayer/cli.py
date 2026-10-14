@@ -27,12 +27,22 @@ def _project_action_frontier(document):
         document['decision_input'], evidence)
 
 
+def _project_choice_graph(document):
+    from .choice_graph import build_choice_graph
+    request = document['current'].get('request')
+    document['choice_graph'] = build_choice_graph(
+        document.get('decision_input'), document.get('action_frontier'), request)
+
+
 def replay(path, dry=False, format='normalized', card_db_path=None,
-           decision_input=False, action_gaps=False, action_frontier=False):
+           decision_input=False, action_gaps=False, action_frontier=False,
+           choice_graph=False):
     if action_gaps and not decision_input:
         raise ValueError('action_gaps_requires_decision_input')
     if action_frontier and not decision_input:
         raise ValueError('action_frontier_requires_decision_input')
+    if choice_graph and not action_frontier:
+        raise ValueError('choice_graph_requires_action_frontier')
     if card_db_path is not None and format != 'player-log':
         raise ValueError('card_db_requires_player_log_format')
     if decision_input and format != 'player-log':
@@ -66,6 +76,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                     document['decision_input'])
             if action_frontier:
                 _project_action_frontier(document)
+            if choice_graph:
+                _project_choice_graph(document)
         return document
     follower, reducer = Follower(path), Reducer()
     reset, records = follower.poll()
@@ -92,12 +104,15 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 
 
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
-          decision_input=False, action_gaps=False, action_frontier=False):
+          decision_input=False, action_gaps=False, action_frontier=False,
+          choice_graph=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     if action_gaps and not decision_input:
         raise ValueError('action_gaps_requires_decision_input')
     if action_frontier and not decision_input:
         raise ValueError('action_frontier_requires_decision_input')
+    if choice_graph and not action_frontier:
+        raise ValueError('choice_graph_requires_action_frontier')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
@@ -168,6 +183,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                     document['decision_input'])
             if action_frontier:
                 _project_action_frontier(document)
+            if choice_graph:
+                _project_choice_graph(document)
         yield document
         if index + 1 < samples:
             time.sleep(interval)
@@ -213,6 +230,8 @@ def main(argv=None):
                                    help='MP14 unverified rule/response evidence gaps; needs --decision-input')
         replay_parser.add_argument('--action-frontier', action='store_true',
                                    help='read-only MP15 active action templates; needs --decision-input')
+        replay_parser.add_argument('--choice-graph', action='store_true',
+                                   help='read-only MP16 observed complex constraints; needs --action-frontier')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -224,6 +243,8 @@ def main(argv=None):
                               help='MP14 evidence gaps on observation only; needs --decision-input')
     watch_parser.add_argument('--action-frontier', action='store_true',
                               help='read-only MP15 active action templates; needs --decision-input')
+    watch_parser.add_argument('--choice-graph', action='store_true',
+                              help='read-only MP16 observed complex constraints; needs --action-frontier')
     harness = sub.add_parser('harness', help='independent synthetic interactive test window')
     harness.add_argument('--directory', type=Path, required=True)
     harness.add_argument('--nonce', required=True)
@@ -251,7 +272,8 @@ def main(argv=None):
             result = replay(args.input, args.command == 'dry-run', args.format,
                             args.card_db, decision_input=args.decision_input,
                             action_gaps=args.action_gaps,
-                            action_frontier=args.action_frontier)
+                            action_frontier=args.action_frontier,
+                            choice_graph=args.choice_graph)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
@@ -260,7 +282,8 @@ def main(argv=None):
             for result in watch(args.input, args.interval, args.samples,
                                 args.max_history_bytes, decision_input=args.decision_input,
                                 action_gaps=args.action_gaps,
-                                action_frontier=args.action_frontier):
+                                action_frontier=args.action_frontier,
+                                choice_graph=args.choice_graph):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:

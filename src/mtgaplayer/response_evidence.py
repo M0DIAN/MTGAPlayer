@@ -318,14 +318,17 @@ class _ActionShapeCounts:
 
 def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
                                action_shapes=False, semantic_choices=False,
-                               complex_semantic_choices=False):
+                               complex_semantic_choices=False,
+                               choice_graph_history=False,
+                               _history_collector=None):
     """Count exact-current-own-request response-envelope matches, offline.
 
     The reducer must already have accepted a current authenticated request
     BEFORE each response. Old, superseded, broadcast, invalid or unmatched
     replies are never promoted to a matched request.
     """
-    if sum(bool(mode) for mode in (action_shapes, semantic_choices, complex_semantic_choices)) > 1:
+    if sum(bool(mode) for mode in (action_shapes, semantic_choices,
+                                  complex_semantic_choices, choice_graph_history)) > 1:
         raise ValueError('MP15 shape and MP16 semantic modes are mutually exclusive')
     follower = RawFollower(Path(path), max_history_bytes=max_history_bytes)
     _, records = follower.poll()
@@ -338,7 +341,14 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
     unshown = 0
     action_shape_counts = _ActionShapeCounts() if action_shapes else None
     semantic_counter = SemanticChoiceCounter() if semantic_choices else None
-    complex_counter = ComplexSemanticChoiceCounter() if complex_semantic_choices else None
+    complex_counter = ComplexSemanticChoiceCounter() if (
+        complex_semantic_choices or choice_graph_history) else None
+    if choice_graph_history:
+        from .choice_history import ChoiceHistoryCounter
+        choice_history = (_history_collector if _history_collector is not None
+                          else ChoiceHistoryCounter())
+    else:
+        choice_history = None
     ui_token, ui_count = None, 0
     for entry in records:
         before = _current_verified_request(reducer)
@@ -356,6 +366,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
             candidate and _RESP.fullmatch(typ) is not None and
             _id(payload.get("respId")) and _id(payload.get("gameStateId")))
         reducer.apply(entry)
+        if choice_history is not None:
+            choice_history.observe_entry(entry, reducer)
         after = _current_verified_request(reducer)
         if after is not None:
             next_token = _identity(after)
@@ -363,6 +375,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
                 seen_requests.add(next_token)
                 counts["accepted_unique_own_requests"] += 1
                 by_kind[_request_kind(after)] += 1
+                if choice_history is not None:
+                    choice_history.observe_request(after)
         if not candidate:
             continue
         counts["observed_client_response_records"] += 1
@@ -395,6 +409,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
                 semantic_counter.add(before, payload)
             if complex_counter is not None and typ == "ClientMessageType_PerformActionResp":
                 complex_counter.add(before, payload)
+            if choice_history is not None and typ == "ClientMessageType_PerformActionResp":
+                choice_history.matched_response(before, payload, reducer)
         response_kind = _RESPONSE_KINDS.get(typ, "other_client_response")
         by_response[(kind, response_kind)] += 1
         bucket = _ui_bucket(ui_count)
@@ -479,4 +495,28 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
     if complex_counter is not None:
         report["probe"] = "mtga-client-response-complex-correlation-v1"
         report["complex_action_choice_correlation"] = complex_counter.report()
+    if choice_history is not None:
+        choice_history.finish(report['source']['complete'])
+        report["probe"] = "mtga-choice-graph-history-v1"
+        report["historical_choice_relations"] = choice_history.report()
     return report
+
+
+def inspect_historical_choice_graphs(path, max_history_bytes=64 * 1024 * 1024):
+    """Explicit offline local API for bound source graphs and temporal edges.
+
+    Unlike the count-only CLI, this returns request/action identities from the
+    caller's chosen log. It never returns raw response payloads or target IDs.
+    """
+    from .choice_history import ChoiceHistoryCounter
+    collector = ChoiceHistoryCounter()
+    report = inspect_response_envelopes(
+        path, max_history_bytes=max_history_bytes, choice_graph_history=True,
+        _history_collector=collector)
+    return {'schema_version': 'mtga-historical-choice-graphs-v1',
+            'source_complete': report['source']['complete'],
+            'graphs': collector.graphs,
+            'summary': report['historical_choice_relations'],
+            'read_only': True, 'legal_choice_verified': False,
+            'response_encoding_verified': False, 'execution_ready': False,
+            'input_sent': False}
