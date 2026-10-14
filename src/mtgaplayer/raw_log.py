@@ -711,8 +711,11 @@ class RawReducer:
         if state is None and not is_request:
             return
         recipients = message.get('systemSeatIds')
-        if state is None and recipients != [self.room_seat]:
-            if isinstance(recipients, list) and self.room_seat in recipients:
+        own_recipient = (isinstance(recipients, list) and len(recipients) == 1 and
+                         _seat(recipients[0]) and recipients[0] == self.room_seat)
+        if state is None and not own_recipient:
+            if isinstance(recipients, list) and any(
+                    _seat(seat) and seat == self.room_seat for seat in recipients):
                 self.unsupported_broadcast_requests += 1
                 if self.observer is not None:
                     self._observe('unsupported_broadcast_request')
@@ -720,7 +723,7 @@ class RawReducer:
         if self.room_seat not in (1, 2):
             self._invalidate('self_seat_unverified')
             return
-        if recipients != [self.room_seat]:
+        if not own_recipient:
             self._invalidate('gre_recipient_or_self_seat_unverified')
             return
         self.seat = self.room_seat
