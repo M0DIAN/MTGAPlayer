@@ -10,7 +10,7 @@ import json
 import re
 
 from .raw_log import RawFollower, RawReducer
-from .semantic_evidence import SemanticChoiceCounter
+from .semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
 
 
 _RESP = re.compile(r"ClientMessageType_[A-Za-z_]{1,64}Resp\Z")
@@ -317,14 +317,15 @@ class _ActionShapeCounts:
 
 
 def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
-                               action_shapes=False, semantic_choices=False):
+                               action_shapes=False, semantic_choices=False,
+                               complex_semantic_choices=False):
     """Count exact-current-own-request response-envelope matches, offline.
 
     The reducer must already have accepted a current authenticated request
     BEFORE each response. Old, superseded, broadcast, invalid or unmatched
     replies are never promoted to a matched request.
     """
-    if action_shapes and semantic_choices:
+    if sum(bool(mode) for mode in (action_shapes, semantic_choices, complex_semantic_choices)) > 1:
         raise ValueError('MP15 shape and MP16 semantic modes are mutually exclusive')
     follower = RawFollower(Path(path), max_history_bytes=max_history_bytes)
     _, records = follower.poll()
@@ -337,6 +338,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
     unshown = 0
     action_shape_counts = _ActionShapeCounts() if action_shapes else None
     semantic_counter = SemanticChoiceCounter() if semantic_choices else None
+    complex_counter = ComplexSemanticChoiceCounter() if complex_semantic_choices else None
     ui_token, ui_count = None, 0
     for entry in records:
         before = _current_verified_request(reducer)
@@ -391,6 +393,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
             if semantic_counter is not None and typ == "ClientMessageType_PerformActionResp":
                 # Only after the existing exact authenticated request/response gate.
                 semantic_counter.add(before, payload)
+            if complex_counter is not None and typ == "ClientMessageType_PerformActionResp":
+                complex_counter.add(before, payload)
         response_kind = _RESPONSE_KINDS.get(typ, "other_client_response")
         by_response[(kind, response_kind)] += 1
         bucket = _ui_bucket(ui_count)
@@ -472,4 +476,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
     if semantic_counter is not None:
         report["probe"] = "mtga-client-response-semantic-correlation-v1"
         report["action_choice_correlation"] = semantic_counter.report()
+    if complex_counter is not None:
+        report["probe"] = "mtga-client-response-complex-correlation-v1"
+        report["complex_action_choice_correlation"] = complex_counter.report()
     return report
