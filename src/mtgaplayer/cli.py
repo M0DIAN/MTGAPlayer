@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -245,6 +246,12 @@ def main(argv=None):
                               help='read-only MP15 active action templates; needs --decision-input')
     watch_parser.add_argument('--choice-graph', action='store_true',
                               help='read-only MP16 observed complex constraints; needs --action-frontier')
+    performance = sub.add_parser('performance-baseline',
+                                 help='opt-in read-only 600..900s pipeline timing; final safe aggregate only')
+    performance.add_argument('input', type=Path)
+    performance.add_argument('--duration', type=float, default=600)
+    performance.add_argument('--interval', type=float, default=.25)
+    performance.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     harness = sub.add_parser('harness', help='independent synthetic interactive test window')
     harness.add_argument('--directory', type=Path, required=True)
     harness.add_argument('--nonce', required=True)
@@ -264,6 +271,12 @@ def main(argv=None):
                                     not 1 <= args.samples <= 1000 or
                                     not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024):
         parser.error('watch bounds must be positive (interval <=60, samples <=1000, history <=1GiB)')
+    if args.command == 'performance-baseline' and (
+            not math.isfinite(args.duration) or not 600 <= args.duration <= 900 or
+            not math.isfinite(args.interval) or not 0 < args.interval <= 60 or
+            round(args.interval * 1_000_000_000) < 1 or
+            not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024):
+        parser.error('performance bounds: duration 600..900s, interval >0..60s, history >0..1GiB')
     if args.command == 'doctor':
         result = doctor(args.config, args.log)
         code = 0 if result['interpreter_supported'] and result['config']['valid'] else 1
@@ -293,6 +306,11 @@ def main(argv=None):
             return 0
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
+    elif args.command == 'performance-baseline':
+        from .live_performance import run, serialize_report
+        result = run(args.input, args.duration, args.interval, args.max_history_bytes)
+        print(serialize_report(result), flush=True)
+        return 1 if result['failure_category'] is not None else 0
     elif args.command == 'harness':
         if os.name != 'nt':
             result, code = {'status': 'BLOCKED_NATIVE', 'reason': 'Windows_required'}, 2

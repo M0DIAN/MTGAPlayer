@@ -289,6 +289,14 @@ Actual commands (from repository root):
 
 Each artifact manifest retains exact argv/exit codes. CI has Ubuntu logic/replay and Windows no-input doctor jobs, each capped at 10 minutes; current results and HEAD/base/merge-ref mapping belong to the candidate PR, not older green runs. Next batch: adapt verified raw GRE parsing, define a supported real deck/effect scope, then establish MTGA object recognition and authorized live confirmation. Harness markers and synthetic mana rules must not be extrapolated to the game.
 
+## Live read-only performance baseline candidate (2026-10-14)
+
+Opt-in `performance-baseline` adds deadline-based 600–900s safe aggregate measurement of the existing raw follower/reducer/DecisionInput/Frontier/Graph chain. Startup history, file reset and Full baseline reinitialization remain separate from normal incremental timings. The reducer observer is disabled by default and records authenticated requests before same-poll consumption/supersession. ActionsAvailable's existing `supported=false` semantics and SelectN's lack of a root ChoiceGraph are preserved.
+
+Development uses repository sanitized fixtures and synthetic variants only; actual Player.log has not been read by the implementation agent. Focused test results are retained in ignored `artifacts/local-live-performance/`; the first run exposed two incorrect test expectations about the existing ActionsAvailable supported flag, retained as evidence. Actual live measurement, complete validation, code revision binding and independent acceptance belong to the final handoff and aggregate report. No live three-second, legal-choice, strategy or input claim is made.
+
+Independent project Python 3.11.16 validation: 12/12 focused tests pass. Required full unittest ran 182 tests, exit 1, with exactly the same 13 historical SQLite TemporaryDirectory WinError32 error headers and no assertion failures; no database refactor or test skip. Installed Windows doctor, synthetic replay/dry-run and opted-in read-only fixture replay exit 0. Raw command outputs and the mechanical error comparison are retained in `artifacts/local-live-performance/`. The earlier APD 429 produced no patch or live measurement; this implementation uses direct Agents and does not invoke APD. No remote push, PR or merge is authorized.
+
 ## PR #1 response / Full retransmission repair (2026-10-13)
 
 The starting candidate was `d3940641888e73b4fcac834bbff8bb94f7e91426` on `codex/mp0-mp3`. Independent reproduction through `.venv/Scripts/python.exe -m mtgaplayer replay` confirmed that `begin(m1,g1,seat=1), full(v1,r1), response(r1), identical full(v1,r1), full(v2,r2)` exits 1 with `valid=false` and latched `conflicting_duplicate_state`. Removing the retransmission exits 0 with valid request r2. Local raw inputs/stdout/stderr are retained in ignored `artifacts/local-response-repair/`; the regression tests retain the reproducible sequence in the PR.
