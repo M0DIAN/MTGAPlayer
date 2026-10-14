@@ -58,6 +58,7 @@ class ResponseEvidenceTests(unittest.TestCase):
             report = inspect_response_envelopes(path)
         self.assertTrue(report["source"]["complete"])
         self.assertGreaterEqual(report["matched_current_own_responses"], 1)
+        self.assertEqual(report["matched_actions_available_responses"], 1)
         self.assertIn({"request_kind": "actions_available",
                        "response_type_class": "perform_action_resp", "count": 1},
                       report["matched_response_types"])
@@ -91,13 +92,18 @@ class ResponseEvidenceTests(unittest.TestCase):
             path = Path(directory) / "Player.log"
             save(path, frames)
             report = inspect_response_envelopes(path)
-        self.assertEqual(report["matched_current_own_responses"], 1)
+        # The real GRE prefix ALSO has an authenticated Mulligan response.
+        # Retain it as history; count the new action response separately.
+        self.assertEqual(report["matched_current_own_responses"], 2)
+        self.assertEqual(report["matched_actions_available_responses"], 1)
         self.assertEqual(report["unmatched_or_noncurrent_responses"], 0)
-        self.assertEqual(report["observed_historical_client_response_records"], 1)
-        self.assertEqual(report["matched_response_types"], [
+        self.assertEqual(report["observed_historical_client_response_records"], 2)
+        self.assertIn(
             {"request_kind": "actions_available",
-             "response_type_class": "perform_action_resp", "count": 1}])
-        variant = report["envelope_variants"][0]
+             "response_type_class": "perform_action_resp", "count": 1},
+            report["matched_response_types"])
+        variant = next(v for v in report["envelope_variants"]
+                       if v["request_kind"] == "actions_available")
         self.assertEqual(variant["offered_action_context_not_choice"],
                          "pass_and_play_offered")
         self.assertEqual(variant["response_type_class"], "perform_action_resp")
@@ -137,8 +143,9 @@ class ResponseEvidenceTests(unittest.TestCase):
             path = Path(directory) / "Player.log"
             save(path, frames)
             report = inspect_response_envelopes(path)
-        self.assertEqual(report["observed_historical_client_response_records"], 4)
-        self.assertEqual(report["matched_current_own_responses"], 1)
+        self.assertEqual(report["observed_historical_client_response_records"], 5)
+        self.assertEqual(report["matched_current_own_responses"], 2)
+        self.assertEqual(report["matched_actions_available_responses"], 1)
         self.assertEqual(report["unmatched_or_noncurrent_responses"], 3)
         self.assertEqual(report["malformed_response_envelopes"], 0)
         self.assertFalse(report["response_encoding_verified"])
@@ -152,7 +159,8 @@ class ResponseEvidenceTests(unittest.TestCase):
                     path = Path(directory) / "Player.log"
                     save(path, frames)
                     report = inspect_response_envelopes(path)
-                self.assertEqual(report["matched_current_own_responses"], 0)
+                self.assertEqual(report["matched_current_own_responses"], 1)
+                self.assertEqual(report["matched_actions_available_responses"], 0)
                 self.assertEqual(report["unmatched_or_noncurrent_responses"], 1)
 
     def test_count_only_cli_and_partial_tail_never_claim_verified_encoding(self):

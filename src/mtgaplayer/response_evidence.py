@@ -211,6 +211,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
             continue
         counts["matched_current_own_responses"] += 1
         kind = _request_kind(before)
+        if kind == "actions_available":
+            counts["matched_actions_available_responses"] += 1
         response_kind = _RESPONSE_KINDS.get(typ, "other_client_response")
         by_response[(kind, response_kind)] += 1
         bucket = _ui_bucket(ui_count)
@@ -260,6 +262,8 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024):
         "observed_historical_client_response_records":
             counts["observed_client_response_records"],
         "matched_current_own_responses": counts["matched_current_own_responses"],
+        "matched_actions_available_responses":
+            counts["matched_actions_available_responses"],
         "unmatched_or_noncurrent_responses":
             counts["unmatched_or_noncurrent_responses"],
         "malformed_response_envelopes":
