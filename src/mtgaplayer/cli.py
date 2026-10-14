@@ -12,10 +12,27 @@ from .stream import Follower
 from .raw_log import RawFollower, RawReducer
 
 
+def _project_action_frontier(document):
+    """Consume private row evidence, then remove it from the public snapshot."""
+    from .action_frontier import build_action_frontier
+    request = document['current'].get('request')
+    inventory = request.get('action_inventory') if isinstance(request, dict) else None
+    evidence = None
+    if isinstance(inventory, dict):
+        evidence = {
+            'request_identity': inventory.pop('_frontier_request_identity', None),
+            'rows': inventory.pop('_frontier_rows', None),
+        }
+    document['action_frontier'] = build_action_frontier(
+        document['decision_input'], evidence)
+
+
 def replay(path, dry=False, format='normalized', card_db_path=None,
-           decision_input=False, action_gaps=False):
+           decision_input=False, action_gaps=False, action_frontier=False):
     if action_gaps and not decision_input:
         raise ValueError('action_gaps_requires_decision_input')
+    if action_frontier and not decision_input:
+        raise ValueError('action_frontier_requires_decision_input')
     if card_db_path is not None and format != 'player-log':
         raise ValueError('card_db_requires_player_log_format')
     if decision_input and format != 'player-log':
@@ -27,7 +44,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
             reducer.reset(follower.generation)
         for record in records:
             reducer.apply(record)
-        document = reducer.document()
+        document = reducer.document(include_frontier_rows=action_frontier)
         if follower.framer.partial:
             document['current'] = {k: document['current'].get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
@@ -47,6 +64,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                 from .action_gaps import assess_action_gaps
                 document['action_gap_report'] = assess_action_gaps(
                     document['decision_input'])
+            if action_frontier:
+                _project_action_frontier(document)
         return document
     follower, reducer = Follower(path), Reducer()
     reset, records = follower.poll()
@@ -73,10 +92,12 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 
 
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
-          decision_input=False, action_gaps=False):
+          decision_input=False, action_gaps=False, action_frontier=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     if action_gaps and not decision_input:
         raise ValueError('action_gaps_requires_decision_input')
+    if action_frontier and not decision_input:
+        raise ValueError('action_frontier_requires_decision_input')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
@@ -113,7 +134,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                             for message in messages):
                         newly_accepted.add(identity)
                     seen_requests.add(identity)
-        document = reducer.document()
+        document = reducer.document(include_frontier_rows=action_frontier)
         reduced_current = document['current']
         if follower.framer.partial:
             document['current'] = {k: reduced_current.get(k) for k in
@@ -145,6 +166,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                 from .action_gaps import assess_action_gaps
                 document['action_gap_report'] = assess_action_gaps(
                     document['decision_input'])
+            if action_frontier:
+                _project_action_frontier(document)
         yield document
         if index + 1 < samples:
             time.sleep(interval)
@@ -188,6 +211,8 @@ def main(argv=None):
                                    help='MP13 read-only, own-request-bound observation (player-log only)')
         replay_parser.add_argument('--action-gaps', action='store_true',
                                    help='MP14 unverified rule/response evidence gaps; needs --decision-input')
+        replay_parser.add_argument('--action-frontier', action='store_true',
+                                   help='read-only MP15 active action templates; needs --decision-input')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -197,6 +222,8 @@ def main(argv=None):
                               help='MP13 read-only own-request observations (no executor)')
     watch_parser.add_argument('--action-gaps', action='store_true',
                               help='MP14 evidence gaps on observation only; needs --decision-input')
+    watch_parser.add_argument('--action-frontier', action='store_true',
+                              help='read-only MP15 active action templates; needs --decision-input')
     harness = sub.add_parser('harness', help='independent synthetic interactive test window')
     harness.add_argument('--directory', type=Path, required=True)
     harness.add_argument('--nonce', required=True)
@@ -223,7 +250,8 @@ def main(argv=None):
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
                             args.card_db, decision_input=args.decision_input,
-                            action_gaps=args.action_gaps)
+                            action_gaps=args.action_gaps,
+                            action_frontier=args.action_frontier)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
@@ -231,7 +259,8 @@ def main(argv=None):
         try:
             for result in watch(args.input, args.interval, args.samples,
                                 args.max_history_bytes, decision_input=args.decision_input,
-                                action_gaps=args.action_gaps):
+                                action_gaps=args.action_gaps,
+                                action_frontier=args.action_frontier):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:

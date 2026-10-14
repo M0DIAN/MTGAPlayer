@@ -53,6 +53,41 @@ A separate `scripts/inspect_card_catalog.py --log <Player.log> --card-db <actual
 
 
 
+### MP15 offline client response-envelope and own-request linkage (read-only)
+
+The next blocker after MP14 is **not knowing how actual client responses encode a selected Pass, Play, Cast or other action**. An existing sanitized real-source Player.log fixture already contains `ClientMessageType_PerformActionResp` with **only** the `type`, `respId` and `gameStateId` root fields. These three fields establish an observed *response envelope*, **not** which offered action was selected and not a complete action-payload contract.
+
+The optional schema-only counter reuses `scripts/inspect_actions.py`, RawFollower and RawReducer, rather than adding a second parser or a sender:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "<Player.log>" --response-envelopes
+```
+
+It links a historical `ClientMessageType_*Resp` **only when the immediately preceding reducer state has a current authenticated own-seat request whose request ID and game-state ID exactly match the response**, and the reducer records the client submission. Superseded, mismatched, broadcast, other-seat or duplicate responses stay unlinked. It aggregates safe response-type categories, counts of matching requests, the known **offered** Pass/Play context (never a claimed chosen move), whitelisted field **names and storage type classes**, opaque nested field shapes and the count of intervening UIMessage envelopes. It never prints request/card/player IDs, raw scalar values, private keys, file paths, action-selection values or complete payloads. Shape variation is capped and truncation is explicit.
+
+**Actual installed-log update (owner-executed, aggregate only):** the owner's 6,021-frame Player.log yielded 423 accepted own requests, 485 historical client response records, 369 exactly paired own responses and 116 unmatched/noncurrent. All **216** paired ActionsAvailable requests had `performActionResp.actions` arrays. Of these, **122** offered Pass without Play and **94** offered Pass together with Play; this is **offer context, not the action chosen**. A further **167/216** action responses contained one nonallowlisted sibling field under `performActionResp`, whose name/value were intentionally suppressed.
+
+To understand the remaining real response **array element format** without guessing, MP15 adds a second, *explicit* read-only diagnostic mode using the **same** probe and own-request matching chain:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\inspect_actions.py "<Player.log>" --response-action-shapes
+```
+
+It reports only bucketed lengths of already matched `performActionResp.actions` arrays, aggregate per-element JSON storage types, a **fixed whitelist** of field names and their storage kinds (including one level of nested known object fields), and **types but not names or values** of suppressed unknown fields. Limits: 64 array items per matched response, 24 fields per element, 16 fields per nested known object, and 48 aggregate shape variants; overflows are explicit. Unlike `--response-envelopes`, the detailed option reads array elements **in memory** but never prints raw content, card/action IDs, selected action values, hidden fields or local paths. Prior `--response-envelopes` output is unchanged. Even if the response contains `actionType`, its scalar value stays unobserved: no Pass-vs-Play selection, legal action or response encoding is asserted.
+
+**Historical client responses observed in a log are not messages sent by this tool.** `response_encoding_verified=false`, `selected_action_type_verified=false`, `pass_vs_play_selection_verified=false`, `gameplay_effect_verified=false`, `legal_actions=null`, `actionable=false` and `input_sent=false` remain. No MTGA input, native automation, inferred action encoding, mana/target contract or <3 s live-performance claim is introduced. The owner may supply only the count-only JSON from the original locally installed Player.log to determine the next evidence-focused implementation.
+
+### MP15 opt-in first engine-offered action frontier (read-only)
+
+`--action-frontier` requires `--decision-input` and a Player.log replay or finite watch. It adds a separate `action_frontier` property with one `ActionTemplate` for **each position in the current authenticated own-seat** `ActionsAvailableReq.actions` array, including duplicate rows, `FloatMana`, unknown types and malformed shapes. The template contains the request identity, original array position, recognized type or a fixed unknown label, existing verified visible-source link when available, whitelisted opaque parameter container sizes, and explicit unresolved evidence. Private values, unknown field names and raw action IDs are excluded. `inactiveActions` never become templates. The existing raw inventory, decision input and gap report keep their prior meanings and default output stays unchanged.
+
+```powershell
+.\.venv\Scripts\mtgaplayer.exe replay --format player-log --decision-input --action-frontier "<Player.log>"
+.\.venv\Scripts\mtgaplayer.exe watch --decision-input --action-frontier "<Player.log>" --samples 5
+```
+
+Coverage reports `engine_active_action_count = interpreted_action_count + unsupported_action_count`. “Interpreted” means only an existing reviewed structural description; malformed or unreviewed rows are explicit unsupported templates. Immediate completeness is `partial` even when every row has a description, since payment, targets and response encoding remain unverified. Future choice expansion stays `unknown`; no later request is presumed. Missing/invalid action payloads and other current request types yield `unknown` coverage with null counts and null templates, not a fabricated zero. Invalid or partial current snapshots yield `action_frontier: null`; diagnostic `last_valid` is never reused. Finite watch may finish with `stopped=true` while retaining a historical diagnostic frontier, always `actionable=false`, `execution_ready=false` and `input_sent=false`. This is level-one engine-offered structure, not verified legal choices or MTGA input.
+
 ### MP14 action evidence/gap classification (still read-only)
 
 MP13 produced a **request-bound observation**, not an action-execution contract. MP14 optionally classifies only **engine-described active action positions** into typed *engineering evidence gaps*; it never marks Pass, Play, Cast, Activate or Activate_Mana as executable, legal, strategically good or complete. An unknown/undetailed action such as `FloatMana` is counted by its observed type but gets **no invented position or response parameters**. A visible source join is not a Magic permission; even an explicit same-request mana pair/target slot is only raw structural equality, **not** a validated payment or target.

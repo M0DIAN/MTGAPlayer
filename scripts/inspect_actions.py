@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 
 from mtgaplayer.raw_log import RawFollower, RawReducer
+from mtgaplayer.response_evidence import inspect_response_envelopes
 from mtgaplayer.decision_input import build_decision_input
 from mtgaplayer.action_gaps import assess_action_gaps
 
@@ -567,11 +568,20 @@ def main(argv=None):
                          help="MP10: only own-request visible-source join statistics")
     choices.add_argument("--gap-coverage", action="store_true",
                          help="MP14: aggregate own-request action rule/response gaps (no raw values)")
+    choices.add_argument("--response-envelopes", action="store_true",
+                         help="MP15: count-only own-client response envelope/offer linkage")
+    choices.add_argument("--response-action-shapes", action="store_true",
+                         help="MP15: strictly value-free action-array item schema on matched own responses")
     args = parser.parse_args(argv)
     if not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024:
         parser.error("max-history-bytes must be between 1 and 1073741824")
     try:
-        if args.gap_coverage:
+        if args.response_action_shapes:
+            result = inspect_response_envelopes(
+                args.input, args.max_history_bytes, action_shapes=True)
+        elif args.response_envelopes:
+            result = inspect_response_envelopes(args.input, args.max_history_bytes)
+        elif args.gap_coverage:
             result = inspect_gap_coverage(args.input, args.max_history_bytes)
         elif args.visible_sources:
             result = inspect_visible_sources(args.input, args.max_history_bytes)
@@ -580,7 +590,9 @@ def main(argv=None):
         else:
             result = inspect(args.input, args.max_history_bytes)
     except (OSError, ValueError):
-        print(json.dumps({"probe": ("mtga-action-gap-coverage-v1" if args.gap_coverage
+        print(json.dumps({"probe": ("mtga-client-response-action-shapes-v1" if args.response_action_shapes
+                                   else "mtga-client-response-envelopes-v1" if args.response_envelopes
+                                   else "mtga-action-gap-coverage-v1" if args.gap_coverage
                                    else "visible-action-sources-v1" if args.visible_sources
                                    else "actions-complex-relations-v1" if args.complex_relations
                                    else "actions-available-schema-v1"),
