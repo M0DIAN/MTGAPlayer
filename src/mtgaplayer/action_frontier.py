@@ -163,6 +163,9 @@ def build_action_frontier(decision_input, frontier_evidence):
                 'malformed_or_unreviewed_action_shape' if described_row is not None
                 else 'action_structure_not_described'),
             'source_link_status': status, 'visible_object_id': visible_id,
+            'source_card_identity_agreement': (described_row.get('source_card_identity_agreement')
+                if described_row is not None and status == 'visible_unique' and
+                type(described_row.get('source_card_identity_agreement')) is bool else None),
             'observed_parameter_shapes': parameters.copy(),
             'unknown_parameter_fields_present': row['other_top_level_fields_present'],
             'unresolved_parameters': sorted(set(unresolved)),
@@ -178,6 +181,8 @@ def build_action_frontier(decision_input, frontier_evidence):
     return {
         'schema': 'mtga-action-frontier-v1',
         'scope': 'current_authenticated_own_actions_available_request_only',
+        'unknown_request_fields_present': (inventory.get('unknown_request_fields_present')
+            if type(inventory.get('unknown_request_fields_present')) is bool else None),
         'request_identity': identity,
         'engine_active_action_count': offered,
         'interpreted_action_count': interpreted_count,

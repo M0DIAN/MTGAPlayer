@@ -94,7 +94,8 @@ def measure(count, *, report=None):
                     for key, call in (
                         ('candidate_extraction', lambda: _extract_actions(state)),
                         ('evidence_classification', lambda: _classify_actions(rows, state['binding'])),
-                        ('heuristic_preference', lambda: _preference(rows, SIMPLE_TYPE_POLICY, True, issue)),
+                        ('heuristic_preference', lambda: _preference(rows, SIMPLE_TYPE_POLICY, True, issue,
+                            state['legal_action_space']['immediate_frontier']['projection'].get('unknown_request_fields_present'))),
                         ('total_assessment', lambda: assess_current_decision(consumer, policy_version=SIMPLE_TYPE_POLICY))):
                         started = time.perf_counter_ns()
                         value = call()
