@@ -15,7 +15,7 @@ import time
 from collections import deque
 
 from .decision_publisher import EVENT_STATE_VERSIONS, IDENTITY, MAX_AGE_NS, STOP_REASONS
-from .decision_state import FLAGS, KINDS, SCHEMA_VERSIONS, _stack, _bound_readonly
+from .decision_state import FLAGS, KINDS, SCHEMA_VERSIONS, _stack, _effective_stats, _bound_readonly
 
 MAX_LINE_BYTES = 2 * 1024 * 1024
 MAX_ID = 9_007_199_254_740_991
@@ -130,7 +130,7 @@ def _state(value, binding):
     game = value['game']
     _keys(game, ('room_state', 'game_stage', 'source_state_timestamp', 'turn', 'players',
         'hidden_counts', 'mana', 'effective_combat_stats', 'rules') +
-        (('stack',) if value['schema_version'] == SCHEMA_VERSIONS[3] else ()))
+        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4]) else ()))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
     turn = game['turn']
@@ -152,7 +152,9 @@ def _state(value, binding):
     _require(type(game['hidden_counts']) is dict)
     for count in game['hidden_counts'].values():
         _integer(count)
-    _require(all(game[k] is None for k in ('mana', 'effective_combat_stats', 'rules')) and
+    current_stats = value['schema_version'] == SCHEMA_VERSIONS[4]
+    _require(all(game[k] is None for k in ('mana', 'rules')) and
+             (current_stats or game['effective_combat_stats'] is None) and
              value['effect_claims'] is None)
     _list(value['visible_objects'])
     for obj in value['visible_objects']:
@@ -164,8 +166,10 @@ def _state(value, binding):
             _integer(obj[key], 1, 2, nullable=True)
         _require((obj['zone'] is None or type(obj['zone']) is str) and
                  (obj['tapped'] is None or type(obj['tapped']) is bool) and
-                 obj['effective_power'] is None and obj['effective_toughness'] is None)
-    if value['schema_version'] == SCHEMA_VERSIONS[3]:
+                 (current_stats or obj['effective_power'] is None and obj['effective_toughness'] is None))
+    if current_stats:
+        _effective_stats(game['effective_combat_stats'], value['visible_objects'])
+    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4]):
         _stack(game['stack'], value['visible_objects'])
     cards = value['card_knowledge']
     if cards is not None:

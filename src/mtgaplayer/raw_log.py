@@ -1057,9 +1057,22 @@ class RawReducer:
             'self_seat': self.seat, 'game_state_id': self.version, 'actionable': False}
         if include_decision_state and current['valid']:
             # Private assembly facts; legacy raw/DecisionInput turn is unchanged.
-            # The v2 assembler validates these and the CLI removes the staging.
+            # Versioned assemblers validate these; the CLI removes the staging.
             current['_turn_context'] = {key: copy.deepcopy(self.turn.get(key))
                                        for key in ('phase', 'step', 'priorityPlayer')}
             current['_public_stack'] = self._public_stack(current)
+            # Only the existing visible projection may admit a source object.
+            # Rows omitted by a Diff remain reduced rows; a replaced row with
+            # no stat has no value. No catalog, modifier or protobuf default.
+            def literal(value):
+                return value['value'] if (type(value) is dict and set(value) == {'value'} and
+                    type(value['value']) is int and -2**31 <= value['value'] <= 2**31 - 1) else None
+            current['_observed_combat_stats'] = [
+                {'instance_id': obj['id'], 'effective_power': literal(raw.get('power')),
+                 'effective_toughness': literal(raw.get('toughness'))}
+                for obj in current['objects']
+                if obj['zone'] == 'ZoneType_Battlefield' and
+                (raw := self.objects[obj['id']]).get('type') in
+                    ('GameObjectType_Card', 'GameObjectType_Token')]
         return {'current': current, 'last_valid': copy.deepcopy(self.last_valid),
                 'first_error': copy.deepcopy(self.first_error), 'error': self.error}
