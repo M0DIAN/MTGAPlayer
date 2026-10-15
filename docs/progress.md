@@ -1,5 +1,13 @@
 # MTGAPlayer progress
 
+## MP22 — visible-object static reference context (2026-10-15)
+
+Base is accepted MP21 main `3e5620994c90c4b0a73dcfe8c1e519ab52f5dc6d`, tree `60f590016e7b7a987b1a75e59b44da99bc0ed5ba`. PR #28 and exact-main push run `38737200553` passed Linux and Windows complete 322-test suites and Windows doctor. Final remote candidate `91fbcc2c77e3f83f440340b96429c8d620581a94` received independent exact-version review, including public API sample/hash, bytewise truncations, UTF-8 boundaries and a create-if-absent race. No old review verdict is reused for this task.
+
+The new read-only rule_context module validates the existing read-only DecisionState, then associates only its unique visible instance rows' exact card IDs through the MP21 lookup. A separate versioned sidecar binds the complete state/request identity and source version/hash, retains every visible row with reconciled counts, keeps static reference text/face data distinct and leaves current face/effects/legality unknown. Missing, ambiguous and absent IDs are explicit. Invalid state returns no binding/content and performs no lookup; a missing/bad index retains only the valid input binding and an unavailable reason. Results are detached data with no continuing currentness. `replay --format player-log --rules-index` is explicit opt-in and implies DecisionState; all legacy output fields are equal to default replay after removing the two added properties. Current publisher/consumer and all v1 State/Event contracts are unchanged; no watch-side database I/O or hot-path database dependency is introduced.
+
+Six focused tests cover actual replay CLI and legacy output equality, complete binding/SHA provenance and purity, exact visible-only lookup domain, request-only SelectN references, hidden sentinel exclusion, missing/duplicate catalog IDs, missing/ambiguous visible identities, literal multi-face/static stats, invalid state and unavailable-index behavior. All data additions use invented reference records against the existing scrubbed GRE chain. Full-suite and final-candidate review/CI results accompany the PR/delivery. No new source scan, game resource access, input, rules simulation or strategic policy.
+
 ## MP21 — offline versioned static-rule index (2026-10-15)
 
 Base is accepted MP20 main `ea1e6a7ad4b096b8e6ba4f3234d8aef22913097c`, tree `a836868a4f8c58358c308186d7dbd19cd3bea005`. PR #27 and its exact-main natural push run `38736170990` both passed Linux and Windows full 315-test suites plus Windows doctor. Exact remote candidate `36236aa65ec34379b493f2888ac43539a5469350` was independently reviewed before squash. Historical Windows cleanup FAIL entries below remain historical; they do not describe the repaired current main.
