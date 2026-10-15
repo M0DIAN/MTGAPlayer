@@ -307,3 +307,21 @@ Only own `self` hand and explicitly public battlefield/stack/graveyard objects r
 Supported **synthetic rules v1**: main-phase own priority; no continuous effects; one land play per scene; integer generic mana pool; `spark` costs exactly one generic and deals one damage to one visible opposing `inert_creature`; inert creatures have no other abilities. Scores prefer land, spark, then legal pass. Unknown visible own/opponent rules/effects or missing required fields return unsupported even if pass would otherwise be available. No real card database, colored mana, combat, stack responses, triggers, general Magic legality, win-rate or optimal-play claim.
 
 Measured status/blockers and raw evidence: [docs/progress.md](docs/progress.md). Source decisions/hashes: [THIRD_PARTY.md](THIRD_PARTY.md). CI separates Ubuntu offline checks from Windows no-input doctor, each with a 10-minute limit. Frozen candidate identity, actual CI revisions and independent review are reported on the candidate PR and final handoff. The native normal set passed; retained negative scenarios include an unsupported effect, an uncertain target disappearance and a reordering timeout. This does not establish MTGA or dynamic-layout three-second performance.
+
+### MP19 Phase 2 — Advisor evidence coverage (offline, read-only)
+
+`inspect_advisor_coverage.py` analyzes **already projected** `DecisionState v1` records through the existing `assess_decision_state` API; it never opens or parses original GRE messages, game assets, or a private `Player.log`. This is a research-only coverage report, **not** an action oracle or measured real-game decision-success rate.
+
+```powershell
+# Repository committed scrubbed fixture → existing opt-in DecisionState projection.
+New-Item -ItemType Directory -Force artifacts\local-mp19-phase2 | Out-Null
+.\.venv\Scripts\python.exe -c "from pathlib import Path; import json; from mtgaplayer.cli import replay; d=replay(Path('tests/fixtures/player_log_selectn.jsonl'), format='player-log', decision_state=True); Path('artifacts/local-mp19-phase2/projected.jsonl').write_text(json.dumps(d, ensure_ascii=False)+'\n', encoding='utf-8')"
+# One safe JSON aggregate; source remains local.
+.\.venv\Scripts\python.exe scripts\inspect_advisor_coverage.py --input artifacts\local-mp19-phase2\projected.jsonl --output artifacts\local-mp19-phase2\coverage.json --dataset-kind scrubbed_projected_offline
+```
+
+The input is one `DecisionState v1` object or one wrapper containing a `decision_state` property per line (not a GRE log). Each input record is capped at 2 MiB, the entire input at 64 MiB and 4,096 lines. Malformed, null, invalid, no-request, repeated and conflicting-identity inputs are counted separately. Duplicates are grouped by complete request binding **only within the supplied dataset**; conflicting observations of the same identity are quarantined. No account/match/request/card IDs, free-form message fields or source paths enter the aggregate output. It does not use historical `last_valid` to create an opportunity.
+
+Active ActionsAvailable candidates use the already validated Advisor inventory; unsupported and repeated action types remain in their original cardinality. SelectN and combat have separate reference counters and continue to mark unknown quantities/combinations. Rates include explicit numerator and denominator; a zero denominator is JSON `null`. Default `evidence_only.v1` and historical research abstention are not interpreted as strategy failures. Optional in-process `CoverageAccumulator.add_current_consumer(existing_consumer)` calls the current Advisor directly; a detached JSON record cannot claim to be a fresh current opportunity. Summaries of synthetic/scrubbed samples remain **nonrepresentative** (`PRIORITY_EVIDENCE_INSUFFICIENT`) regardless of local pass rate.
+
+This stage does **not** change the Advisor, DecisionState, Consumer, schemas, policy, GRE reducer, executor or their runtime permissions. No real MTGA actions, response encoding, complete legality, dynamic effects, payment/target resolution, optimality or real three-second qualification is introduced.
