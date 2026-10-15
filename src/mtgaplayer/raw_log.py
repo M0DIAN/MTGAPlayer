@@ -12,6 +12,12 @@ from pathlib import Path
 import re
 
 
+COMBAT_SUBMITS = {
+    'ClientMessageType_SubmitAttackersReq': 'GREMessageType_DeclareAttackersReq',
+    'ClientMessageType_SubmitBlockersReq': 'GREMessageType_DeclareBlockersReq',
+}
+
+
 def _id(value):
     return type(value) is int and 0 <= value <= 2**53 - 1
 
@@ -645,9 +651,32 @@ class RawReducer:
                 if len(hits) == 1 and type(hits[0]) is int and hits[0] in (1, 2):
                     self.room_seat = hits[0]
         payload = entry.get('payload')
+        response = (isinstance(payload, dict) and isinstance(payload.get('type'), str) and
+                    payload['type'].startswith('ClientMessageType_') and
+                    payload['type'].endswith('Resp') and _id(payload.get('respId')))
+        combat_submit = False
         if (isinstance(payload, dict) and isinstance(payload.get('type'), str) and
-                payload['type'].startswith('ClientMessageType_') and
-                payload['type'].endswith('Resp') and _id(payload.get('respId'))):
+                payload['type'] in COMBAT_SUBMITS):
+            req = self.request
+            binding = req.get('binding') if isinstance(req, dict) else None
+            ident, version = payload.get('respId'), payload.get('gameStateId')
+            combat_submit = (not any(k in entry for k in ('greToClientEvent', 'authenticateResponse',
+                    'matchGameRoomStateChangedEvent')) and self.error is None and not self.conflict and _id(ident) and _id(version) and
+                isinstance(binding, dict) and req.get('current') is True and
+                req.get('_continuity_verified') is True and req.get('type') == COMBAT_SUBMITS[payload['type']] and
+                req.get('id') == ident and req.get('game_state_id') == version == self.version and
+                binding == {'generation': self.generation, 'match': self.match, 'game': self.game,
+                            'game_state_id': version, 'self_seat': self.seat, 'ownership_verified': True} and
+                type(binding.get('generation')) is int and type(binding.get('game')) is int and
+                type(binding.get('game_state_id')) is int and
+                type(binding.get('self_seat')) is int and binding.get('ownership_verified') is True and
+                type(self.seat) is int and type(self.room_seat) is int and self.room_seat == self.seat and
+                self.seat in (1, 2) and self.room_match == self.match and
+                self.room_state != 'MatchGameRoomStateType_MatchCompleted' and
+                self.game_info.get('stage') != 'GameStage_GameOver' and
+                (self.match, self.game, ident) not in self.consumed and ident not in self.superseded and
+                self.request_ids.get(ident, ())[:2] == (version, req['type']))
+        if response or combat_submit:
             response_id = payload['respId']
             prior = self.request_ids.get(response_id)
             request_state = prior[0] if prior else None

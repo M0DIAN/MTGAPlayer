@@ -13,7 +13,7 @@ import tempfile
 
 from .decision_consumer import EXECUTION
 from .raw_log import RawFollower, RawReducer, _id
-from .response_evidence import _current_verified_request, _current_verified_raw_request, _paired_response
+from .response_evidence import _current_verified_request, _current_verified_raw_request, _paired_response, _paired_combat_submit
 from .choice_graph import _selectn_known_constraints
 
 VERSION = 'mtgaplayer.semantic-samples.v1'
@@ -108,8 +108,14 @@ def _action(row, refs, scope):
         'observed_empty_parameters': [k for k in PARAMS if k in row]}
 
 
-def _request(message, request, refs, scope, version=1):
+def _request(message, request, refs, scope, version=1, snapshot=None):
     kind = KINDS.get(request['type'])
+    if version == 3 and kind in ('declare_attackers','declare_blockers'):
+        from .semantic_combat import request as combat_request
+        try:
+            return combat_request(message,request,refs,scope,snapshot)
+        except SampleError:
+            raise SampleError('request_unsupported') from None
     if kind == 'select_n':
         _need(request.get('supported') is True, 'request_unsupported')
         selection = request['selection']
@@ -121,14 +127,14 @@ def _request(message, request, refs, scope, version=1):
             'validation_type': 'SelectionValidationType_NonRepeatable',
             'allow_cancel': False, 'min_weight': selection['min_weight'], 'max_weight': selection['max_weight']}}
     _need(kind == 'actions_available' and not set(message) - {
-        'type', 'systemSeatIds', 'msgId', 'gameStateId', 'actionsAvailableReq', *(['prompt'] if version == 2 else [])}, 'request_unsupported')
+        'type', 'systemSeatIds', 'msgId', 'gameStateId', 'actionsAvailableReq', *(['prompt'] if version >= 2 else [])}, 'request_unsupported')
     payload = message.get('actionsAvailableReq')
     _need(type(payload) is dict and not set(payload) - {'actions', 'inactiveActions'}, 'request_unsupported')
     rows = payload.get('actions')
     _need(type(rows) is list and len(rows) <= 256, 'request_unsupported')
     # Whole inventory or nothing; never drop bad rows or opaque parameters.
     try:
-        if version == 2:
+        if version >= 2:
             from .semantic_cast import action, RequestManaRefs
             refs = RequestManaRefs(refs, request)
         else:
@@ -139,6 +145,12 @@ def _request(message, request, refs, scope, version=1):
 
 
 def _response(payload, request, refs, scope, version=1):
+    if version == 3 and request['type'] in ('GREMessageType_DeclareAttackersReq','GREMessageType_DeclareBlockersReq'):
+        from .semantic_combat import response as combat_response
+        try:
+            return combat_response(payload,request)
+        except SampleError:
+            raise SampleError('response_unsupported') from None
     if request['type'] == 'GREMessageType_SelectNReq':
         validation = _selectn_known_constraints(request, payload)
         _need(validation['validation_level'] != 'violated_known_constraints', 'known_constraints_violated')
@@ -147,10 +159,10 @@ def _response(payload, request, refs, scope, version=1):
             refs.ref('object', scope, i) for i in payload['selectNResp']['ids']]}}
     _need(set(payload) == {'type', 'respId', 'gameStateId', 'performActionResp'}, 'response_unsupported')
     body = payload['performActionResp']
-    _need(type(body) is dict and set(body) in ([{'actions'}, {'actions','autoPassPriority'}] if version == 2 else [{'actions'}]) and type(body['actions']) is list and
+    _need(type(body) is dict and set(body) in ([{'actions'}, {'actions','autoPassPriority'}] if version >= 2 else [{'actions'}]) and type(body['actions']) is list and
           len(body['actions']) == 1, 'response_unsupported')
     try:
-        if version == 2:
+        if version >= 2:
             from .semantic_cast import action as project_action, RequestManaRefs
             refs = RequestManaRefs(refs, request)
         else:
@@ -179,7 +191,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     Source consistency is metadata/boundary consistency, not a byte fingerprint.
     At most max_samples pairs are retained; omissions are explicit counts.
     """
-    _need(type(schema_version) is int and schema_version in (1, 2) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
+    _need(type(schema_version) is int and schema_version in (1, 2, 3) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
           type(max_history_bytes) is int and 1 <= max_history_bytes <= 1024**3, 'invalid_export_bounds')
     path = Path(path)
     before_stat = path.stat()
@@ -193,7 +205,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     refs, samples, counts, rejected = _Refs(), [], Counter(), Counter()
     active, pending, tracing = None, None, None
     reducer = None
-    if schema_version == 2:
+    if schema_version >= 2:
         from . import semantic_cast as cast
 
     def end_trace(status, request_ref=None):
@@ -231,16 +243,22 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                         snap = _snapshot(reducer, refs, _scope(reducer))
                         previous = (tracing['trace']['states'][-1]['snapshot'] if tracing['trace']['states'] else tracing['before'])
                         gs = details['message']
-                        selected = tracing['response']['payload'].get('action', {})
-                        related = ({selected['identifier_refs']['instanceId']} if 'instanceId' in selected.get('identifier_refs', {}) else set())
-                        for tap in selected.get('parameters', {}).get('autoTapSolution', {}).get('autoTapActions', []):
-                            related.add(tap['instanceId'])
-                        for prior in tracing['trace']['states']:
-                            related.update(f['new_object_ref'] for f in prior['facts'] if f['kind'] == 'object_id_changed')
-                        fact_rows, fact_status, omitted = cast.facts(gs, reducer, refs, _scope(reducer), previous, snap, related)
+                        if tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
+                            from . import semantic_combat as combat
+                            fact_rows,fact_status,omitted=combat.facts(gs,refs,_scope(reducer),snap)
+                        else:
+                            selected = tracing['response']['payload'].get('action', {})
+                            related = ({selected['identifier_refs']['instanceId']} if 'instanceId' in selected.get('identifier_refs', {}) else set())
+                            for tap in selected.get('parameters', {}).get('autoTapSolution', {}).get('autoTapActions', []):
+                                related.add(tap['instanceId'])
+                            for prior in tracing['trace']['states']:
+                                related.update(f['new_object_ref'] for f in prior['facts'] if f['kind'] == 'object_id_changed')
+                            fact_rows, fact_status, omitted = cast.facts(gs, reducer, refs, _scope(reducer), previous, snap, related)
                         tracing['trace']['states'].append({'snapshot': snap,
                             'previous_state_ref': refs.ref('state', _scope(reducer), gs['prevGameStateId']),
                             'facts': fact_rows, 'facts_status': fact_status, 'omitted_annotations': omitted})
+                        if tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
+                            end_trace(combat.FIRST)
                     except (SampleError, KeyError, TypeError):
                         end_trace('interrupted')
             if pending is not None:
@@ -277,14 +295,14 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                                refs.ref('request', scope, request['id']))
             try:
                 snap = _snapshot(reducer, refs, scope)
-                projected = _request(message, request, refs, scope, schema_version)
+                projected = _request(message, request, refs, scope, schema_version, snap)
             except SampleError as exc:
                 active = {'identity': (request['id'], request['game_state_id']), 'reason': str(exc)}
             else:
                 active = {'identity': (request['id'], request['game_state_id']), 'scope': scope,
                     'request_ref': refs.ref('request', scope, request['id']), 'before': snap, 'request': projected}
 
-    reducer = RawReducer(observer=observe, include_state_messages=schema_version == 2)
+    reducer = RawReducer(observer=observe, include_state_messages=schema_version >= 2)
     reducer.reset(follower.generation)
     for entry in records:
         before = copy.deepcopy(_current_verified_request(reducer))
@@ -298,7 +316,8 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
         if tracing is not None and (_scope(reducer) != tracing['_scope'] or reducer.error is not None or
                 reducer.room_state == 'MatchGameRoomStateType_MatchCompleted'):
             end_trace('interrupted')
-        if not _paired_response(reducer, before, payload):
+        if not (_paired_response(reducer, before, payload) or
+                schema_version == 3 and _paired_combat_submit(reducer,before,payload)):
             continue
         counts['matched_pairs'] += 1
         if any(key in entry for key in ('greToClientEvent', 'authenticateResponse',
@@ -328,7 +347,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                 'private_auth_revalidated_by_replay': False, 'client_submission_only': True}, '_scope': scope}
         finish('interrupted')
         end_trace('interrupted')
-        if schema_version == 2:
+        if schema_version >= 2:
             episode['trace'] = {'status': 'not_observed', 'truncated': False, 'next_request_ref': None, 'states': []}
             tracing = episode
         samples.append(episode)
@@ -336,8 +355,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     end_trace('eof')
     for sample in samples:
         sample.pop('_scope')
-    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION,
-        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2),
+    if schema_version == 3:
+        from . import semantic_combat as combat
+    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION if schema_version == 2 else combat.VERSION,
+        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2 if schema_version == 2 else combat.PROJECTION_V3),
         'source': {'format': 'player-log-gre-v1',
         'mode': 'offline', 'origin': origin, 'origin_is_user_supplied': True,
         'framing_complete': True, 'framed_records': len(records),
@@ -419,15 +440,11 @@ def _unique_action_position(actions, chosen):
     return matches[0] if len(matches) == 1 else None
 
 
-def _replay_samples(document):
-    """Validate/replay exported choices, NOT private GRE authentication/effects."""
-    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v2':
-        from .semantic_cast import replay
-        return replay(document)
+def _check_envelope(document, version, projection):
     _keys(document, ('schema_version', 'projection', 'source', 'counts', 'unsupported_reasons', 'samples', 'read_only', 'execution'))
-    _need(document['schema_version'] == VERSION and document['read_only'] is True and
+    _need(document['schema_version'] == version and document['read_only'] is True and
           document['execution'] == EXECUTION and all(type(v) is bool for v in document['execution'].values()))
-    _need(document['projection'] == PROJECTION and document['projection']['raw_equivalent'] is False)
+    _need(document['projection'] == projection and document['projection']['raw_equivalent'] is False)
     source = document['source']
     _keys(source, ('format', 'mode', 'origin', 'origin_is_user_supplied', 'framing_complete', 'framed_records',
                    'raw_gre_replay', 'source_auth_revalidated_by_portable_replay'))
@@ -447,15 +464,46 @@ def _replay_samples(document):
         reasons.add(row['reason']); total += row['count']
     _need(total == counts['unsupported_pairs'])
     _need(type(document['samples']) is list and len(document['samples']) == counts['exported'] <= 256)
+
+
+def _check_episode_base(sample, extras=()):
+    _keys(sample, ('identity', 'before', 'request', 'response', 'successor', 'provenance', *extras))
+    _keys(sample['identity'], ('match_ref', 'game', 'self_seat', 'request_ref'))
+    _need(all(_id(v) and v > 0 for v in sample['identity'].values()) and sample['identity']['self_seat'] in (1,2))
+    _check_snapshot(sample['before'])
+    _need(sample['provenance'] == {'exact_source_pair_verified_by_producer': True,
+          'private_auth_revalidated_by_replay': False, 'client_submission_only': True} and
+          all(type(v) is bool for v in sample['provenance'].values()))
+
+
+def _check_successor(successor, before):
+    _keys(successor, ('status', 'snapshot', 'request_kind', 'request_ref'))
+    _need(successor['status'] in SUCCESSORS)
+    if successor['status'] in ('not_observed', 'interrupted'):
+        _need(all(successor[k] is None for k in ('snapshot','request_kind','request_ref')))
+    else:
+        _check_snapshot(successor['snapshot'])
+        if successor['status'] == 'next_request_observed':
+            _need(successor['request_kind'] in (*KINDS.values(),'unsupported') and
+                  _id(successor['request_ref']) and successor['request_ref'] > 0)
+        else:
+            _need(successor['request_kind'] is None and successor['request_ref'] is None)
+        if successor['status'] == 'continuous_state_observed':
+            _need(successor['snapshot']['state_ref'] != before['state_ref'])
+
+
+def _replay_samples(document):
+    """Validate/replay exported choices, NOT private GRE authentication/effects."""
+    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v3':
+        from .semantic_combat import replay
+        return replay(document)
+    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v2':
+        from .semantic_cast import replay
+        return replay(document)
+    _check_envelope(document, VERSION, PROJECTION)
     reports = []
     for index, sample in enumerate(document['samples']):
-        _keys(sample, ('identity', 'before', 'request', 'response', 'successor', 'provenance'))
-        _keys(sample['identity'], ('match_ref', 'game', 'self_seat', 'request_ref'))
-        _need(all(_id(v) and v > 0 for v in sample['identity'].values()) and sample['identity']['self_seat'] in (1,2))
-        _check_snapshot(sample['before'])
-        _need(sample['provenance'] == {'exact_source_pair_verified_by_producer': True,
-              'private_auth_revalidated_by_replay': False, 'client_submission_only': True} and
-              all(type(v) is bool for v in sample['provenance'].values()))
+        _check_episode_base(sample)
         request, response = sample['request'], sample['response']
         _keys(request, ('kind', 'payload')); _keys(response, ('kind', 'payload'))
         _need(request['kind'] == response['kind'] and request['kind'] in ('select_n', 'actions_available'))
@@ -485,19 +533,7 @@ def _replay_samples(document):
             _check_action(chosen)
             action_position = _unique_action_position(actions, chosen)
         successor = sample['successor']
-        _keys(successor, ('status', 'snapshot', 'request_kind', 'request_ref'))
-        _need(successor['status'] in SUCCESSORS)
-        if successor['status'] in ('not_observed', 'interrupted'):
-            _need(all(successor[k] is None for k in ('snapshot','request_kind','request_ref')))
-        else:
-            _check_snapshot(successor['snapshot'])
-            if successor['status'] == 'next_request_observed':
-                _need(successor['request_kind'] in (*KINDS.values(),'unsupported') and
-                      _id(successor['request_ref']) and successor['request_ref'] > 0)
-            else:
-                _need(successor['request_kind'] is None and successor['request_ref'] is None)
-            if successor['status'] == 'continuous_state_observed':
-                _need(successor['snapshot']['state_ref'] != sample['before']['state_ref'])
+        _check_successor(successor, sample['before'])
         reports.append({'sample_index': index, 'request_kind': request['kind'],
             'selected_option_positions': chosen_positions, 'selected_action_position': action_position,
             'validation_scope': 'known_select_n_constraints_only' if chosen_positions is not None else
