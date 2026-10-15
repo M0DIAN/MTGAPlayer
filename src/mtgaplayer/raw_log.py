@@ -28,6 +28,11 @@ def _seat(value):
     return type(value) is int and value in (1, 2)
 
 
+def _request_digest(message):
+    return hashlib.sha256(json.dumps(message, sort_keys=True,
+                          separators=(',', ':')).encode('utf-8')).digest()
+
+
 def _viewer_list(value):
     return isinstance(value, list) and all(_seat(seat) for seat in value)
 
@@ -737,8 +742,7 @@ class RawReducer:
             if not _id(msg_id) or not _id(state_id):
                 self._invalidate('request_identity_missing')
                 return
-            digest = hashlib.sha256(json.dumps(message, sort_keys=True,
-                        separators=(',', ':')).encode('utf-8')).digest()
+            digest = _request_digest(message)
             prior = self.request_ids.get(msg_id)
             if prior is not None and prior != (state_id, message['type'], digest):
                 self._invalidate('conflicting_request_identity')
@@ -762,7 +766,8 @@ class RawReducer:
                                             'ownership_verified': True},
                                 **_request_semantics(message)}
                 if self.observer is not None:
-                    self._observe('request_accepted', request=self.request)
+                    self._observe('request_accepted', request=self.request, message=message,
+                                  is_retransmission=prior is not None)
 
     def _state(self, gs, timestamp):
         if not isinstance(gs, dict) or gs.get('type') not in ('GameStateType_Full', 'GameStateType_Diff'):

@@ -9,7 +9,7 @@ from pathlib import Path
 import json
 import re
 
-from .raw_log import RawFollower, RawReducer
+from .raw_log import RawFollower, RawReducer, _request_digest
 from .semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
 from .choice_graph import (CHOICE_VALIDATION_LEVELS, _selectn_known_constraints,
                            _build_selectn_constraint_graph)
@@ -121,6 +121,52 @@ def _identity(request):
     bind = request["binding"]
     return (bind["generation"], bind["match"], bind["game"],
             bind["self_seat"], request["game_state_id"], request["id"])
+
+
+def _current_verified_raw_request(reducer, message):
+    """Bind accepted-event content to the single reducer's current digest ledger.
+
+    Adapted from the local Phase 5B helper; strict recipient types are required.
+    Neither matching headers nor an old accepted message establish this binding.
+    """
+    req = _current_verified_request(reducer)
+    recipients = message.get('systemSeatIds') if isinstance(message, dict) else None
+    if (req is None or reducer.conflict or not isinstance(message, dict) or
+            not _id(message.get('msgId')) or not _id(message.get('gameStateId')) or
+            not isinstance(recipients, list) or len(recipients) != 1 or
+            type(recipients[0]) is not int or recipients[0] != reducer.room_seat or
+            message.get('msgId') != req['id'] or
+            message.get('gameStateId') != req['game_state_id'] or
+            message.get('type') != req['type'] or
+            (reducer.match, reducer.game, req['id']) in reducer.consumed or
+            req['id'] in reducer.superseded or
+            reducer.request_ids.get(req['id']) !=
+            (req['game_state_id'], req['type'], _request_digest(message))):
+        return None
+    return req
+
+
+def _paired_response(reducer, before, payload, expected_type=None):
+    """Existing MP15 post-consumption gate, client submission only.
+
+    A bounded diagnostic can supply a fixed protocol pair without changing the
+    default response map. Callers must authenticate request content separately.
+    """
+    if not isinstance(payload, dict) or before is None:
+        return False
+    typ = payload.get('type')
+    expected = expected_type or _RESPONSE_BY_REQUEST.get(before.get('type'))
+    return (isinstance(typ, str) and _RESP.fullmatch(typ) is not None and
+            _id(payload.get('respId')) and _id(payload.get('gameStateId')) and
+            typ == expected and payload['respId'] == before['id'] and
+            payload['gameStateId'] == before['game_state_id'] and
+            reducer.error is None and isinstance(reducer.submitted, dict) and
+            reducer.submitted.get('request_id') == payload['respId'] and
+            reducer.submitted.get('game_state_id') == payload['gameStateId'] and
+            reducer.submitted.get('confirmation') == 'client_submission_only' and
+            (reducer.match, reducer.game) ==
+            (before['binding']['match'], before['binding']['game']) and
+            (reducer.match, reducer.game, payload['respId']) in reducer.consumed)
 
 
 def _request_kind(request):
@@ -431,18 +477,7 @@ def inspect_response_envelopes(path, max_history_bytes=64 * 1024 * 1024,
         if not candidate:
             continue
         counts["observed_client_response_records"] += 1
-        paired = (valid_response and before is not None and
-                  typ == _RESPONSE_BY_REQUEST.get(before.get("type")) and
-                  payload["respId"] == before["id"] and
-                  payload["gameStateId"] == before["game_state_id"] and
-                  reducer.error is None and
-                  isinstance(reducer.submitted, dict) and
-                  reducer.submitted.get("request_id") == payload["respId"] and
-                  reducer.submitted.get("game_state_id") == payload["gameStateId"] and
-                  reducer.submitted.get("confirmation") == "client_submission_only" and
-                  (reducer.match, reducer.game) ==
-                  (before["binding"]["match"], before["binding"]["game"]) and
-                  (reducer.match, reducer.game, payload["respId"]) in reducer.consumed)
+        paired = _paired_response(reducer, before, payload)
         if constraint_counts is not None:
             constraint_counts.add(before, payload, paired)
         if not valid_response:
