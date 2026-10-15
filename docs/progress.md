@@ -49,6 +49,8 @@ Initial seven-case focused run had one test error because the actual consume-eve
 
 Root integration passed the complete **412-test suite in58.287s** on project Python3.11.17; `git diff --check` is clean. Final independent review, PR CI, conditional squash and exact-main CI are separate delivery gates recorded in the PR.
 
+Independent review found that malformed second snapshots could be rejected by the existing unrevoked-replacement protocol gate before reaching v4 validation. Each v4 mutation now first challenges a fresh Consumer's first snapshot, then separately preserves the active-cache rejection control. The7 focused tests pass7.388s; a temporary in-process no-op replacement of the v4 validator produces the expected single failure, proving the first-frame control discriminates missing validation. The final full412 tests pass58.179s. No runtime, schema or fixture changed in this repair; initial remote CI is historical and the revised exact candidate requires new CI and incremental independent PASS.
+
 Damage, persistent counters, complete combat arrangements, current abilities, causes, durations, all-mana/target/mode/X legality, strategy and actual MTGA input are excluded. Current effective values do not imply prediction, complete effect knowledge or execution authority. MP36 remains conditional on its own mechanism/constraint-completeness evidence.
 
 ## Authorized mainline package MP30–MP32 (2026-10-15)

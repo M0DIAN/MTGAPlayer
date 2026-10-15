@@ -191,12 +191,18 @@ class ObservedPTV4Tests(unittest.TestCase):
             lambda s: s['game']['effective_combat_stats'].update(PRIVATE_METADATA='unknown'),
             lambda s: s['visible_objects'].append(dict(obj(s,315),effective_power=99)),
         ):
+            bad = copy.deepcopy(snapshot)
+            mutate(bad['decision_state'])
+            # A first snapshot reaches v4 validation, without the separate
+            # unrevoked-replacement guard masking an invalid numeric contract.
+            consumer = DecisionConsumer(clock_ns=ManualClock())
+            self.assertFalse(consumer.accept_event(bad))
+            self.assertIsNone(consumer.current_view()['decision_state'])
+            # Independently retain the existing fail-closed cache guarantee.
             consumer = DecisionConsumer(clock_ns=ManualClock())
             self.assertTrue(consumer.accept_event(snapshot))
             self.assertEqual(obj(consumer.current_view()['decision_state'],315)['effective_power'],3)
-            bad = copy.deepcopy(snapshot)
             bad['sequence'] = bad['snapshot_ref']['sequence'] = 2
-            mutate(bad['decision_state'])
             self.assertFalse(consumer.accept_event(bad))
             self.assertIsNone(consumer.current_view()['decision_state'])
         crossed = copy.deepcopy(snapshot)
