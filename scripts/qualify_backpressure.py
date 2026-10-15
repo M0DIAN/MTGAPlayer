@@ -29,7 +29,10 @@ def run_case(directory, case, baseline=False):
         options['output_queue_capacity'] = 64
     if case == 'input_overflow':
         options['queue_capacity'] = 64
-    interval = .001 if case in ('output_overflow', 'persistent', 'input_overflow') else .003
+    # Fill larger OS stdout pipes before the unchanged 500ms age lease expires.
+    # Still require an actual emit blocked >=30ms; never infer backpressure
+    # merely from paused controller reads or relax the invalidation assertions.
+    interval = .001 if case in ('age', 'new_event', 'output_overflow', 'persistent', 'input_overflow') else .003
     session = Session(directory, interval, 1000, silence_ms=150 if case == 'silence' else 3000,
         age_ms=500 if case in ('age', 'new_event') else 30000, pause_file=gate,
         event_probes=False, consumer_role='consumer_internal', consumer_options=options)
@@ -80,6 +83,7 @@ def run_case(directory, case, baseline=False):
             'input_overflow': 'input_queue_overflow', 'cancel': 'cancelled'}[case]
         returned = next((r for r in reversed(session.internal) if r['kind'] == 'returned'), None)
         result = {'case': case, 'outcome': 'baseline_reproduced' if baseline else 'verified',
+            'producer_interval_seconds': interval,
             'stdout_read_pause_ms': (before_resume - paused) / 1e6,
             'confirmed_emit_block_ms': (before_resume - blocked_at) / 1e6,
             'internal_invalidated_before_resume': invalid is not None,
