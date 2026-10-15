@@ -190,6 +190,16 @@ The command streams UTF-8 input (up to 2 GiB, one million records and 1 MiB buff
 
 `mtgaplayer.rules_index.lookup_rules(path, arena_ids)` reads exact Arena IDs from the index with immutable/read-only SQLite. Missing IDs stay unresolved; every duplicate ID stays ambiguous, including identical duplicates. Names never disambiguate. Scryfall printing/Oracle IDs, digital flag, layout and separate card faces are preserved; absent fields stay null. No face is selected, no face texts or costs are merged, and `power`/`toughness` remain literal strings. Reference text/keywords/cost are not current effects, effective stats, payment legality or complete rules. Runtime performs no downloads or LLM calls; the repository bundles no card dataset. Default replay/watch and DecisionState/Event v1 remain unchanged.
 
+### MP22 visible-object static-rule context
+
+```powershell
+python -m mtgaplayer replay --format player-log --rules-index "<rules-v1.sqlite>" "<explicit Player.log>"
+```
+
+`--rules-index` implies `--decision-state` for raw replay/dry-run. It adds a separate `static_rule_context` with `schema_version=mtgaplayer.static-rule-context.v1`, full state/request `binding`, `rules_source` version/SHA provenance, one `objects` row per projected visible object, reconciled `counts`, unresolved facts and false execution flags. The Python entry is `mtgaplayer.rule_context.build_static_rule_context(decision_state, index_path)`.
+
+Only already-projected visible `card_id` values supply exact lookups. SelectN instance references, hidden cards, last_valid, names and ambiguous visible-instance identities supply no completion. Rows distinguish resolved static reference, absent ID, catalog ambiguity, missing card ID and visible identity ambiguity. Multi-face data remains separate and `current_face` stays null; static text, costs, keywords and literal P/T never become current effects or legal actions. The sidecar describes its bound snapshot, grants no continuing currentness and must be discarded when that binding changes. Missing/invalid indices yield an unavailable context with empty content and an explicit reason; an otherwise valid raw replay still exits successfully. Invalid state never triggers a catalog query. DecisionState/Event v1, Advisor, default replay/watch and the existing local title catalog are unchanged.
+
 ### MP19 evidence-bounded decision advisor (read-only research)
 
 `mtgaplayer.decision_advisor` assesses existing projections without calling the synthetic harness policy, parsing GRE, querying a database or connecting an executor. The APIs are:

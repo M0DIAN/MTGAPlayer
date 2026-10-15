@@ -99,7 +99,12 @@ def _project_decision_state(reducer, document, combat, retain_rows):
 
 def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
-           choice_graph=False, combat_frontier=False, decision_state=False):
+           choice_graph=False, combat_frontier=False, decision_state=False,
+           rules_index_path=None):
+    if rules_index_path is not None:
+        if format != 'player-log':
+            raise ValueError('rules_index_requires_player_log_format')
+        decision_state = True
     if decision_state and format != 'player-log':
         raise ValueError('decision_state_requires_player_log_format')
     if combat_frontier and not decision_input:
@@ -138,6 +143,10 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
         if decision_state:
             _project_decision_state(reducer, document, combat, action_frontier)
+        if rules_index_path is not None:
+            from .rule_context import build_static_rule_context
+            document['static_rule_context'] = build_static_rule_context(
+                document['decision_state'], rules_index_path)
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
@@ -393,6 +402,8 @@ def main(argv=None):
         replay_parser.add_argument('--format', choices=['normalized', 'player-log'], default='normalized')
         replay_parser.add_argument('--card-db', type=Path,
                                    help='opt-in local read-only MTGA card SQLite (raw replay only)')
+        replay_parser.add_argument('--rules-index', type=Path,
+                                   help='opt-in static reference sidecar; implies --decision-state (player-log only)')
         replay_parser.add_argument('--decision-input', action='store_true',
                                    help='MP13 read-only, own-request-bound observation (player-log only)')
         replay_parser.add_argument('--action-gaps', action='store_true',
@@ -499,7 +510,7 @@ def main(argv=None):
                             action_gaps=args.action_gaps,
                             action_frontier=args.action_frontier,
                             choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
-                            decision_state=args.decision_state)
+                            decision_state=args.decision_state, rules_index_path=args.rules_index)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
