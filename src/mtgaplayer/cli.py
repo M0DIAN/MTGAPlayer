@@ -64,7 +64,7 @@ def _observe_combat(reducer):
     return observer
 
 
-def _project_decision_state(reducer, document, combat, retain_rows):
+def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     """Stage children from this document only; never poll or advance the reducer."""
     from .decision_input import build_decision_input
     from .decision_state import build_decision_state
@@ -82,7 +82,8 @@ def _project_decision_state(reducer, document, combat, retain_rows):
         _project_choice_graph(staged)
     elif typ in ('GREMessageType_DeclareAttackersReq', 'GREMessageType_DeclareBlockersReq'):
         staged['combat_frontier'] = combat.project(reducer, staged)
-    document['decision_state'] = build_decision_state(staged)
+    document['decision_state'] = build_decision_state(staged, version=version)
+    document['current'].pop('_turn_context', None)
     if interrupted and document['decision_state'] is not None:
         document['decision_state']['unresolved'].append('current_request_continuity_unverified')
         document['decision_state']['unresolved'].sort()
@@ -100,7 +101,10 @@ def _project_decision_state(reducer, document, combat, retain_rows):
 def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
            choice_graph=False, combat_frontier=False, decision_state=False,
-           rules_index_path=None, advice_policy=None):
+           rules_index_path=None, advice_policy=None, decision_state_version=1):
+    from .decision_state import state_schema_version
+    state_schema_version(decision_state_version)
+    decision_state = decision_state or decision_state_version == 2
     if advice_policy is not None:
         if format != 'player-log':
             raise ValueError('advice_requires_player_log_format')
@@ -146,7 +150,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
         if decision_state:
-            _project_decision_state(reducer, document, combat, action_frontier)
+            _project_decision_state(reducer, document, combat, action_frontier, decision_state_version)
         if rules_index_path is not None:
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
@@ -196,8 +200,11 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
           choice_graph=False, combat_frontier=False, decision_state=False,
-          _poll_observer=None, _clock_ns=None):
+          _poll_observer=None, _clock_ns=None, decision_state_version=1):
     """Finite read-only observations. Each yielded sample is a standalone document."""
+    from .decision_state import state_schema_version
+    state_schema_version(decision_state_version)
+    decision_state = decision_state or decision_state_version == 2
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
     if action_gaps and not decision_input:
@@ -319,7 +326,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         if decision_state:
             if _poll_observer is not None:
                 assembly_start = clock()
-            _project_decision_state(reducer, document, combat, action_frontier)
+            _project_decision_state(reducer, document, combat, action_frontier, decision_state_version)
             if _poll_observer is not None:
                 assembly_ns = clock() - assembly_start
         if decision_input:
@@ -347,7 +354,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
 
 
 def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
-                          max_observation_age_ns=None, clock_ns=None, session_id=None):
+                          max_observation_age_ns=None, clock_ns=None, session_id=None, decision_state_version=1):
     """Iterate poll-level DecisionEvent JSON objects; source is read only once.
 
     EOF/consumer abandonment also ends the subscription; consumers must discard
@@ -359,7 +366,7 @@ def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 *
             not math.isfinite(interval) or not 0 <= interval <= 60 or
             type(max_history_bytes) is not int or not 1 <= max_history_bytes <= 1024 * 1024 * 1024):
         raise ValueError('invalid_decision_event_watch_bounds')
-    publisher = DecisionPublisher(max_observation_age_ns, clock_ns, session_id)
+    publisher = DecisionPublisher(max_observation_age_ns, clock_ns, session_id, state_version=decision_state_version)
     metadata = None
     def observed(facts):
         nonlocal metadata
@@ -367,7 +374,8 @@ def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 *
     reason = 'sample_limit'
     try:
         for document in watch(path, interval, samples, max_history_bytes, decision_state=True,
-                              _poll_observer=observed, _clock_ns=publisher.clock_ns):
+                              _poll_observer=observed, _clock_ns=publisher.clock_ns,
+                              decision_state_version=decision_state_version):
             yield from publisher.observe(document, metadata)
     except KeyboardInterrupt:
         reason = 'user_interrupt'
@@ -429,6 +437,8 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2), default=1,
+                                   help='explicit v2 adds observed turn context and implies DecisionState')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -446,6 +456,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2), default=1,
+                              help='State/Event version; default1, explicit2 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent v1 JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
@@ -543,8 +555,9 @@ def main(argv=None):
                             action_frontier=args.action_frontier,
                             choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
                             decision_state=args.decision_state, rules_index_path=args.rules_index,
-                            advice_policy=advice_policy)
-            code = 0 if result['current']['valid'] else 1
+                            advice_policy=advice_policy, decision_state_version=args.decision_state_version)
+            code = 0 if result['current']['valid'] and (
+                args.decision_state_version != 2 or result.get('decision_state') is not None) else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
     elif args.command == 'watch':
@@ -552,7 +565,8 @@ def main(argv=None):
             limit = (round(args.max_observation_age_ms * 1_000_000)
                      if args.max_observation_age_ms is not None else None)
             events = watch_decision_events(args.input, args.interval, args.samples,
-                                           args.max_history_bytes, limit)
+                                           args.max_history_bytes, limit,
+                                           decision_state_version=args.decision_state_version)
             reason = None
             try:
                 for result in events:
@@ -578,7 +592,7 @@ def main(argv=None):
                                 action_gaps=args.action_gaps,
                                 action_frontier=args.action_frontier,
                                 choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
-                                decision_state=args.decision_state):
+                                decision_state=args.decision_state, decision_state_version=args.decision_state_version):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:

@@ -1016,5 +1016,10 @@ class RawReducer:
         current = self._current(include_frontier_rows, include_decision_state) if self.error is None and self.version is not None else {
             'valid': False, 'match': self.match, 'game': self.game,
             'self_seat': self.seat, 'game_state_id': self.version, 'actionable': False}
+        if include_decision_state and current['valid']:
+            # Private assembly facts; legacy raw/DecisionInput turn is unchanged.
+            # The v2 assembler validates these and the CLI removes the staging.
+            current['_turn_context'] = {key: copy.deepcopy(self.turn.get(key))
+                                       for key in ('phase', 'step', 'priorityPlayer')}
         return {'current': current, 'last_valid': copy.deepcopy(self.last_valid),
                 'first_error': copy.deepcopy(self.first_error), 'error': self.error}

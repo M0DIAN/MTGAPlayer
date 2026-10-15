@@ -14,8 +14,8 @@ import threading
 import time
 from collections import deque
 
-from .decision_publisher import EVENT_VERSION, IDENTITY, MAX_AGE_NS, STOP_REASONS
-from .decision_state import FLAGS, KINDS, SCHEMA_VERSION, _bound_readonly
+from .decision_publisher import EVENT_STATE_VERSIONS, IDENTITY, MAX_AGE_NS, STOP_REASONS
+from .decision_state import FLAGS, KINDS, SCHEMA_VERSIONS, _bound_readonly
 
 MAX_LINE_BYTES = 2 * 1024 * 1024
 MAX_ID = 9_007_199_254_740_991
@@ -115,7 +115,7 @@ def _state(value, binding):
     _keys(value, ('schema_version', 'status', 'binding', 'source', 'game',
         'visible_objects', 'card_knowledge', 'effect_claims', 'legal_action_space',
         'unresolved', 'execution', 'read_only'))
-    _require(value['schema_version'] == SCHEMA_VERSION and value['status'] in STATUSES)
+    _require(value['schema_version'] in SCHEMA_VERSIONS.values() and value['status'] in STATUSES)
     _binding(value['binding'], complete=True)
     _require(value['binding'] == binding and value['read_only'] is True and value['execution'] == EXECUTION)
     source = value['source']
@@ -132,9 +132,17 @@ def _state(value, binding):
         'hidden_counts', 'mana', 'effective_combat_stats', 'rules'))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
-    _keys(game['turn'], ('turnNumber', 'activePlayer', 'decisionPlayer'))
-    for number in game['turn'].values():
+    turn = game['turn']
+    extended = value['schema_version'] == SCHEMA_VERSIONS[2]
+    _keys(turn, ('turnNumber', 'activePlayer', 'decisionPlayer') +
+          (('phase', 'step', 'priorityPlayer') if extended else ()))
+    for number in (turn[k] for k in ('turnNumber', 'activePlayer', 'decisionPlayer')):
         _integer(number, -MAX_ID, nullable=True)
+    if extended:
+        _integer(turn['priorityPlayer'], 1, 2, nullable=True)
+        for key, prefix in (('phase', 'Phase_'), ('step', 'Step_')):
+            _require(turn[key] is None or type(turn[key]) is str and
+                     re.fullmatch(prefix + r'[A-Za-z0-9_]{1,80}', turn[key]) is not None)
     _list(game['players'], 2)
     for player in game['players']:
         _keys(player, ('seat', 'life'))
@@ -291,7 +299,7 @@ def _validate(event):
     _require(type(event) is dict and type(event.get('event_type')) is str and event['event_type'] in EXTRAS)
     kind = event['event_type']
     _keys(event, COMMON + EXTRAS[kind])
-    _require(event['schema_version'] == EVENT_VERSION)
+    _require(event['schema_version'] in EVENT_STATE_VERSIONS)
     _session(event['session_id'])
     _integer(event['sequence'], 1)
     _binding(event['binding'])
@@ -312,6 +320,8 @@ def _validate(event):
                      minimum=1 if key == 'observation_age_limit_ns' else 0,
                      nullable=key not in ('published_ns', 'event_publication_ns'))
     if kind == 'snapshot':
+        _require(type(event['decision_state']) is dict and event['decision_state'].get('schema_version') ==
+                 EVENT_STATE_VERSIONS[event['schema_version']])
         _reference(event['snapshot_ref'], event['session_id'], event['sequence'], snapshot=True)
         _state(event['decision_state'], event['binding'])
         _require(event['snapshot_ref']['binding'] == event['binding'] and
@@ -356,6 +366,7 @@ class DecisionConsumer:
         self._last_clock = None
         self._silence_limit, self._age_limit = max_event_silence_ns, max_observation_age_ns
         self._session = None
+        self._event_version = None
         self._sequence = 0
         self._ref = self._state = None
         self._last_event = self._snapshot_received = None
@@ -409,6 +420,7 @@ class DecisionConsumer:
             _integer(received, maximum=2**64 - 1)
             _require(received <= now and (self._last_event is None or received >= self._last_event))
             _validate(event)
+            _require(self._event_version in (None, event['schema_version']))
             if event['sequence'] != self._sequence + 1 or self._session not in (None, event['session_id']):
                 raise ValueError('session_or_sequence_mismatch')
             kind = event['event_type']
@@ -439,6 +451,7 @@ class DecisionConsumer:
                 self._stopped = True
                 self._clear('CLOSED', event['reason'])
             self._session, self._sequence, self._last_event = event['session_id'], event['sequence'], received
+            self._event_version = event['schema_version']
             self._tick(now)
             return True
         except (ValueError, TypeError, KeyError, RecursionError, UnicodeError):

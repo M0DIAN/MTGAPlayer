@@ -1,10 +1,12 @@
 """Pure assembly of one projected GRE snapshot; no reader or input authority."""
 import copy
+import re
 from typing import TypedDict
 
 from .decision_input import build_decision_input, _catalog, _id
 
 SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
+SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2'}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
     'response_encoding_verified', 'server_acceptance_verified', 'execution_ready', 'input_sent')}
 IDENTITY_FIELDS = ('generation', 'match', 'game', 'self_seat', 'game_state_id', 'request_id')
@@ -27,6 +29,12 @@ class DecisionState(TypedDict):
     unresolved: list[str]
     execution: dict
     read_only: bool
+
+
+def state_schema_version(version):
+    if type(version) is not int or version not in SCHEMA_VERSIONS:
+        raise ValueError('unsupported_decision_state_version')
+    return SCHEMA_VERSIONS[version]
 
 
 def _same_identity(value, identity):
@@ -57,7 +65,7 @@ def _bound_readonly(value, identity, request_type):
     return True
 
 
-def build_decision_state(document):
+def build_decision_state(document, *, version=1):
     """Consume only current visible state and child projections of that snapshot.
 
     CLI stages children on a private copy before consuming action row metadata.
@@ -66,6 +74,7 @@ def build_decision_state(document):
     Request continuity requires the opt-in RawReducer document fact; legacy
     public documents without it can supply visible state but no current choices.
     """
+    schema_version = state_schema_version(version)
     if not isinstance(document, dict):
         return None
     current, source = document.get('current'), document.get('source')
@@ -135,6 +144,19 @@ def build_decision_state(document):
                          ('turnNumber', 'activePlayer', 'decisionPlayer')},
         'players': [{'seat': p['seat'], 'life': p.get('life') if type(p.get('life')) is int else None} for p in players],
         'hidden_counts': hidden, 'mana': None, 'effective_combat_stats': None, 'rules': None})
+    if version == 2:
+        context = current.get('_turn_context')
+        if not isinstance(context, dict) or set(context) != {'phase', 'step', 'priorityPlayer'}:
+            return None
+        for key, prefix in (('phase', 'Phase_'), ('step', 'Step_')):
+            value = context[key]
+            if value is not None and (type(value) is not str or
+                    re.fullmatch(prefix + r'[A-Za-z0-9_]{1,80}', value) is None):
+                return None
+        priority = context['priorityPlayer']
+        if priority is not None and (type(priority) is not int or priority not in (1, 2)):
+            return None
+        game['turn'].update(context)
     kind = KINDS.get(request_type)
     projection, graph, availability, completeness = None, None, 'not_provided', 'unknown'
     unresolved = ['effective_stats_unknown', 'effects_not_observed', 'mana_payment_unknown',
@@ -188,7 +210,7 @@ def build_decision_state(document):
             unresolved.append('current_frontier_unavailable_or_mismatched')
     binding = {'source_generation': identity['generation'], **{k: identity[k] for k in IDENTITY_FIELDS if k != 'generation'},
                'request_type': request_type}
-    result = {'schema_version': SCHEMA_VERSION,
+    result = {'schema_version': schema_version,
         'status': 'state_and_request_observed' if request is not None else 'state_observed_without_request',
         'binding': binding, 'source': {'format': source['format'], 'mode': source['mode'],
             'byte_offset': source.get('byte_offset') if _id(source.get('byte_offset')) else None,
