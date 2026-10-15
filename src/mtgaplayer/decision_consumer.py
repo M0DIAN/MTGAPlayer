@@ -589,7 +589,7 @@ class _DiagnosticOutput:
 
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
-                   prepared_rules=None, rules_error=None):
+                   prepared_rules=None, rules_error=None, observed_changes=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -617,6 +617,13 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 prepared_rules is not None and rules_error is not None):
             raise ValueError('invalid_prepared_rules_configuration')
     consumer = consumer if consumer is not None else DecisionConsumer()
+    if type(observed_changes) is not bool:
+        raise ValueError('invalid_observed_changes_option')
+    changes_observer = None
+    if observed_changes:
+        from .observed_changes import ObservedChanges
+        changes_observer = ObservedChanges(consumer)
+    pending_event = None
     inbox, overflow, done = queue.Queue(queue_capacity), threading.Event(), threading.Event()
 
     def lines():
@@ -672,12 +679,18 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     result = 1
 
     def diagnostic():
+        nonlocal pending_event
         if advice_policy is not None:
             advice = assess_current_decision(consumer, policy_version=advice_policy)
         if rules_enabled:
             context = assess_current_rule_context(consumer, prepared_rules, rules_error=rules_error)
+        if changes_observer is not None:
+            changes = changes_observer.observe(pending_event)
+            pending_event = None
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
+        if changes_observer is not None:
+            sidecars.append(changes)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -687,6 +700,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 advice = assess_current_decision(consumer, policy_version=advice_policy)
             if rules_enabled:
                 context = assess_current_rule_context(consumer, prepared_rules, rules_error=rules_error)
+            if changes_observer is not None:
+                changes = changes_observer.observe()
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -695,6 +710,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['decision_advice'] = advice
         if rules_enabled:
             value['current_rule_context'] = context
+        if changes_observer is not None:
+            value['observed_changes'] = changes
         return value
 
     try:
@@ -719,7 +736,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                         except (ValueError, UnicodeError, RecursionError):
                             consumer._clear('PROTOCOL_ERROR', 'invalid_json_line')
                         else:
-                            consumer.accept_event(event, received_ns=received)
+                            accepted = consumer.accept_event(event, received_ns=received)
+                            pending_event = (event['event_type'], event.get('reason')) if accepted else None
             value = diagnostic()
             if value['consumer_status'] in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
                 result = 0 if consumer._stopped and value['unresolved'] != ['source_error'] else 1
@@ -740,6 +758,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         done.set()
         if consumer._status not in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
             consumer._clear('CLOSED', 'subscription_ended')
+        if changes_observer is not None:
+            changes_observer.clear('subscription_ended')
         drained = output.close(output_grace_seconds)
     # A failure during normal terminal drain must never report success.
     if output.failure is not None:
