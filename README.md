@@ -127,6 +127,21 @@ python scripts/inspect_actions.py "<Player.log>" --choice-graph-history
 
 The last command is a **count-only** offline historical probe behind the existing exact own-request/client-response type, ID, state and reducer-consumption gate. The local Python API `inspect_historical_choice_graphs(path)` returns bound historical source graphs when an explicitly chosen log is suitable; it includes request/action identities and should stay local. A uniquely correlated submitted action may receive an observed successor only after a later accepted state and a whitelisted own request in the same generation, match, game and seat. Supported SelectN successors expose only their own offered count and raw `maxSel`, with minimum and legal combinations unknown. Each graph records whether a successor was observed, absent, discontinuous, unsupported in ordering, or could not be linked to an action. Temporal adjacency does not prove the action caused the next request or that the server accepted a legal choice. All graph and node execution flags remain false.
 
+### MP18 opt-in unified DecisionState v1
+
+`--decision-state` assembles a single read-only snapshot, using the existing GRE reducer and projections. It works alone; the independent `--decision-input`, `--action-frontier`, `--choice-graph` and `--combat-frontier` options retain their existing dependency checks and opt-in output. Examples using committed sanitized fixtures:
+
+```powershell
+python -m mtgaplayer replay --format player-log --decision-state tests/fixtures/player_log_selectn.jsonl
+python -m mtgaplayer watch --decision-state --samples 1 tests/fixtures/player_log_minimal.jsonl
+```
+
+The additional `decision_state` property uses `schema_version=mtgaplayer.decision-state.v1`; its independent [Draft 2020-12 JSON Schema](schemas/decision-state.v1.schema.json) also accepts null for invalid, discontinuous or partial current sources. A valid state without a current own request still exposes verified visible state, with null request identity and an unknown/not_provided action space. It never substitutes last_valid or an empty legal-action domain. `binding.source_generation` corresponds to the existing child projections' `request_identity.generation`; all other identity fields must agree with the same current snapshot.
+
+Only the current request's ActionsAvailable frontier/ChoiceGraph, SelectN observation or CombatFrontier participates. `confirmed_empty` means an explicitly observed empty offered container, with completeness still partial; missing/unavailable/unsupported data remains null and unknown. Expanded plans remain unknown. SelectN IDs are request references, not visibility joins. Combat recipients remain count-only and missing blocker relationships remain unknown. No historical response validation becomes a current verified choice.
+
+Replay's optional `--card-db` enrichment contributes static knowledge for already visible objects only. Effective power/toughness and effect_claims remain null; static P/T is not effective P/T. All six legality/encoding/acceptance/execution/input flags are false, read_only is true, and source freshness is unverified even for watch. No new log reader, parser, rule graph, effect engine, runtime dependency, IPC or input path is added. Default output is unchanged. A private continuity bit in the existing reducer request distinguishes uninterrupted requests from requests retained for legacy diagnostics after Full recovery; DecisionState excludes the latter until a fresh request, without altering the legacy read-only diagnostics or adding a second lifecycle ledger.
+
 ### MP17 opt-in strict combat references (read-only)
 
 `replay`/`dry-run --format player-log --decision-input --combat-frontier` and finite `watch --decision-input --combat-frontier` optionally project the latest authenticated combat request snapshot. DeclareAttackers reads only `qualifiedAttackers[].attackerInstanceId`; DeclareBlockers reads `blockers[].blockerInstanceId` and its explicit `attackerInstanceIds` relationships. Only references uniquely matching the existing public battlefield projection are exposed. Missing/invalid/duplicate/truncated data remains unresolved; unqualified aliases, historical flags and default recipients never fill a gap. Default output is unchanged.

@@ -577,6 +577,8 @@ class RawReducer:
         self.unsupported_broadcast_requests = 0
 
     def _invalidate(self, reason):
+        if self.request:
+            self.request['_continuity_verified'] = False
         if self.observer is not None:
             self._observe('continuity_error', reason=reason)
         if reason in ('room_seat_conflict', 'gre_recipient_or_self_seat_unverified',
@@ -758,6 +760,9 @@ class RawReducer:
                     self.superseded.add(self.request['id'])
                     self._request_ended('superseded')
                 self.request = {'id': msg_id, 'type': message['type'],
+                                '_continuity_verified': prior is None or bool(self.request and
+                                    self.request['id'] == msg_id and
+                                    self.request.get('_continuity_verified') is True),
                                 'game_state_id': state_id, 'current': True,
                                 'binding': {'generation': self.generation,
                                             'match': self.match, 'game': self.game,
@@ -942,7 +947,7 @@ class RawReducer:
             self._observe('state_accepted', kind='full' if full else 'diff',
                           baseline=baseline)
 
-    def _current(self, include_frontier_rows=False):
+    def _current(self, include_frontier_rows=False, include_decision_state=False):
         visible, hidden = [], {}
         for zone in self.zones.values():
             kind = zone.get('type')
@@ -972,6 +977,8 @@ class RawReducer:
                     label = f'{owner if owner in (1, 2) else "unknown"}:{kind}'
                     hidden[label] = hidden.get(label, 0) + 1
         request = copy.deepcopy(self.request)
+        if request and not include_decision_state:
+            request.pop('_continuity_verified', None)
         if request and isinstance(request.get('action_inventory'), dict):
             inventory = request['action_inventory']
             if include_frontier_rows:
@@ -1001,8 +1008,8 @@ class RawReducer:
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}
 
-    def document(self, include_frontier_rows=False):
-        current = self._current(include_frontier_rows) if self.error is None and self.version is not None else {
+    def document(self, include_frontier_rows=False, include_decision_state=False):
+        current = self._current(include_frontier_rows, include_decision_state) if self.error is None and self.version is not None else {
             'valid': False, 'match': self.match, 'game': self.game,
             'self_seat': self.seat, 'game_state_id': self.version, 'actionable': False}
         return {'current': current, 'last_valid': copy.deepcopy(self.last_valid),

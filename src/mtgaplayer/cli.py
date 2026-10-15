@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import math
 import os
@@ -42,9 +43,44 @@ def _observe_combat(reducer):
     return observer
 
 
+def _project_decision_state(reducer, document, combat, retain_rows):
+    """Stage children from this document only; never poll or advance the reducer."""
+    from .decision_input import build_decision_input
+    from .decision_state import build_decision_state
+    staged = {'current': copy.deepcopy(document['current']),
+              'source': copy.deepcopy(document['source']), 'error': document.get('error')}
+    request = staged['current'].get('request')
+    interrupted = isinstance(request, dict) and request.get('_continuity_verified') is False
+    if interrupted:
+        staged['current']['request'] = None
+    staged['decision_input'] = build_decision_input(staged)
+    request = staged['current'].get('request')
+    typ = request.get('type') if isinstance(request, dict) else None
+    if typ == 'GREMessageType_ActionsAvailableReq':
+        _project_action_frontier(staged)
+        _project_choice_graph(staged)
+    elif typ in ('GREMessageType_DeclareAttackersReq', 'GREMessageType_DeclareBlockersReq'):
+        staged['combat_frontier'] = combat.project(reducer, staged)
+    document['decision_state'] = build_decision_state(staged)
+    if interrupted and document['decision_state'] is not None:
+        document['decision_state']['unresolved'].append('current_request_continuity_unverified')
+        document['decision_state']['unresolved'].sort()
+    request = document['current'].get('request')
+    if isinstance(request, dict):
+        request.pop('_continuity_verified', None)
+    if not retain_rows:
+        request = document['current'].get('request')
+        inventory = request.get('action_inventory') if isinstance(request, dict) else None
+        if isinstance(inventory, dict):
+            inventory.pop('_frontier_rows', None)
+            inventory.pop('_frontier_request_identity', None)
+
+
 def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
-           choice_graph=False, combat_frontier=False):
+           choice_graph=False, combat_frontier=False, decision_state=False):
+    if decision_state and format != 'player-log':
+        raise ValueError('decision_state_requires_player_log_format')
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
     if action_gaps and not decision_input:
@@ -59,13 +95,14 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         raise ValueError('decision_input_requires_player_log_format')
     if format == 'player-log':
         follower, reducer = RawFollower(path), RawReducer()
-        combat = _observe_combat(reducer) if combat_frontier else None
+        combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         reset, records = follower.poll()
         if reset:
             reducer.reset(follower.generation)
         for record in records:
             reducer.apply(record)
-        document = reducer.document(include_frontier_rows=action_frontier)
+        document = reducer.document(include_frontier_rows=action_frontier or decision_state,
+                                    include_decision_state=decision_state)
         if follower.framer.partial:
             document['current'] = {k: document['current'].get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
@@ -78,6 +115,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
+        if decision_state:
+            _project_decision_state(reducer, document, combat, action_frontier)
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
@@ -89,7 +128,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                 _project_action_frontier(document)
             if choice_graph:
                 _project_choice_graph(document)
-            if combat is not None:
+            if combat_frontier:
                 document['combat_frontier'] = combat.project(reducer, document)
         return document
     follower, reducer = Follower(path), Reducer()
@@ -118,7 +157,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
-          choice_graph=False, combat_frontier=False):
+          choice_graph=False, combat_frontier=False, decision_state=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
@@ -129,7 +168,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     if choice_graph and not action_frontier:
         raise ValueError('choice_graph_requires_action_frontier')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
-    combat = _observe_combat(reducer) if combat_frontier else None
+    combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
     seen_requests = set()
@@ -165,7 +204,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                             for message in messages):
                         newly_accepted.add(identity)
                     seen_requests.add(identity)
-        document = reducer.document(include_frontier_rows=action_frontier)
+        document = reducer.document(include_frontier_rows=action_frontier or decision_state,
+                                    include_decision_state=decision_state)
         reduced_current = document['current']
         if follower.framer.partial:
             document['current'] = {k: reduced_current.get(k) for k in
@@ -190,6 +230,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                               'candidate_event': candidate_event, 'input_sent': False,
                               'executor_connected': False, 'stopped': index + 1 == samples,
                               'stop_reason': 'sample_limit' if index + 1 == samples else None}
+        if decision_state:
+            _project_decision_state(reducer, document, combat, action_frontier)
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
@@ -201,7 +243,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                 _project_action_frontier(document)
             if choice_graph:
                 _project_choice_graph(document)
-            if combat is not None:
+            if combat_frontier:
                 document['combat_frontier'] = combat.project(reducer, document)
         yield document
         if index + 1 < samples:
@@ -252,6 +294,8 @@ def main(argv=None):
                                    help='read-only MP16 observed complex constraints; needs --action-frontier')
         replay_parser.add_argument('--combat-frontier', action='store_true',
                                    help='read-only strict combat references; needs --decision-input')
+        replay_parser.add_argument('--decision-state', action='store_true',
+                                   help='unified read-only DecisionState v1 (player-log only)')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -267,6 +311,8 @@ def main(argv=None):
                               help='read-only MP16 observed complex constraints; needs --action-frontier')
     watch_parser.add_argument('--combat-frontier', action='store_true',
                               help='read-only strict combat references; needs --decision-input')
+    watch_parser.add_argument('--decision-state', action='store_true',
+                              help='unified read-only DecisionState v1')
     performance = sub.add_parser('performance-baseline',
                                  help='opt-in read-only 600..900s pipeline timing; final safe aggregate only')
     performance.add_argument('input', type=Path)
@@ -307,7 +353,8 @@ def main(argv=None):
                             args.card_db, decision_input=args.decision_input,
                             action_gaps=args.action_gaps,
                             action_frontier=args.action_frontier,
-                            choice_graph=args.choice_graph, combat_frontier=args.combat_frontier)
+                            choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
+                            decision_state=args.decision_state)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
@@ -317,7 +364,8 @@ def main(argv=None):
                                 args.max_history_bytes, decision_input=args.decision_input,
                                 action_gaps=args.action_gaps,
                                 action_frontier=args.action_frontier,
-                                choice_graph=args.choice_graph, combat_frontier=args.combat_frontier):
+                                choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
+                                decision_state=args.decision_state):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:
