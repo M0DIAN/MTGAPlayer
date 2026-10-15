@@ -467,6 +467,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
+    consumer_parser.add_argument('--observed-changes', action='store_true',
+        help='snapshot-bound visible endpoint changes; no effects or event-history claims')
     consumer_parser.add_argument('--rules-index', type=Path,
         help='explicit offline rules index prepared once before consumption; static reference only')
     consumer_parser.add_argument('--advice', action='store_true',
@@ -546,7 +548,8 @@ def main(argv=None):
         consumer = DecisionConsumer(*(round(v * 1_000_000) for v in limits))
         return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic,
                               consumer, advice_policy=advice_policy,
-                              prepared_rules=prepared, rules_error=rules_error)
+                              prepared_rules=prepared, rules_error=rules_error,
+                              observed_changes=args.observed_changes)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,

@@ -226,6 +226,19 @@ Invalidation, lease expiry, source stop, malformed stream, EOF and subscription 
 
 Only already-projected visible `card_id` values supply exact lookups. SelectN instance references, hidden cards, last_valid, names and ambiguous visible-instance identities supply no completion. Rows distinguish resolved static reference, absent ID, catalog ambiguity, missing card ID and visible identity ambiguity. Multi-face data remains separate and `current_face` stays null; static text, costs, keywords and literal P/T never become current effects or legal actions. The sidecar describes its bound snapshot, grants no continuing currentness and must be discarded when that binding changes. Missing/invalid indices yield an unavailable context with empty content and an explicit reason; an otherwise valid raw replay still exits successfully. Invalid state never triggers a catalog query. DecisionState/Event v1, Advisor, default replay/watch and the existing local title catalog are unchanged.
 
+### Visible snapshot endpoint changes
+
+```powershell
+python -m mtgaplayer consume-events --observed-changes
+python -m mtgaplayer consume-events --observed-changes --advice --rules-index "<rules-v1.sqlite>"
+```
+
+This opt-in adds `observed_changes` (`mtgaplayer.observed-changes.v1`) to the existing owner-thread diagnostics; Python callers use `consume_events(..., observed_changes=True)`. Default output is unchanged and both Event/State version pairs work. It retains at most one validated comparison baseline and accepts only an existing Consumer's accepted `state_advanced` invalidation immediately followed by a valid append snapshot. A tick/liveness gap while invalidated discards that baseline conservatively. Other invalidations, reset/recovery, identity breaks, partial/malformed source, expiry, EOF and stop clear it. No second reducer, Consumer, lifecycle ledger, timer or worker is introduced.
+
+Results are `baseline_observed`, `endpoints_compared` or `unavailable`. Full before/after snapshot refs bind successful comparisons; `source_snapshot_ref` is the after ref. Counts reconcile to change entries. Fields include known public player life and same-instance/same-known-card zone, tapped and controller values. Missing/ambiguous identity or unknown endpoints are not compared. Entering/leaving only means membership in the visible projection; a left instance ID is a previously published reference, not an assertion about its later hidden destination. Static rules and hidden/request-only references never enrich these facts.
+
+These are two published endpoints, not a complete GRE event sequence, damage/death/draw/resolution proof or a cause/effect model. No tracked differences does not prove the game was unchanged. The existing 512-object input bounds limit rows; at most1MiB of encoded change-row JSON is returned, otherwise the entire result is unavailable without partial entries (not a heap/total-diagnostic bound). A final current-ref/lease check after all sidecars clears comparisons and earlier advice when computation crosses expiry. Output backpressure does not stop clearing; in-flight bytes remain irrevocable and external readers must revoke on invalidation/ref change/termination/EOF. All execution flags and new_live_opportunity stay false.
+
 ### MP23 Advisor CLI delivery
 
 Enable read-only evidence assessment on the existing event pipeline:
