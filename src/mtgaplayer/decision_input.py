@@ -75,6 +75,10 @@ def _observed_actions(inventory, visible_counts):
         row = {
             "list_position": position, "engine_action_type": action_type,
             "source_link_status": source_status,
+            "source_card_identity_agreement": (
+                link.get('raw_group_equals_visible_card_id')
+                if isinstance(link, dict) and source_status == 'visible_unique' and
+                type(link.get('raw_group_equals_visible_card_id')) is bool else None),
             "raw_action_details_complete": False,
             "legal_action_verified": False, "executable": False,
         }
@@ -90,6 +94,10 @@ def _observed_actions(inventory, visible_counts):
     described.sort(key=lambda row: row["list_position"])
     return {
         "offered_count": offered,
+        "unknown_request_fields_present": (any(inventory[k] for k in
+            ('other_payload_fields_present', 'other_message_fields_present')) if all(
+            type(inventory.get(k)) is bool for k in
+            ('other_payload_fields_present', 'other_message_fields_present')) else None),
         "described_count": len(described),
         "undetailed_count": offered - len(described),
         "type_counts": copy.deepcopy(inventory.get("types", [])),

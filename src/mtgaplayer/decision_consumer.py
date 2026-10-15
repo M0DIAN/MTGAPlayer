@@ -247,6 +247,8 @@ def _projection(value, kind, availability):
                  value['source_ids_not_visibility_joined'] is True)
         rows = value['offered_instance_ids']
     elif kind == 'actions_available':
+        _require(value.get('unknown_request_fields_present') is None or
+                 type(value['unknown_request_fields_present']) is bool)
         _keys(value, ('schema', 'request_identity', 'templates', 'immediate_completeness',
             'expanded_choice_completeness', 'read_only', 'actionable', 'input_sent'), tuple(value))
         _require(value['schema'] == 'mtga-action-frontier-v1' and
@@ -256,6 +258,8 @@ def _projection(value, kind, availability):
         if rows is not None:
             _list(rows, 256)
             for row in rows:
+                _require(row.get('source_card_identity_agreement') is None or
+                         type(row['source_card_identity_agreement']) is bool)
                 _keys(row, ('action_key', 'request_identity', 'list_position', 'engine_action_type',
                     'engine_offered', 'observed_parameter_shapes', 'unresolved_parameters',
                     'legal_choice_verified', 'response_encoding_verified', 'execution_ready',

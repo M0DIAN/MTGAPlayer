@@ -330,6 +330,8 @@ def _available_action_inventory(message):
                 '_frontier_rows': frontier_rows,
                 'remaining_action_details_unverified': len(actions) - len(simple),
                 'other_payload_fields_present': bool(set(payload) - {'actions', 'inactiveActions'}),
+                'other_message_fields_present': bool(set(message) - {
+                    'type', 'systemSeatIds', 'msgId', 'gameStateId', 'actionsAvailableReq'}),
                 'semantics_complete': False, 'legal_actions_complete': False,
                 'executable': False, 'read_only': True}}
 

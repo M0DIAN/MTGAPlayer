@@ -160,19 +160,22 @@ def _classify_actions(rows, binding):
             'engine_action_type': row['engine_action_type'], 'engine_offered': True,
             'structurally_interpreted': row['structurally_interpreted'],
             'source_link_status': row['source_link_status'],
+            'source_card_identity_agreement': row.get('source_card_identity_agreement'),
             'unresolved_parameters': list(row['unresolved_parameters']),
             'evidence_quality': evidence, 'highest_evidence_level': 'LA2' if row['structurally_interpreted'] else 'LA1',
             'strategic_utility': None, 'read_only': True, 'execution': dict(EXECUTION)})
     return assessed
 
 
-def _preference(rows, policy, current, graph_issue):
+def _preference(rows, policy, current, graph_issue, unknown_request_fields):
     if not current:
         return None, 'historical_research_only'
     if graph_issue:
         return None, graph_issue
     if policy == EVIDENCE_POLICY:
         return None, 'evidence_only_policy'
+    if unknown_request_fields is not False:
+        return None, 'request_fields_not_fully_interpreted'
     if not rows:
         return None, 'no_engine_offered_candidates'
     if any(row['engine_action_type'] not in _SIMPLE for row in rows):
@@ -181,6 +184,8 @@ def _preference(rows, policy, current, graph_issue):
            row['unknown_parameter_fields_present'] or row['observed_parameter_shapes'] for row in rows):
         return None, 'simple_candidate_structure_incomplete'
     plays = [row['list_position'] for row in rows if row['engine_action_type'] == 'ActionType_Play']
+    if any(rows[position].get('source_card_identity_agreement') is not True for position in plays):
+        return None, 'play_source_card_identity_unverified'
     return (plays[0], None) if len(plays) == 1 else (None, 'unique_play_not_observed')
 
 
@@ -277,7 +282,8 @@ def _assess(state, policy, current=False, snapshot=None):
             offered_count=len(rows), assessed_count=len(rows), inventory_integrity_verified=True, completeness='partial')
         if issue:
             result['unresolved'].append(issue)
-        position, reason = _preference(rows, policy, current, issue)
+        position, reason = _preference(rows, policy, current, issue,
+            state['legal_action_space']['immediate_frontier']['projection'].get('unknown_request_fields_present'))
         if position is None:
             return _abstain(result, reason)
         result['assessment_status'] = 'research_preference'
