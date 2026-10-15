@@ -405,6 +405,11 @@ def main(argv=None):
                               help='separate read-only DecisionEvent v1 JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
                               help='consumer observation age limit >0..86400000ms; needs --decision-events; no protocol TTL')
+    consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
+    consumer_parser.add_argument('--max-event-silence-ms', type=float, default=5000,
+                                 help='local transport silence policy >0..86400000ms (default 5000)')
+    consumer_parser.add_argument('--max-observation-age-ms', type=float, default=5000,
+                                 help='local observation age policy >0..86400000ms (default 5000); not server TTL')
     performance = sub.add_parser('performance-baseline',
                                  help='opt-in read-only 600..900s pipeline timing; final safe aggregate only')
     performance.add_argument('input', type=Path)
@@ -448,6 +453,14 @@ def main(argv=None):
     if args.command == 'doctor':
         result = doctor(args.config, args.log)
         code = 0 if result['interpreter_supported'] and result['config']['valid'] else 1
+    elif args.command == 'consume-events':
+        from .decision_consumer import DecisionConsumer, consume_events
+        limits = (args.max_event_silence_ms, args.max_observation_age_ms)
+        if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
+            parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
+        consumer = DecisionConsumer(*(round(v * 1_000_000) for v in limits))
+        return consume_events(getattr(sys.stdin, 'buffer', sys.stdin),
+            lambda value: print(json.dumps(value, ensure_ascii=False), flush=True), consumer)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,

@@ -145,6 +145,25 @@ Time fields use one injectable monotonic nanosecond clock (default perf_counter_
 
 Per-poll timings separate read/framing, reducer apply/loop bookkeeping, DecisionState assembly and event preparation. These four segments do not exhaust poll_to_publish: reducer document projection and source packaging are included in the total only. poll_to_publish ends before JSON encoding/stdout/consumer delivery. These local measurements exclude server-to-log latency, source timestamp age and actual game/decision/input latency. DecisionState freshness_verified remains false, effects/effective P/T remain null, read_only remains true and all six legality/execution flags remain false.
 
+### MP18 local DecisionEvent consumer
+
+`consume-events` reads only DecisionEvent v1 JSONL from stdin. For example, from the repository root with the independent project Python 3.11:
+
+```powershell
+& .\.venv\Scripts\python.exe -m mtgaplayer watch tests\fixtures\player_log_selectn.jsonl --decision-events --samples 5 --interval .001 |
+    & .\.venv\Scripts\python.exe -m mtgaplayer consume-events --max-event-silence-ms 5000 --max-observation-age-ms 5000
+```
+
+The Python API is `DecisionConsumer(max_event_silence_ns=..., max_observation_age_ns=..., clock_ns=...)`, `accept_event(event) -> bool`, `current_view() -> dict`, `tick() -> dict`, and `close(reason='cancelled') -> dict`. Views and cached snapshots are deep copies. The optional `accept_event(..., received_ns=...)` uses the same **consumer-local** clock; the stdin adapter stamps complete lines before queueing so queue/decode delay counts toward leases. No producer timestamp is subtracted from the consumer clock.
+
+Each instance binds one session starting at sequence 1, including an initial liveness without a snapshot. Every subsequent sequence must be consecutive. References include the full generation/match/game/seat/state/request/type binding. A snapshot needs exact event/reference/state identity agreement, and another snapshot requires prior exact invalidation. A mismatched revoke, unknown liveness reference, elevated nested authority, forged completeness, malformed structure or stream ordering error clears the cache and quarantines the instance. The standard-library checks have finite size/depth limits and enforce supported shapes and safety invariants; the existing Draft 2020-12 schemas remain the formal contracts. No runtime schema dependency is added.
+
+Local states are `WAITING`, `OBSERVING`, `INVALIDATED`, `STALE`, `CLOSED` and `PROTOCOL_ERROR`. Only `OBSERVING` has a current DecisionState/reference. Invalidated references cannot be restored by liveness; stale, closed or quarantined instances require a new explicit subscription. A `session_stopped` invalidation permits only the terminal stopped event next. All views remain read-only, non-actionable and disconnected from execution. `new_request_observed` preserves the publisher's observation flag; history snapshots and candidate content grant no new decision opportunity or input authority. `source.freshness_verified` remains false.
+
+Both local lease defaults are five seconds, configurable from 1ns to 24h, with expiration strictly above the limit. They are consumer policy, **not MTGA protocol TTLs**. Liveness updates transport receipt and can increase the reported age; it cannot reduce age or renew the original evidence anchor. Observation age is conservatively the maximum of the existing locally elapsed age and the latest producer-reported age plus local queue delay. This still cannot measure server state age or time spent upstream before local receipt.
+
+A bounded reader queue allows ticks while stdin remains open and silent. Queue overflow terminates with protocol error rather than dropping events. Input exceptions, partial/unterminated JSON lines, cancellation, output disconnect and EOF clear current content. EOF without stopped reports `unexpected_eof` and exit 1; normal stopped exits 0 (producer `source_error` exits 1). Stale/protocol failure exits 1. The CLI emits only consumer status, sequence and safe reason/authority fields, without echoing bindings or private DecisionState content. Output backpressure and OS scheduling can delay observation/ticks; this is a local read-only interface, with no server freshness or three-second end-to-end guarantee.
+
 ### MP18 opt-in unified DecisionState v1
 
 `--decision-state` assembles a single read-only snapshot, using the existing GRE reducer and projections. It works alone; the independent `--decision-input`, `--action-frontier`, `--choice-graph` and `--combat-frontier` options retain their existing dependency checks and opt-in output. Examples using committed sanitized fixtures:
