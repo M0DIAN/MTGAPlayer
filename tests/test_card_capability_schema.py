@@ -1,4 +1,5 @@
 """MP12 schema inventory tests: database metadata only, no card values."""
+from contextlib import closing
 import hashlib
 import json
 from pathlib import Path
@@ -16,7 +17,7 @@ SCRIPT = ROOT / "scripts/inspect_card_capability_schema.py"
 
 
 def make_db(path):
-    with sqlite3.connect(path) as db:
+    with closing(sqlite3.connect(path)) as db, db:
         db.execute(
             'CREATE TABLE Cards (GrpId INTEGER, TitleId INTEGER NOT NULL, '
             'ManaCost TEXT, CardType INTEGER, Abilities BLOB, '
@@ -84,7 +85,7 @@ class CapabilitySchemaEvidenceTests(unittest.TestCase):
     def test_missing_or_unsupported_schema_fails_without_path_leak(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "PRIVATE_DB_LOCATION.mtga"
-            with sqlite3.connect(path) as db:
+            with closing(sqlite3.connect(path)) as db, db:
                 db.execute("CREATE TABLE MissingCards (GrpId INTEGER)")
             run = subprocess.run(
                 [sys.executable, str(SCRIPT), "--card-db", str(path)],

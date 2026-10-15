@@ -1,5 +1,6 @@
 """MP11: opt-in, local-only card titles for visible GRE card IDs."""
 import copy
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -15,7 +16,7 @@ FIXTURE = Path(__file__).parent / "fixtures/player_log_selectn.jsonl"
 
 
 def make_db(path, classic=False, duplicate=False):
-    with sqlite3.connect(path) as db:
+    with closing(sqlite3.connect(path)) as db, db:
         db.execute("CREATE TABLE Cards (GrpId INTEGER, TitleId INTEGER, ExpansionCode TEXT, CollectorNumber TEXT)")
         if classic:
             db.execute("CREATE TABLE Localizations (LocId INTEGER, Formatted INTEGER, enUS TEXT)")
@@ -110,7 +111,7 @@ class LocalCardTitlesTests(unittest.TestCase):
                 with tempfile.TemporaryDirectory() as directory:
                     db_path = Path(directory) / "cards.mtga"
                     make_db(db_path)
-                    with sqlite3.connect(db_path) as db:
+                    with closing(sqlite3.connect(db_path)) as db, db:
                         if title_id == 5:
                             db.execute(
                                 "INSERT INTO Localizations_enUS "
@@ -143,7 +144,7 @@ class LocalCardTitlesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             db_path = Path(directory) / "cards.mtga"
             make_db(db_path)
-            with sqlite3.connect(db_path) as db:
+            with closing(sqlite3.connect(db_path)) as db, db:
                 db.execute("ALTER TABLE Cards ADD COLUMN Power TEXT")
                 db.execute("ALTER TABLE Cards ADD COLUMN Toughness TEXT")
                 for power, toughness, grp in (
@@ -183,7 +184,7 @@ class LocalCardTitlesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "cards.mtga"
             make_db(path)
-            with sqlite3.connect(path) as db:
+            with closing(sqlite3.connect(path)) as db, db:
                 db.execute("ALTER TABLE Cards ADD COLUMN Power TEXT")
                 db.execute("ALTER TABLE Cards ADD COLUMN Toughness TEXT")
                 db.execute("UPDATE Cards SET Power='4', Toughness='5' WHERE GrpId=96839")
@@ -209,7 +210,7 @@ class LocalCardTitlesTests(unittest.TestCase):
             fake = Path(directory) / "missing.mtga"
             with self.assertRaises(CardCatalogError):
                 lookup_local_titles(fake, [96839])
-            with sqlite3.connect(fake) as db:
+            with closing(sqlite3.connect(fake)) as db, db:
                 db.execute("CREATE TABLE Wrong (ID INTEGER)")
             with self.assertRaisesRegex(CardCatalogError, "catalog_schema_unsupported"):
                 lookup_local_titles(fake, [96839])

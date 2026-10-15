@@ -1,5 +1,6 @@
 """MP13: request-bound, read-only decision observation from actual GRE projection."""
 import copy
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -61,7 +62,7 @@ def log_file(path, frames):
 
 
 def catalog_file(path):
-    with sqlite3.connect(path) as db:
+    with closing(sqlite3.connect(path)) as db, db:
         db.execute(
             "CREATE TABLE Cards (GrpId INTEGER, TitleId INTEGER, Power TEXT, "
             "Toughness TEXT, ExpansionCode TEXT, CollectorNumber TEXT)")
