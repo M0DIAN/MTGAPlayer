@@ -85,6 +85,7 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     document['decision_state'] = build_decision_state(staged, version=version)
     document['current'].pop('_turn_context', None)
     document['current'].pop('_public_stack', None)
+    document['current'].pop('_observed_combat_stats', None)
     if interrupted and document['decision_state'] is not None:
         document['decision_state']['unresolved'].append('current_request_continuity_unverified')
         document['decision_state']['unresolved'].sort()
@@ -449,8 +450,8 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3), default=1,
-                                   help='explicit v2 adds turn context; v3 also adds literal public Stack order')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4), default=1,
+                                   help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -468,8 +469,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3), default=1,
-                              help='State/Event version; default1; explicit2/3 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4), default=1,
+                              help='State/Event version; default1; explicit2/3/4 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,

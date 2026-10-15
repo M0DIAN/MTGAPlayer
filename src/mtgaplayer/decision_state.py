@@ -7,7 +7,10 @@ from typing import TypedDict
 from .decision_input import build_decision_input, _catalog, _id
 
 SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
-SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2', 3: 'mtgaplayer.decision-state.v3'}
+SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
+                   3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4'}
+EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
+                   'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
     'response_encoding_verified', 'server_acceptance_verified', 'execution_ready', 'input_sent')}
 IDENTITY_FIELDS = ('generation', 'match', 'game', 'self_seat', 'game_state_id', 'request_id')
@@ -62,6 +65,25 @@ def _stack(value, visible):
         require(counts[row['instance_id']] == 1 and row['instance_id'] in public)
         ids.append(row['instance_id'])
     require(len(set(ids)) == len(ids) and set(ids) == public)
+
+
+def _effective_stats(value, visible):
+    """Public v4 observation constraints; not raw-source reauthentication.
+
+    Only the producer can check the original Card/Token type. Consumer checks
+    the fixed claim, public zone, literal scalar bounds and enclosing binding.
+    """
+    if type(value) is not dict or value != EFFECTIVE_STATS or set(value) != set(EFFECTIVE_STATS):
+        raise ValueError('invalid_effective_stats')
+    ids = [obj['instance_id'] for obj in visible]
+    if len(ids) != len(set(ids)):
+        raise ValueError('ambiguous_effective_stats_identity')
+    for obj in visible:
+        for key in ('effective_power', 'effective_toughness'):
+            stat = obj[key]
+            if stat is not None and (type(stat) is not int or not -2**31 <= stat <= 2**31 - 1 or
+                                     obj['zone'] != 'ZoneType_Battlefield'):
+                raise ValueError('invalid_effective_stats')
 
 
 def _same_identity(value, identity):
@@ -184,18 +206,46 @@ def build_decision_state(document, *, version=1):
         if priority is not None and (type(priority) is not int or priority not in (1, 2)):
             return None
         game['turn'].update(context)
-    if version == 3:
+    if version >= 3:
         stack = current.get('_public_stack')
         try:
             _stack(stack, visible)
         except (ValueError, KeyError, TypeError):
             return None
         game['stack'] = copy.deepcopy(stack)
+    if version == 4:
+        observed = current.get('_observed_combat_stats')
+        counts = Counter(obj['instance_id'] for obj in visible)
+        if type(observed) is not list or len(observed) > 512:
+            return None
+        by_id = {}
+        for row in observed:
+            if (type(row) is not dict or
+                    set(row) != {'instance_id', 'effective_power', 'effective_toughness'} or
+                    not _id(row.get('instance_id')) or counts[row['instance_id']] != 1 or
+                    row['instance_id'] in by_id):
+                return None
+            by_id[row['instance_id']] = row
+        for obj in visible:
+            if obj['instance_id'] in by_id:
+                row = by_id[obj['instance_id']]
+                if obj['zone'] != 'ZoneType_Battlefield':
+                    return None
+                obj.update({key: row[key] for key in ('effective_power', 'effective_toughness')})
+        game['effective_combat_stats'] = dict(EFFECTIVE_STATS)
+        try:
+            _effective_stats(game['effective_combat_stats'], visible)
+        except (ValueError, KeyError, TypeError):
+            return None
     kind = KINDS.get(request_type)
     projection, graph, availability, completeness = None, None, 'not_provided', 'unknown'
     unresolved = ['effective_stats_unknown', 'effects_not_observed', 'mana_payment_unknown',
                   'complete_legality_unknown', 'response_encoding_unknown', 'server_acceptance_unknown']
-    if version == 3:
+    if version == 4:
+        unresolved.remove('effective_stats_unknown')
+        unresolved.extend(('current_power_toughness_scope_limited', 'current_power_toughness_unknown_where_null',
+                           'effective_stat_effect_sources_unknown', 'effective_stat_durations_unknown'))
+    if version >= 3:
         unresolved.extend(('stack_order_orientation_unverified', 'stack_resolution_unverified'))
         if game['stack']['availability'] == 'unknown':
             unresolved.append('public_stack_membership_unknown')
