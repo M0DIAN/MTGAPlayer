@@ -414,6 +414,15 @@ def main(argv=None):
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
+    export_parser = sub.add_parser('export-semantic-samples', help='export NEW sanitized offline observation episodes')
+    export_parser.add_argument('input', type=Path, help='explicit local Player.log; no directory discovery')
+    export_parser.add_argument('--output', type=Path, required=True, help='new JSON file, never overwritten')
+    export_parser.add_argument('--max-samples', type=int, default=16)
+    export_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
+    export_parser.add_argument('--origin', choices=('unclassified_local', 'retained_scrubbed_real', 'synthetic'),
+                               default='unclassified_local', help='operator label, not proof of origin')
+    sample_replay = sub.add_parser('replay-semantic-samples', help='validate sanitized choices; not raw GRE authentication or effects')
+    sample_replay.add_argument('input', type=Path)
     for name in ('replay', 'dry-run'):
         replay_parser = sub.add_parser(name, help='consume explicit normalized JSONL; never sends input')
         replay_parser.add_argument('input', type=Path)
@@ -497,6 +506,22 @@ def main(argv=None):
     bench.add_argument('--duration', type=float, default=90)
     bench.add_argument('--scenario', choices=['normal', 'reorder', 'unsupported', 'target-disappear'], default='normal')
     args = parser.parse_args(argv)
+    if args.command in ('export-semantic-samples', 'replay-semantic-samples'):
+        from .semantic_samples import export_samples, load_and_replay, SampleError
+        try:
+            if args.command == 'export-semantic-samples':
+                result = export_samples(args.input, args.output, origin=args.origin,
+                    max_samples=args.max_samples, max_history_bytes=args.max_history_bytes)
+                report = {'schema_version': result['schema_version'], 'counts': result['counts'],
+                          'unsupported_reasons': result['unsupported_reasons'], 'read_only': True, 'input_sent': False}
+            else:
+                report = load_and_replay(args.input)
+        except (SampleError, OSError, ValueError, TypeError, RecursionError, UnicodeError) as exc:
+            print(json.dumps({'error': str(exc) if isinstance(exc, SampleError) else
+                              'semantic_sample_io_or_format_error', 'read_only': True, 'input_sent': False}))
+            return 1
+        print(json.dumps(report, ensure_ascii=False))
+        return 0
     if getattr(args, 'advice_policy', None) is not None and not args.advice:
         parser.error('--advice-policy requires --advice')
     advice_policy = ((args.advice_policy or EVIDENCE_POLICY)
