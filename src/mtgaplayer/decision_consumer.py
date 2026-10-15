@@ -537,12 +537,14 @@ class _DiagnosticOutput:
             self._closed = True
             self._condition.notify()
         self.thread.join(grace)
+        # A later callback exit cannot turn abandoned output into success.
+        drained = not self.thread.is_alive()
         with self._condition:
             # Never begin another emit after abandoning a blocked callback.
             self._dropped += len(self._pending) + int(self._terminal is not None)
             self._pending.clear()
             self._terminal = None
-        return not self.thread.is_alive()
+        return drained
 
     def _run(self):
         try:

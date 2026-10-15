@@ -1,6 +1,7 @@
 """Counterexamples for output/core independence; no game or native input."""
 import copy
 import io
+import inspect
 import queue
 import sys
 import tempfile
@@ -11,7 +12,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from mtgaplayer.cli import _emit_consumer_diagnostic
-from mtgaplayer.decision_consumer import DecisionConsumer, consume_events
+from mtgaplayer.decision_consumer import DecisionConsumer, _DiagnosticOutput, consume_events
+from mtgaplayer.decision_publisher import DecisionPublisher
 import test_decision_consumer as consumer_fixtures
 from test_decision_consumer import encoded
 
@@ -174,6 +176,49 @@ class ConsumerBackpressureTests(unittest.TestCase):
                     self.assertEqual(c._reason, 'output_stream_error')
                 else:
                     self.assertIs(result[0], error)
+
+    def test_writer_exit_after_abandonment_cannot_report_success(self):
+        entered, release = threading.Event(), threading.Event()
+        output, dropped = [], []
+        stopped = next(iter(DecisionPublisher(session_id='race').stop('sample_limit')))
+        class Stream:
+            def __init__(self):
+                self.sent = False
+            def readline(self, size):
+                if self.sent:
+                    return ''
+                self.sent = True
+                if not entered.wait(1):
+                    raise OSError('test_writer_not_entered')
+                return encoded([stopped])
+        def emit(value):
+            output.append(value)
+            entered.set()
+            release.wait(2)
+        # Schedule a real callback completion after close has abandoned output,
+        # just before its return. No state/output methods are mocked.
+        source, first = inspect.getsourcelines(_DiagnosticOutput.close)
+        return_line = first + next(i for i, line in enumerate(source) if line.strip().startswith('return '))
+        def schedule(frame, event, arg):
+            if (frame.f_code is _DiagnosticOutput.close.__code__ and event == 'line'
+                    and frame.f_lineno == return_line):
+                writer = frame.f_locals['self']
+                dropped.append(writer._dropped)
+                release.set()
+                writer.thread.join(1)
+            return schedule
+        previous = sys.gettrace()
+        c = DecisionConsumer()
+        try:
+            sys.settrace(schedule)
+            result = consume_events(Stream(), emit, c, tick_seconds=.005, output_grace_seconds=.01)
+        finally:
+            sys.settrace(previous)
+            release.set()
+        self.assertEqual(dropped, [1])
+        self.assertEqual([d['consumer_status'] for d in output], ['WAITING'])
+        self.assertEqual(c._reason, 'sample_limit')
+        self.assertEqual(result, 1)
 
     def test_raw_cli_writer_handles_partial_zero_and_memory_outputs(self):
         with patch('mtgaplayer.cli.os.write', side_effect=[2, 1000]) as write:
