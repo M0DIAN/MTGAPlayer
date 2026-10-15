@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 from mtgaplayer.cli import replay, watch_decision_events
-from mtgaplayer.decision_advisor import assess_current_decision, SIMPLE_TYPE_POLICY
+from mtgaplayer.decision_advisor import assess_current_decision, assess_decision_state, SIMPLE_TYPE_POLICY
 from mtgaplayer.decision_consumer import DecisionConsumer
 from test_action_frontier import frames, save
 from test_decision_advisor import PASS, PLAY
@@ -122,3 +122,19 @@ class RequestEvidenceTests(unittest.TestCase):
         advice = assess_current_decision(c, policy_version=SIMPLE_TYPE_POLICY)
         self.assertIsNone(advice['source_snapshot_ref'])
         self.assertEqual(advice['candidate_assessments'], [])
+
+    def test_malformed_rows_revoke_existing_cache_without_raising(self):
+        _, snapshot = self.chain()
+        snapshot['sequence'] = snapshot['snapshot_ref']['sequence'] = 1
+        for malformed in (None, 1, [], 'bad'):
+            c = DecisionConsumer(clock_ns=ManualClock())
+            self.assertTrue(c.accept_event(snapshot))
+            bad = copy.deepcopy(snapshot)
+            bad['sequence'] = bad['snapshot_ref']['sequence'] = 2
+            bad['decision_state']['legal_action_space']['immediate_frontier']['projection']['templates'][0] = malformed
+            self.assertFalse(c.accept_event(bad))
+            view = c.current_view()
+            self.assertEqual(view['consumer_status'], 'PROTOCOL_ERROR')
+            self.assertIsNone(view['decision_state'])
+            self.assertIsNone(view['current_snapshot_ref'])
+            self.assertEqual(assess_decision_state(bad['decision_state'])['assessment_status'], 'abstain')

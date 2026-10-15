@@ -258,12 +258,12 @@ def _projection(value, kind, availability):
         if rows is not None:
             _list(rows, 256)
             for row in rows:
-                _require(row.get('source_card_identity_agreement') is None or
-                         type(row['source_card_identity_agreement']) is bool)
                 _keys(row, ('action_key', 'request_identity', 'list_position', 'engine_action_type',
                     'engine_offered', 'observed_parameter_shapes', 'unresolved_parameters',
                     'legal_choice_verified', 'response_encoding_verified', 'execution_ready',
                     'actionable', 'input_sent'), tuple(row))
+                _require(row.get('source_card_identity_agreement') is None or
+                         type(row['source_card_identity_agreement']) is bool)
                 _action_key(row['action_key'])
                 _integer(row['list_position'])
                 _require(row['list_position'] == row['action_key']['list_position'] and
