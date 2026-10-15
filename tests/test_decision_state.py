@@ -338,7 +338,8 @@ class DecisionStateTests(unittest.TestCase):
         mutations = [('action_frontier', name, True) for name in SAFETY_FLAGS]
         mutations += [('action_frontier', 'read_only', False),
                       ('action_frontier', 'immediate_completeness', 'complete_verified'),
-                      ('choice_graph', 'execution_ready', True)]
+                      ('choice_graph', 'execution_ready', True),
+                      ('choice_graph', 'server_acceptance_verified', True)]
         for child, name, value in mutations:
             with self.subTest(child=child, name=name):
                 changed = copy.deepcopy(document)
@@ -348,6 +349,18 @@ class DecisionStateTests(unittest.TestCase):
                 space = result['legal_action_space']
                 self.assertIsNone(space['choice_graph'] if child == 'choice_graph' else
                                   space['immediate_frontier']['projection'])
+        for location, name, value in (
+                ('constraint', 'input_sent', True),
+                ('expanded_choices', 'completeness', 'complete_verified')):
+            with self.subTest(location=location):
+                changed = copy.deepcopy(document)
+                target = (changed['choice_graph']['action_nodes'][0]['constraints'][0]
+                          if location == 'constraint' else
+                          changed['choice_graph']['expanded_choices'])
+                target[name] = value
+                result = build_decision_state(changed)
+                self.assert_safe(result)
+                self.assertIsNone(result['legal_action_space']['choice_graph'])
 
     def test_consumed_replaced_and_advanced_actions_never_restore_old_request(self):
         initial = history()[:-1]
@@ -592,6 +605,25 @@ class DecisionStateTests(unittest.TestCase):
         self.assertIn('complete_verified', schema['$defs']['completenessVocabulary']['enum'])
         self.assertEqual(schema['$defs']['phase1Completeness']['allOf'][1]['enum'],
                          ['partial', 'unknown'])
+        # Extensible legacy children are still covered by the formal contract's
+        # recursive safety rule. Standard Draft 2020-12 negative validation is
+        # a separate development check; this stdlib suite adds no dependency.
+        safety_ref = {'$ref': '#/$defs/readOnlyValue'}
+        self.assertIn(safety_ref, schema['allOf'])
+        safety = schema['$defs']['readOnlyValue']
+        for name in SAFETY_FLAGS + ('actionable', 'usable_now', 'executor_connected'):
+            self.assertEqual(safety['properties'][name], {'const': False})
+        self.assertEqual(safety['properties']['read_only'], {'const': True})
+        self.assertEqual(safety['additionalProperties'], safety_ref)
+        self.assertEqual(safety['items'], safety_ref)
+        self.assertEqual(safety['patternProperties']['completeness']['allOf'],
+                         [{'not': {'const': 'complete_verified'}}, safety_ref])
+        self.assertEqual(schema['$defs']['actionNode']['properties']['constraints']['items'],
+                         {'type': 'object'})
+        expanded = schema['properties']['legal_action_space']['properties'][
+            'choice_graph']['properties']['expanded_choices']['properties']
+        self.assertEqual(expanded['completeness'], {'const': 'unknown'})
+        self.assertEqual(expanded['legal_combinations'], {'type': 'null'})
         # This checks the checked-in schema's structure, not a substitute validator.
         types = {'null', 'boolean', 'object', 'array', 'number', 'integer', 'string'}
         for node in walk(schema):
