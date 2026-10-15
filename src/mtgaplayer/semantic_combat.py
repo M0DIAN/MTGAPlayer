@@ -216,6 +216,7 @@ def evaluate(sample):
                     observed=fs.get(attacker)
                     if observed is not None:
                         matched=matched and observed['block_state'] in (None,'BlockState_Blocked') and \
+                            observed['attacker_refs'] is None and \
                             observed['attack_state'] in (None,'AttackState_Attacking') and \
                             observed['target_seat'] in (None,seat)
     return {'current_request_selection_preserved':True,'final_submission_observed':True,

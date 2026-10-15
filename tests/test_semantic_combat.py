@@ -142,15 +142,18 @@ class SemanticCombatTests(unittest.TestCase):
             with self.assertRaises(SampleError):check_request(bad,snapshot,seat)
 
     def test_missing_conflicting_extra_or_private_result_never_confirms(self):
-        for role in ('blocker','attacker'):
+        for role in ('blocker','attacker','opposing_attacker'):
             with self.subTest(conflicting_role=role):
-                rows=copy.deepcopy(self.rows if role=='blocker' else self.load('unselect'))
-                line=44 if role=='blocker' else 316
-                ident=1025 if role=='blocker' else 1352
+                blocking=role!='attacker'
+                rows=copy.deepcopy(self.rows if blocking else self.load('unselect'))
+                line=44 if blocking else 316
+                ident={'blocker':1025,'attacker':1352,'opposing_attacker':1003}[role]
                 update=next(o for o in self.message(rows,line)['gameStateMessage']['gameObjects']
                             if o['instanceId']==ident)
                 if role=='blocker':
                     update.update(attackState='AttackState_Attacking',attackInfo={'targetId':2})
+                elif role=='opposing_attacker':
+                    update['blockInfo']={'attackerIds':[1025]}
                 else:
                     reducer,_,_=self.ready(rows,line=315)
                     opposing=next(o['id'] for o in reducer.document()['current']['objects']
