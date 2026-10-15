@@ -957,6 +957,7 @@ class RawReducer:
                 continue
             own_hand = kind == 'ZoneType_Hand' and owner == self.seat
             public_zone = kind in ('ZoneType_Battlefield', 'ZoneType_Stack', 'ZoneType_Graveyard')
+            public_exile = kind == 'ZoneType_Exile' and zone.get('visibility') == 'Visibility_Public'
             for instance in ids:
                 obj = self.objects.get(instance)
                 if not isinstance(obj, dict):
@@ -967,7 +968,10 @@ class RawReducer:
                     continue  # Opaque view: neither a physical card nor a hidden card count.
                 can_see = (public_zone and obj.get('visibility') == 'Visibility_Public') or (
                     own_hand and (self.seat in obj.get('viewers', []) or
-                                  obj.get('visibility') == 'Visibility_Public'))
+                                  obj.get('visibility') == 'Visibility_Public')) or (
+                    public_exile and obj.get('type') == 'GameObjectType_Card' and
+                    obj.get('zoneId') == zone.get('zoneId') and
+                    obj.get('visibility') == 'Visibility_Public')
                 if can_see:
                     visible.append({'id': instance, 'card_id': obj.get('grpId') if _id(obj.get('grpId')) else None,
                                     'owner': obj.get('ownerSeatId') if _id(obj.get('ownerSeatId')) else None,
