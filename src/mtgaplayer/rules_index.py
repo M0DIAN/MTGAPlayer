@@ -1,6 +1,7 @@
 """Offline Scryfall reference data. No game rules, downloads or name fallback."""
 import codecs
 from contextlib import closing
+import copy
 import hashlib
 import json
 import os
@@ -15,6 +16,8 @@ MAX_CARD_ID = 9_007_199_254_740_991
 _CHUNK = 65536
 _MAX_RECORD = 1024 * 1024
 _TEXT = ('oracle_text', 'type_line', 'mana_cost', 'power', 'toughness')
+DEFAULT_MAX_CARDS = 100_000
+DEFAULT_MAX_JSON_BYTES = 64 * 1024 * 1024
 
 
 class RulesIndexError(ValueError):
@@ -188,38 +191,113 @@ def build_rules_index(source_path, output_path, *, source_version):
             temporary.unlink(missing_ok=True)
 
 
-def lookup_rules(index_path, arena_ids):
-    """Read exact IDs only. Duplicate IDs never resolve, even identical rows."""
+def _lookup_ids(arena_ids):
     values = list(arena_ids)
     _require(len(values) <= 512 and all(_id(value) for value in values))
-    ids = set(values)
+    return set(values)
+
+
+def _read_metadata(db):
+    metadata = {}
+    for key, raw in db.execute('SELECT key,value FROM metadata'):
+        _require(len(metadata) < 9 and type(key) is str and key not in metadata and
+                 type(raw) is str and len(raw) <= 4096)
+        metadata[key] = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant)
+    _require(set(metadata) == {'schema_version', 'source_format', 'source_version',
+        'source_sha256', 'source_version_is_user_supplied', 'card_records',
+        'records_without_arena_id', 'unique_arena_ids', 'ambiguous_arena_ids'})
+    _require(metadata['schema_version'] == VERSION and
+             metadata['source_format'] == 'scryfall_card_json_array' and
+             metadata['source_version_is_user_supplied'] is True and
+             type(metadata['source_version']) is str and 1 <= len(metadata['source_version']) <= 128 and
+             all(ord(c) >= 32 for c in metadata['source_version']) and
+             type(metadata['source_sha256']) is str and
+             re.fullmatch('[0-9a-f]{64}', metadata['source_sha256']) is not None)
+    _require(all(type(metadata[k]) is int and 0 <= metadata[k] <= 1_000_000 for k in
+                 ('card_records', 'records_without_arena_id', 'unique_arena_ids', 'ambiguous_arena_ids')))
+    return metadata
+
+
+def _read_card(arena, count, raw):
+    _require(_id(arena) and type(count) is int and 1 <= count <= 1_000_000)
+    if count > 1:
+        _require(raw is None)
+        return {'status': 'ambiguous', 'card': None}
+    _require(type(raw) is str and len(raw) <= _MAX_RECORD)
+    card = _card(json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant))
+    _require(card['arena_id'] == arena)
+    return {'status': 'resolved', 'card': card}
+
+
+class PreparedRulesIndex:
+    """A source-fixed reference snapshot, created only by load_rules_index.
+
+    Queries perform no filesystem/SQLite operations and return detached data.
+    The encoded-payload budget is not a Python heap/RSS bound.
+    """
+    __slots__ = ('_metadata', '_cards')
+
+    def __init__(self, metadata, cards):
+        self._metadata, self._cards = metadata, cards
+
+    def lookup(self, arena_ids):
+        ids = _lookup_ids(arena_ids)
+        return copy.deepcopy((self._metadata, {arena: self._cards.get(arena,
+            {'status': 'unresolved', 'card': None}) for arena in ids}))
+
+
+def load_rules_index(index_path, *, max_cards=DEFAULT_MAX_CARDS,
+                     max_json_bytes=DEFAULT_MAX_JSON_BYTES):
+    """Prepare once before starting a subscription; never reload implicitly.
+
+    Bound indexed IDs and encoded JSON bytes before loading card payloads.
+    Validate the complete index; an invalid late row cannot publish a prefix.
+    """
+    _require(type(max_cards) is int and 1 <= max_cards <= 1_000_000 and
+             type(max_json_bytes) is int and 1 <= max_json_bytes <= 1024 * 1024 * 1024)
+    try:
+        path = Path(index_path)
+        _require(path.is_file())
+        with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro&immutable=1', uri=True)) as db:
+            rows, card_bytes = db.execute('SELECT COUNT(*), '
+                'COALESCE(SUM(length(CAST(card_json AS BLOB))),0) FROM cards').fetchone()
+            meta_bytes = db.execute('SELECT COALESCE(SUM(length(CAST(value AS BLOB))),0) FROM metadata').fetchone()[0]
+            if rows > max_cards or card_bytes + meta_bytes > max_json_bytes:
+                raise RulesIndexError('rules_index_limits_exceeded')
+            metadata = _read_metadata(db)
+            cards, occurrences, ambiguous = {}, 0, 0
+            for arena, count, raw in db.execute('SELECT arena_id,occurrences,card_json FROM cards'):
+                _require(arena not in cards)
+                cards[arena] = _read_card(arena, count, raw)
+                occurrences += count
+                ambiguous += count > 1
+            _require(len(cards) == rows and metadata['unique_arena_ids'] == rows - ambiguous and
+                     metadata['ambiguous_arena_ids'] == ambiguous and
+                     metadata['card_records'] == occurrences + metadata['records_without_arena_id'])
+        return PreparedRulesIndex(metadata, cards)
+    except (OSError, sqlite3.Error, ValueError, TypeError, RecursionError) as exc:
+        if isinstance(exc, RulesIndexError) and str(exc) == 'rules_index_limits_exceeded':
+            raise
+        raise RulesIndexError('rules_index_unavailable_or_invalid') from None
+
+
+def lookup_rules(index_path, arena_ids):
+    """Read exact IDs only. Duplicate IDs never resolve, even identical rows."""
+    ids = _lookup_ids(arena_ids)
     try:
         path = Path(index_path)
         if not path.is_file():
             raise RulesIndexError('rules_index_unavailable_or_invalid')
         with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro&immutable=1', uri=True)) as db:
-            metadata = {key: json.loads(value) for key, value in db.execute('SELECT key,value FROM metadata')}
-            _require(metadata.get('schema_version') == VERSION and
-                     metadata.get('source_format') == 'scryfall_card_json_array' and
-                     metadata.get('source_version_is_user_supplied') is True and
-                     type(metadata.get('source_version')) is str and
-                     type(metadata.get('source_sha256')) is str and
-                     re.fullmatch('[0-9a-f]{64}', metadata['source_sha256']) is not None)
+            metadata = _read_metadata(db)
             result = {value: {'status': 'unresolved', 'card': None} for value in ids}
             values = sorted(ids)
             for start in range(0, len(values), 200):
                 group = values[start:start + 200]
                 for arena, count, raw in db.execute('SELECT arena_id,occurrences,card_json FROM cards '
                         'WHERE arena_id IN (' + ','.join('?' for _ in group) + ')', group):
-                    _require(_id(arena) and arena in ids and type(count) is int and count >= 1)
-                    if count > 1:
-                        _require(raw is None)
-                        result[arena] = {'status': 'ambiguous', 'card': None}
-                    else:
-                        _require(type(raw) is str and len(raw) <= _MAX_RECORD)
-                        card = _card(json.loads(raw, object_pairs_hook=_pairs, parse_constant=_constant))
-                        _require(card['arena_id'] == arena)
-                        result[arena] = {'status': 'resolved', 'card': card}
+                    _require(arena in ids)
+                    result[arena] = _read_card(arena, count, raw)
             return metadata, result
     except (OSError, sqlite3.Error, ValueError, TypeError, RecursionError):
         raise RulesIndexError('rules_index_unavailable_or_invalid') from None
