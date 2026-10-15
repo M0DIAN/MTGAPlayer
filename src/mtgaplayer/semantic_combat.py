@@ -205,6 +205,12 @@ def evaluate(sample):
             f=fs.get(obj)
             matched=matched and obj in own and f is not None and (
                 f['target_seat']==target['seat'] if attack else f['attacker_refs']==target and set(target)<=opposing)
+            if f is not None:
+                # This finite profile has disjoint attacking/blocking roles.
+                # Blocked/Unblocked describe an attacker and remain allowed.
+                matched=matched and (f['block_state'] not in ('BlockState_Declared','BlockState_Blocking') and
+                    f['attacker_refs'] is None if attack else
+                    f['attack_state'] is None and f['target_seat'] is None)
             if not attack:
                 for attacker in target:
                     observed=fs.get(attacker)

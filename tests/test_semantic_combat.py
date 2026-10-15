@@ -142,6 +142,26 @@ class SemanticCombatTests(unittest.TestCase):
             with self.assertRaises(SampleError):check_request(bad,snapshot,seat)
 
     def test_missing_conflicting_extra_or_private_result_never_confirms(self):
+        for role in ('blocker','attacker'):
+            with self.subTest(conflicting_role=role):
+                rows=copy.deepcopy(self.rows if role=='blocker' else self.load('unselect'))
+                line=44 if role=='blocker' else 316
+                ident=1025 if role=='blocker' else 1352
+                update=next(o for o in self.message(rows,line)['gameStateMessage']['gameObjects']
+                            if o['instanceId']==ident)
+                if role=='blocker':
+                    update.update(attackState='AttackState_Attacking',attackInfo={'targetId':2})
+                else:
+                    reducer,_,_=self.ready(rows,line=315)
+                    opposing=next(o['id'] for o in reducer.document()['current']['objects']
+                                  if o['zone']=='ZoneType_Battlefield' and o['controller']==2)
+                    update.update(blockState='BlockState_Blocking',blockInfo={'attackerIds':[opposing]})
+                self.assertFalse(self.last(self.collect(rows))['selected_public_result_observed'])
+        rows=self.load('unselect')
+        attacker=next(o for o in self.message(rows,316)['gameStateMessage']['gameObjects']
+                      if o['instanceId']==1352)
+        attacker['blockState']='BlockState_Blocked'  # A blocked attacker is not itself a blocker.
+        self.assertTrue(self.last(self.collect(rows))['selected_public_result_observed'])
         annotated=copy.deepcopy(self.rows)
         self.message(annotated,44)['gameStateMessage']['annotations']=[{'PRIVATE_FIELD':'PRIVATE_SENTINEL'}]
         d=self.collect(annotated)
