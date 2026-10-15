@@ -232,7 +232,9 @@ def _projection(value, kind, availability):
         _list(value['offered_instance_ids'], 256)
         for ident in value['offered_instance_ids']:
             _integer(ident)
-        _integer(value['max_sel_raw'], -MAX_ID, nullable=True)
+        _integer(value['max_sel_raw'], 1, len(value['offered_instance_ids']))
+        _require(bool(value['offered_instance_ids']) and
+                 len(value['offered_instance_ids']) == len(set(value['offered_instance_ids'])))
         _require(value['min_sel_verified'] is None and value['combinations_complete'] is False and
                  value['source_ids_not_visibility_joined'] is True)
         rows = value['offered_instance_ids']

@@ -194,7 +194,15 @@ def _other_request(state, result):
                frontier['completeness'] == 'partial', 'select_n_candidate_coverage_conflict')
         result['candidate_coverage'].update(source='immediate_frontier.projection.offered_instance_ids',
             inventory_status=frontier['availability'], offered_count=len(projection['offered_instance_ids']),
-            inventory_integrity_verified=True, completeness='partial')
+            assessed_count=len(projection['offered_instance_ids']), inventory_integrity_verified=True, completeness='partial')
+        result['candidate_assessments'] = [{
+            'option_key': {'request_identity': dict(binding), 'option_position': position},
+            'request_identity': dict(binding), 'option_position': position,
+            'offered_instance_id': ident, 'identity_scope': 'request_reference_only',
+            'engine_offered': True, 'highest_evidence_level': 'LA1',
+            'evidence_quality': ['ENGINE_OFFERED', 'COMBINATION_UNKNOWN', 'RESPONSE_UNVERIFIED'],
+            'strategic_utility': None, 'read_only': True, 'execution': dict(EXECUTION)}
+            for position, ident in enumerate(projection['offered_instance_ids'])]
         result['request_summary'] = {'observed_candidate_count': len(projection['offered_instance_ids']),
             'max_sel_raw': projection['max_sel_raw'], 'min_sel': None, 'combination_legality': None}
         result['unresolved'].extend(('select_n_minimum_unknown', 'select_n_combinations_unknown'))
