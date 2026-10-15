@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mtgaplayer:decision-event:v1",
+  "title": "MTGAPlayer read-only DecisionEvent v1",
+  "$comment": "Register this and decision-state.v1.schema.json locally by their URN ids. No network resolution is needed. Sequence ordering, same-session backward references and snapshot-binding equality are enforced by the publisher and stream invariant tests. Monotonic timestamps are local to this process/session, never server time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "session_id", "sequence", "event_type", "binding", "phase", "source_status", "subscription_active", "timing", "read_only", "execution"],
+  "properties": {
+    "schema_version": {"const": "mtgaplayer.decision-event.v1"},
+    "session_id": {"$ref": "#/$defs/sessionId"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_type": {"enum": ["snapshot", "invalidate", "liveness", "stopped"]},
+    "binding": {"$ref": "#/$defs/binding"},
+    "phase": {"enum": [null, "history", "append"]},
+    "source_status": {"enum": ["no_observation", "state_and_request_observed", "state_observed_without_request", "partial", "invalid", "stopped"]},
+    "subscription_active": {"type": "boolean"},
+    "read_only": {"const": true},
+    "execution": {"$ref": "urn:mtgaplayer:decision-state:v1#/properties/execution"},
+    "timing": {
+      "type": "object", "additionalProperties": false,
+      "required": ["poll_started_ns", "poll_completed_ns", "published_ns", "last_new_evidence_ns", "last_state_change_ns", "last_request_change_ns", "observation_age_ns", "observation_age_limit_ns", "observation_stale", "poll_to_publish_ns", "poll_read_ns", "reducer_apply_ns", "decision_state_assembly_ns", "event_publication_ns"],
+      "properties": {
+        "poll_started_ns": {"$ref": "#/$defs/nullableNs"}, "poll_completed_ns": {"$ref": "#/$defs/nullableNs"},
+        "published_ns": {"$ref": "#/$defs/ns"}, "last_new_evidence_ns": {"$ref": "#/$defs/nullableNs"},
+        "last_state_change_ns": {"$ref": "#/$defs/nullableNs"}, "last_request_change_ns": {"$ref": "#/$defs/nullableNs"},
+        "observation_age_ns": {"$ref": "#/$defs/nullableNs"},
+        "observation_age_limit_ns": {"type": ["integer", "null"], "minimum": 1, "maximum": 86400000000000},
+        "observation_stale": {"type": ["boolean", "null"]}, "poll_to_publish_ns": {"$ref": "#/$defs/nullableNs"},
+        "poll_read_ns": {"$ref": "#/$defs/nullableNs"}, "reducer_apply_ns": {"$ref": "#/$defs/nullableNs"},
+        "decision_state_assembly_ns": {"$ref": "#/$defs/nullableNs"}, "event_publication_ns": {"$ref": "#/$defs/ns"}
+      }
+    },
+    "decision_state": {"allOf": [{"$ref": "urn:mtgaplayer:decision-state:v1"}, {"type": "object"}]},
+    "snapshot_ref": {"$ref": "#/$defs/reference"},
+    "new_request_observed": {"type": "boolean"},
+    "revoked": {"$ref": "#/$defs/reference"},
+    "reason": {"type": "string"},
+    "current_snapshot_ref": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/reference"}]}
+  },
+  "allOf": [
+    {"$ref": "urn:mtgaplayer:decision-state:v1#/$defs/readOnlyValue"},
+    {
+      "if": {"properties": {"event_type": {"const": "snapshot"}}},
+      "then": {"required": ["decision_state", "snapshot_ref", "new_request_observed"],
+        "properties": {"source_status": {"enum": ["state_and_request_observed", "state_observed_without_request"]}, "subscription_active": {"const": true}, "revoked": false, "reason": false, "current_snapshot_ref": false}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "invalidate"}}},
+      "then": {"required": ["revoked", "reason"], "properties": {
+        "reason": {"enum": ["source_reset", "source_invalid", "request_conflict", "source_partial", "identity_changed", "state_advanced", "request_consumed", "request_replaced", "request_ended", "projection_changed", "observation_stale", "session_stopped"]},
+        "decision_state": false, "snapshot_ref": false, "new_request_observed": false, "current_snapshot_ref": false}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "liveness"}}},
+      "then": {"required": ["current_snapshot_ref"], "properties": {"subscription_active": {"const": true}, "decision_state": false, "snapshot_ref": false, "new_request_observed": false, "revoked": false, "reason": false}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "stopped"}}},
+      "then": {"required": ["reason", "current_snapshot_ref"], "properties": {
+        "subscription_active": {"const": false}, "source_status": {"const": "stopped"}, "current_snapshot_ref": {"type": "null"},
+        "reason": {"enum": ["sample_limit", "user_interrupt", "source_error", "other_supported_reason"]},
+        "decision_state": false, "snapshot_ref": false, "new_request_observed": false, "revoked": false}}
+    },
+    {"if": {"properties": {"phase": {"const": "history"}}}, "then": {"properties": {"new_request_observed": {"const": false}}}},
+    {"if": {"properties": {"reason": {"const": "session_stopped"}}, "required": ["reason"]}, "then": {"properties": {"subscription_active": {"const": false}, "source_status": {"const": "stopped"}}}}
+  ],
+  "$defs": {
+    "ns": {"type": "integer", "minimum": 0},
+    "nullableNs": {"type": ["integer", "null"], "minimum": 0},
+    "sessionId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$"},
+    "binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["source_generation", "match", "game", "self_seat", "game_state_id", "request_id", "request_type"],
+      "properties": {
+        "source_generation": {"$ref": "#/$defs/nullableNs"}, "match": {"type": ["string", "null"], "minLength": 1},
+        "game": {"type": ["integer", "null"], "minimum": 1}, "self_seat": {"enum": [null, 1, 2]},
+        "game_state_id": {"$ref": "#/$defs/nullableNs"}, "request_id": {"$ref": "#/$defs/nullableNs"},
+        "request_type": {"type": ["string", "null"]}
+      }
+    },
+    "reference": {"type": "object", "additionalProperties": false, "required": ["session_id", "sequence", "binding"],
+      "properties": {"session_id": {"$ref": "#/$defs/sessionId"}, "sequence": {"type": "integer", "minimum": 1}, "binding": {"$ref": "#/$defs/binding"}}}
+  }
+}
