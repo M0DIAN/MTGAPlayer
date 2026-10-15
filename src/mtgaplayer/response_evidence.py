@@ -9,7 +9,7 @@ from pathlib import Path
 import json
 import re
 
-from .raw_log import RawFollower, RawReducer, _request_digest
+from .raw_log import RawFollower, RawReducer, _request_digest, COMBAT_SUBMITS
 from .semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
 from .choice_graph import (CHOICE_VALIDATION_LEVELS, _selectn_known_constraints,
                            _build_selectn_constraint_graph)
@@ -156,17 +156,37 @@ def _paired_response(reducer, before, payload, expected_type=None):
         return False
     typ = payload.get('type')
     expected = expected_type or _RESPONSE_BY_REQUEST.get(before.get('type'))
-    return (isinstance(typ, str) and _RESP.fullmatch(typ) is not None and
-            _id(payload.get('respId')) and _id(payload.get('gameStateId')) and
-            typ == expected and payload['respId'] == before['id'] and
-            payload['gameStateId'] == before['game_state_id'] and
+    return (isinstance(typ, str) and _RESP.fullmatch(typ) is not None and typ == expected and
+            _consumed_pair(reducer, before, payload))
+
+
+def _consumed_pair(reducer, before, payload):
+    """Shared post-consumption evidence, never server acceptance."""
+    return (_id(payload.get('respId')) and _id(payload.get('gameStateId')) and
+            payload['respId'] == before['id'] and payload['gameStateId'] == before['game_state_id'] and
             reducer.error is None and isinstance(reducer.submitted, dict) and
             reducer.submitted.get('request_id') == payload['respId'] and
             reducer.submitted.get('game_state_id') == payload['gameStateId'] and
             reducer.submitted.get('confirmation') == 'client_submission_only' and
-            (reducer.match, reducer.game) ==
-            (before['binding']['match'], before['binding']['game']) and
+            (reducer.match, reducer.game) == (before['binding']['match'], before['binding']['game']) and
             (reducer.match, reducer.game, payload['respId']) in reducer.consumed)
+
+
+def _paired_combat_submit(reducer, before, payload):
+    """Only the two fixed terminal combat submissions, after current-request revocation."""
+    if (not isinstance(payload, dict) or not isinstance(payload.get('type'), str) or
+            not isinstance(before, dict)):
+        return False
+    binding = before.get('binding')
+    if not isinstance(binding, dict):
+        return False
+    return (payload['type'] in COMBAT_SUBMITS and COMBAT_SUBMITS[payload['type']] == before.get('type') and
+            before.get('_continuity_verified') is True and reducer.request is None and
+            reducer.generation == binding.get('generation') and reducer.seat == binding.get('self_seat') and
+            reducer.room_seat == reducer.seat and reducer.version == before.get('game_state_id') and
+            reducer.room_state != 'MatchGameRoomStateType_MatchCompleted' and
+            reducer.game_info.get('stage') != 'GameStage_GameOver' and
+            _consumed_pair(reducer, before, payload))
 
 
 def _request_kind(request):
