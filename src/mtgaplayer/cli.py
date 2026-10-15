@@ -157,7 +157,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
-          choice_graph=False, combat_frontier=False, decision_state=False):
+          choice_graph=False, combat_frontier=False, decision_state=False,
+          _poll_observer=None, _clock_ns=None):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
@@ -169,14 +170,49 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('choice_graph_requires_action_frontier')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
+    clock = _clock_ns or time.perf_counter_ns
+    facts = {}
+    previous_request = None
+    history_pending = _poll_observer is not None
+    def request_identity(request):
+        binding = request.get('binding') if isinstance(request, dict) else None
+        return tuple(binding.get(k) for k in ('generation', 'match', 'game', 'self_seat',
+                                              'game_state_id')) + (request['id'], request['type']) if binding else None
+    if _poll_observer is not None:
+        def observe(event, details):
+            # Copy scalar facts immediately; never retain raw messages or the
+            # mutable reducer request. This is a per-poll summary, not a ledger.
+            if combat is not None:
+                combat.observe(reducer, event, details)
+            if event == 'state_accepted' and details['kind'] != 'full_retransmit':
+                facts['state_changed'] = True
+            elif event == 'request_accepted' and not details['is_retransmission']:
+                facts['request_changed'] = True
+                facts['last_new_request'] = request_identity(details['request'])
+            elif event == 'request_ended':
+                facts['request_changed'] = True
+                if request_identity(details['request']) == previous_request:
+                    facts['request_consumed'] = details['disposition'] == 'consumed'
+            elif event == 'continuity_error':
+                facts['continuity_error'] = True
+                facts['request_conflict'] = facts.get('request_conflict', False) or details['reason'] == 'conflicting_request_identity'
+        reducer.observer = observe
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
     seen_requests = set()
     for index in range(samples):
+        if _poll_observer is not None:
+            started = clock()
+            facts = {}
+            previous_request = request_identity(reducer.request)
         reset, records = follower.poll()
+        if _poll_observer is not None:
+            after_read = clock()
         if reset:
             reducer.reset(follower.generation)
-        phase = 'history' if index == 0 or reset else 'append'
+            if _poll_observer is not None:
+                history_pending = True
+        phase = 'history' if index == 0 or reset or history_pending else 'append'
         newly_accepted = set()
         for record in records:
             reducer.apply(record)
@@ -204,9 +240,21 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                             for message in messages):
                         newly_accepted.add(identity)
                     seen_requests.add(identity)
+        if _poll_observer is not None:
+            after_apply = clock()
+            facts['new_final_request'] = (facts.get('last_new_request') is not None and
+                                           facts['last_new_request'] == request_identity(reducer.request))
+            facts.pop('last_new_request', None)
+            # Incomplete source observation must not restore a pre-tail request
+            # when an unrelated record later completes. Reuse its existing bit;
+            # do not alter Full/Diff continuity or create another request ledger.
+            if follower.framer.partial and reducer.request is not None:
+                reducer.request['_continuity_verified'] = False
         document = reducer.document(include_frontier_rows=action_frontier or decision_state,
                                     include_decision_state=decision_state)
         reduced_current = document['current']
+        if _poll_observer is not None and reduced_current.get('valid') and not follower.framer.partial:
+            history_pending = False
         if follower.framer.partial:
             document['current'] = {k: reduced_current.get(k) for k in
                                    ('match', 'game', 'self_seat', 'game_state_id')}
@@ -231,7 +279,11 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                               'executor_connected': False, 'stopped': index + 1 == samples,
                               'stop_reason': 'sample_limit' if index + 1 == samples else None}
         if decision_state:
+            if _poll_observer is not None:
+                assembly_start = clock()
             _project_decision_state(reducer, document, combat, action_frontier)
+            if _poll_observer is not None:
+                assembly_ns = clock() - assembly_start
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
@@ -245,9 +297,45 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                 _project_choice_graph(document)
             if combat_frontier:
                 document['combat_frontier'] = combat.project(reducer, document)
+        if _poll_observer is not None:
+            _poll_observer({**facts, 'reset': reset,
+                'poll_started_ns': started, 'poll_completed_ns': clock(),
+                'poll_read_ns': after_read - started,
+                'reducer_apply_ns': after_apply - after_read,
+                'decision_state_assembly_ns': assembly_ns if decision_state else 0})
         yield document
         if index + 1 < samples:
             time.sleep(interval)
+
+
+def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
+                          max_observation_age_ns=None, clock_ns=None, session_id=None):
+    """Iterate poll-level DecisionEvent JSON objects; source is read only once.
+
+    EOF/consumer abandonment also ends the subscription; consumers must discard
+    cached references when the stream ends. Transient intra-poll requests are
+    intentionally not exported. No server freshness or input permission.
+    """
+    from .decision_publisher import DecisionPublisher
+    if (type(samples) is not int or not 1 <= samples <= 1000 or
+            not math.isfinite(interval) or not 0 <= interval <= 60 or
+            type(max_history_bytes) is not int or not 1 <= max_history_bytes <= 1024 * 1024 * 1024):
+        raise ValueError('invalid_decision_event_watch_bounds')
+    publisher = DecisionPublisher(max_observation_age_ns, clock_ns, session_id)
+    metadata = None
+    def observed(facts):
+        nonlocal metadata
+        metadata = facts
+    reason = 'sample_limit'
+    try:
+        for document in watch(path, interval, samples, max_history_bytes, decision_state=True,
+                              _poll_observer=observed, _clock_ns=publisher.clock_ns):
+            yield from publisher.observe(document, metadata)
+    except KeyboardInterrupt:
+        reason = 'user_interrupt'
+    except (OSError, ValueError):
+        reason = 'source_error'
+    yield from publisher.stop(reason)
 
 
 def doctor(config_path=None, log_path=None):
@@ -313,6 +401,10 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
+    watch_parser.add_argument('--decision-events', action='store_true',
+                              help='separate read-only DecisionEvent v1 JSONL stream (implies DecisionState)')
+    watch_parser.add_argument('--max-observation-age-ms', type=float,
+                              help='consumer observation age limit >0..86400000ms; needs --decision-events; no protocol TTL')
     performance = sub.add_parser('performance-baseline',
                                  help='opt-in read-only 600..900s pipeline timing; final safe aggregate only')
     performance.add_argument('input', type=Path)
@@ -338,6 +430,15 @@ def main(argv=None):
                                     not 1 <= args.samples <= 1000 or
                                     not 1 <= args.max_history_bytes <= 1024 * 1024 * 1024):
         parser.error('watch bounds must be positive (interval <=60, samples <=1000, history <=1GiB)')
+    if args.command == 'watch':
+        if args.max_observation_age_ms is not None and (
+                not args.decision_events or not math.isfinite(args.max_observation_age_ms) or
+                not 0 < args.max_observation_age_ms <= 86_400_000 or
+                round(args.max_observation_age_ms * 1_000_000) < 1):
+            parser.error('observation age limit requires --decision-events and >0..86400000ms (at least 1ns)')
+        if args.decision_events and any((args.decision_input, args.action_gaps, args.action_frontier,
+                                        args.choice_graph, args.combat_frontier, args.decision_state)):
+            parser.error('--decision-events is a separate output mode; omit legacy projection flags')
     if args.command == 'performance-baseline' and (
             not math.isfinite(args.duration) or not 600 <= args.duration <= 900 or
             not math.isfinite(args.interval) or not 0 < args.interval <= 60 or
@@ -359,6 +460,30 @@ def main(argv=None):
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
     elif args.command == 'watch':
+        if args.decision_events:
+            limit = (round(args.max_observation_age_ms * 1_000_000)
+                     if args.max_observation_age_ms is not None else None)
+            events = watch_decision_events(args.input, args.interval, args.samples,
+                                           args.max_history_bytes, limit)
+            reason = None
+            try:
+                for result in events:
+                    print(json.dumps(result, ensure_ascii=False), flush=True)
+                    if result['event_type'] == 'stopped':
+                        reason = result['reason']
+            except KeyboardInterrupt:
+                # An interrupt in stdout/consumer code occurs outside the
+                # generator. Deliver it back to the same publisher so its exact
+                # outstanding reference is revoked; never emit legacy watch JSON.
+                try:
+                    terminal = events.throw(KeyboardInterrupt)
+                except StopIteration:
+                    return 0
+                print(json.dumps(terminal, ensure_ascii=False), flush=True)
+                for terminal in events:
+                    print(json.dumps(terminal, ensure_ascii=False), flush=True)
+                return 0
+            return 1 if reason == 'source_error' else 0
         try:
             for result in watch(args.input, args.interval, args.samples,
                                 args.max_history_bytes, decision_input=args.decision_input,
