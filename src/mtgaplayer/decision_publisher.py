@@ -14,7 +14,7 @@ import uuid
 from .decision_state import FLAGS, SCHEMA_VERSIONS, state_schema_version, _bound_readonly
 
 EVENT_VERSION = 'mtgaplayer.decision-event.v1'
-EVENT_VERSIONS = {1: EVENT_VERSION, 2: 'mtgaplayer.decision-event.v2'}
+EVENT_VERSIONS = {1: EVENT_VERSION, 2: 'mtgaplayer.decision-event.v2', 3: 'mtgaplayer.decision-event.v3'}
 EVENT_STATE_VERSIONS = {EVENT_VERSIONS[key]: value for key, value in SCHEMA_VERSIONS.items()}
 IDENTITY = ('source_generation', 'match', 'game', 'self_seat', 'game_state_id',
             'request_id', 'request_type')

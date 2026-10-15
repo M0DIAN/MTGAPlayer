@@ -1,4 +1,4 @@
-"""Bounded, fail-closed DecisionEvent v1 consumption; no GRE or input adapter.
+"""Bounded, fail-closed DecisionEvent consumption; no GRE or input adapter.
 
 The schemas remain the formal Draft 2020-12 contracts. These stdlib checks
 cover the consumer's supported shapes and safety/identity invariants, not a
@@ -15,7 +15,7 @@ import time
 from collections import deque
 
 from .decision_publisher import EVENT_STATE_VERSIONS, IDENTITY, MAX_AGE_NS, STOP_REASONS
-from .decision_state import FLAGS, KINDS, SCHEMA_VERSIONS, _bound_readonly
+from .decision_state import FLAGS, KINDS, SCHEMA_VERSIONS, _stack, _bound_readonly
 
 MAX_LINE_BYTES = 2 * 1024 * 1024
 MAX_ID = 9_007_199_254_740_991
@@ -129,11 +129,12 @@ def _state(value, binding):
     _integer(source['byte_offset'], nullable=True)
     game = value['game']
     _keys(game, ('room_state', 'game_stage', 'source_state_timestamp', 'turn', 'players',
-        'hidden_counts', 'mana', 'effective_combat_stats', 'rules'))
+        'hidden_counts', 'mana', 'effective_combat_stats', 'rules') +
+        (('stack',) if value['schema_version'] == SCHEMA_VERSIONS[3] else ()))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
     turn = game['turn']
-    extended = value['schema_version'] == SCHEMA_VERSIONS[2]
+    extended = value['schema_version'] != SCHEMA_VERSIONS[1]
     _keys(turn, ('turnNumber', 'activePlayer', 'decisionPlayer') +
           (('phase', 'step', 'priorityPlayer') if extended else ()))
     for number in (turn[k] for k in ('turnNumber', 'activePlayer', 'decisionPlayer')):
@@ -164,6 +165,8 @@ def _state(value, binding):
         _require((obj['zone'] is None or type(obj['zone']) is str) and
                  (obj['tapped'] is None or type(obj['tapped']) is bool) and
                  obj['effective_power'] is None and obj['effective_toughness'] is None)
+    if value['schema_version'] == SCHEMA_VERSIONS[3]:
+        _stack(game['stack'], value['visible_objects'])
     cards = value['card_knowledge']
     if cards is not None:
         _keys(cards, ('source', 'objects'))

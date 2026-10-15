@@ -1017,6 +1017,38 @@ class RawReducer:
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}
 
+    def _public_stack(self, current):
+        """Private literal membership staging; no top/resolution semantics.
+
+        Missing membership in a replaced zone is unknown, unlike explicit [].
+        Never publish a prefix or identifiers outside the visible projection.
+        """
+        result = {'availability': 'unknown', 'zone_id': None, 'members': None,
+                  'order_basis': 'literal_gre_zone_objectInstanceIds'}
+        zones = [z for z in self.zones.values() if z.get('type') == 'ZoneType_Stack']
+        if len(zones) != 1 or zones[0].get('visibility') != 'Visibility_Public':
+            return result
+        zone = zones[0]
+        ids = zone.get('objectInstanceIds')
+        if (not _id(zone.get('zoneId')) or not isinstance(ids, list) or len(ids) > 512 or
+                not all(_id(i) for i in ids) or len(set(ids)) != len(ids)):
+            return result
+        visible = {}
+        for obj in current['objects']:
+            visible.setdefault(obj['id'], []).append(obj)
+        members = []
+        for position, ident in enumerate(ids):
+            matches = visible.get(ident, [])
+            if len(matches) != 1 or matches[0]['zone'] != 'ZoneType_Stack':
+                return result
+            kind = self.objects[ident].get('type')
+            members.append({'list_position': position, 'instance_id': ident,
+                'object_type': kind if kind in ('GameObjectType_Card', 'GameObjectType_Ability',
+                                               'GameObjectType_Token') else None})
+        result.update(availability='observed' if members else 'confirmed_empty',
+                      zone_id=zone['zoneId'], members=members)
+        return result
+
     def document(self, include_frontier_rows=False, include_decision_state=False):
         current = self._current(include_frontier_rows, include_decision_state) if self.error is None and self.version is not None else {
             'valid': False, 'match': self.match, 'game': self.game,
@@ -1026,5 +1058,6 @@ class RawReducer:
             # The v2 assembler validates these and the CLI removes the staging.
             current['_turn_context'] = {key: copy.deepcopy(self.turn.get(key))
                                        for key in ('phase', 'step', 'priorityPlayer')}
+            current['_public_stack'] = self._public_stack(current)
         return {'current': current, 'last_valid': copy.deepcopy(self.last_valid),
                 'first_error': copy.deepcopy(self.first_error), 'error': self.error}

@@ -1,12 +1,13 @@
 """Pure assembly of one projected GRE snapshot; no reader or input authority."""
 import copy
 import re
+from collections import Counter
 from typing import TypedDict
 
 from .decision_input import build_decision_input, _catalog, _id
 
 SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
-SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2'}
+SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2', 3: 'mtgaplayer.decision-state.v3'}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
     'response_encoding_verified', 'server_acceptance_verified', 'execution_ready', 'input_sent')}
 IDENTITY_FIELDS = ('generation', 'match', 'game', 'self_seat', 'game_state_id', 'request_id')
@@ -35,6 +36,32 @@ def state_schema_version(version):
     if type(version) is not int or version not in SCHEMA_VERSIONS:
         raise ValueError('unsupported_decision_state_version')
     return SCHEMA_VERSIONS[version]
+
+
+def _stack(value, visible):
+    """Shared validation of literal public Stack references, not game rules."""
+    def require(ok):
+        if not ok:
+            raise ValueError('invalid_public_stack')
+    require(type(value) is dict and set(value) == {'availability', 'zone_id', 'members', 'order_basis'})
+    require(value['order_basis'] == 'literal_gre_zone_objectInstanceIds')
+    if value['availability'] == 'unknown':
+        require(value['zone_id'] is None and value['members'] is None)
+        return
+    require(value['availability'] in ('observed', 'confirmed_empty') and _id(value['zone_id']))
+    rows = value['members']
+    require(type(rows) is list and len(rows) <= 512)
+    require((value['availability'] == 'observed') == bool(rows))
+    counts = Counter(obj['instance_id'] for obj in visible)
+    public = {obj['instance_id'] for obj in visible if obj['zone'] == 'ZoneType_Stack'}
+    ids = []
+    for position, row in enumerate(rows):
+        require(type(row) is dict and set(row) == {'list_position', 'instance_id', 'object_type'})
+        require(type(row['list_position']) is int and row['list_position'] == position and _id(row['instance_id']))
+        require(row['object_type'] in (None, 'GameObjectType_Card', 'GameObjectType_Ability', 'GameObjectType_Token'))
+        require(counts[row['instance_id']] == 1 and row['instance_id'] in public)
+        ids.append(row['instance_id'])
+    require(len(set(ids)) == len(ids) and set(ids) == public)
 
 
 def _same_identity(value, identity):
@@ -144,7 +171,7 @@ def build_decision_state(document, *, version=1):
                          ('turnNumber', 'activePlayer', 'decisionPlayer')},
         'players': [{'seat': p['seat'], 'life': p.get('life') if type(p.get('life')) is int else None} for p in players],
         'hidden_counts': hidden, 'mana': None, 'effective_combat_stats': None, 'rules': None})
-    if version == 2:
+    if version >= 2:
         context = current.get('_turn_context')
         if not isinstance(context, dict) or set(context) != {'phase', 'step', 'priorityPlayer'}:
             return None
@@ -157,10 +184,23 @@ def build_decision_state(document, *, version=1):
         if priority is not None and (type(priority) is not int or priority not in (1, 2)):
             return None
         game['turn'].update(context)
+    if version == 3:
+        stack = current.get('_public_stack')
+        try:
+            _stack(stack, visible)
+        except (ValueError, KeyError, TypeError):
+            return None
+        game['stack'] = copy.deepcopy(stack)
     kind = KINDS.get(request_type)
     projection, graph, availability, completeness = None, None, 'not_provided', 'unknown'
     unresolved = ['effective_stats_unknown', 'effects_not_observed', 'mana_payment_unknown',
                   'complete_legality_unknown', 'response_encoding_unknown', 'server_acceptance_unknown']
+    if version == 3:
+        unresolved.extend(('stack_order_orientation_unverified', 'stack_resolution_unverified'))
+        if game['stack']['availability'] == 'unknown':
+            unresolved.append('public_stack_membership_unknown')
+        elif any(row['object_type'] is None for row in game['stack']['members']):
+            unresolved.append('stack_object_type_unknown')
     if request_type is None:
         unresolved.append('current_own_request_not_provided')
         if unverified_request:
