@@ -1,5 +1,9 @@
 # Source inspection and reuse
 
+## MP27–29 bounded comparison (2026-10-15)
+
+Rechecked pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`, `gamestate_decisions.py::_handle_select_n_req` and `gamestate.py::_update_turn_info`. Retain our existing reducer and supported real request slice: the upstream count/minCount/maxCount defaults, prompt-text selection-type guesses and general option coercion do not improve exact domain evidence. Its turn update synthesizes Beginning/Untap on a new turn and preserves absent same-turn fields; we do not port those assumptions. Existing real minimal states4/5/6 support literal phase/step/priority observations only, with absent step unknown. For visible endpoint changes, compare our already-validated published projections, rather than importing inferred gameplay-event tracking. No upstream code, resource or new dependency is copied.
+
 Read-only source: `E:\MTGA\skills\mtga-play`, VERSION **0.4.6**, MIT, Copyright (c) 2026 MODIAN. Installed copy: `C:\Users\Administrator\.agents\skills\mtga-play`, VERSION 0.4.6. arena_log.py hashes match. No game assets, database, original full logs, private backend or Skill package are redistributed.
 
 | Source file (SHA256) | Decision |

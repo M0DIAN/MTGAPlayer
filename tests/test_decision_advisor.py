@@ -185,13 +185,14 @@ class DecisionAdvisorTests(unittest.TestCase):
         c = self.from_mutated_projection(lambda s: s['legal_action_space']['immediate_frontier']['projection'].update(templates=None))
         self.assert_abstain(self.advice(c), 'candidate_inventory_invalid', empty=True)
 
-    def test_select_n_reports_only_existing_count_and_unknown_minimum(self):
+    def test_select_n_reports_options_and_unknown_minimum(self):
         self.current(rows=selectn_rows())
         result = self.advice()
         self.assert_abstain(result, 'select_n_strategy_unsupported')
         self.assertEqual(result['request_summary'], {'observed_candidate_count': 4, 'max_sel_raw': 2,
             'min_sel': None, 'combination_legality': None})
-        self.assertEqual(result['candidate_assessments'], [])
+        self.assertEqual([row['offered_instance_id'] for row in result['candidate_assessments']],
+                         [175, 176, 178, 179])
 
     def test_combat_reports_only_existing_candidates_and_explicit_relations(self):
         for typ in (ATTACK, BLOCK):
