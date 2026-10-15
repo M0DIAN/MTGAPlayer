@@ -9,15 +9,20 @@ from test_raw_log import entries
 class RequestContentBindingTests(unittest.TestCase):
     def test_actual_accepted_event_authenticates_only_its_content(self):
         accepted = []
+        retransmissions = []
         reducer = RawReducer(observer=lambda event, details:
-            accepted.append(details['message']) if event == 'request_accepted' else None)
+            (accepted.append(details['message']), retransmissions.append(details['is_retransmission']))
+            if event == 'request_accepted' else None)
         for row in entries()[:3]:
             reducer.apply(row)
         message = {'type': 'GREMessageType_DeclareAttackersReq', 'msgId': 990,
             'gameStateId': 1, 'systemSeatIds': [1], 'declareAttackersReq': {'qualifiedAttackers': []}}
         reducer.apply({'greToClientEvent': {'greToClientMessages': [message]}})
         self.assertEqual(accepted, [message])
+        self.assertEqual(retransmissions, [False])
         self.assertIsNotNone(_current_verified_raw_request(reducer, message))
+        reducer.apply({'greToClientEvent': {'greToClientMessages': [message]}})
+        self.assertEqual(retransmissions, [False, True])
         for seats in ([True], [1.0], [2], [1, 2]):
             rejected = copy.deepcopy(message)
             rejected['systemSeatIds'] = seats

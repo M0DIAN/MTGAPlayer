@@ -766,7 +766,8 @@ class RawReducer:
                                             'ownership_verified': True},
                                 **_request_semantics(message)}
                 if self.observer is not None:
-                    self._observe('request_accepted', request=self.request, message=message)
+                    self._observe('request_accepted', request=self.request, message=message,
+                                  is_retransmission=prior is not None)
 
     def _state(self, gs, timestamp):
         if not isinstance(gs, dict) or gs.get('type') not in ('GameStateType_Full', 'GameStateType_Diff'):
