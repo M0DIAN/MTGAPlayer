@@ -222,6 +222,17 @@ class DecisionAdvisorTests(unittest.TestCase):
                 self.assertNotIn('703', json.dumps(result))
                 self.assertNotIn('704', json.dumps(result))
 
+    def test_incomplete_blocker_edge_abstains_in_both_research_entries(self):
+        self.current(rows=baseline() + [request(BLOCK)])
+        def incomplete(state):
+            edge = state['legal_action_space']['immediate_frontier']['projection']['engine_offered_candidates'][0]['engine_listed_attacker_references'][0]
+            edge.pop('attacker_instance_id')
+            edge['public_reference_verified'] = False
+        c = self.from_mutated_projection(incomplete)
+        self.assert_abstain(assess_decision_state(c.current_view()['decision_state']),
+                            'candidate_inventory_invalid', empty=True)
+        self.assert_abstain(self.advice(c), 'candidate_inventory_invalid', empty=True)
+
     def test_actual_replacement_invalidation_and_consumption_revoke_advice(self):
         self.current([PASS, PLAY])
         old = self.advice()

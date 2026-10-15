@@ -222,7 +222,9 @@ def _other_request(state, result):
             _check(edges is None or type(edges) is list, 'combat_relationship_invalid')
             safe_edges = None if edges is None else []
             for index, edge in enumerate(edges or ()):
-                _check(type(edge) is dict and type(edge.get('list_position')) is int and edge['list_position'] == index and
+                _check(type(edge) is dict and
+                       {'list_position', 'attacker_instance_id', 'public_reference_verified'} <= edge.keys() and
+                       type(edge['list_position']) is int and edge['list_position'] == index and
                        type(edge.get('public_reference_verified')) is bool and
                        (public_reference(edge.get('attacker_instance_id'), 3 - binding['self_seat']) if edge['public_reference_verified']
                         else edge.get('attacker_instance_id') is None), 'combat_relationship_invalid')
