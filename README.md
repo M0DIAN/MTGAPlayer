@@ -200,6 +200,24 @@ python -m mtgaplayer replay --format player-log --rules-index "<rules-v1.sqlite>
 
 Only already-projected visible `card_id` values supply exact lookups. SelectN instance references, hidden cards, last_valid, names and ambiguous visible-instance identities supply no completion. Rows distinguish resolved static reference, absent ID, catalog ambiguity, missing card ID and visible identity ambiguity. Multi-face data remains separate and `current_face` stays null; static text, costs, keywords and literal P/T never become current effects or legal actions. The sidecar describes its bound snapshot, grants no continuing currentness and must be discarded when that binding changes. Missing/invalid indices yield an unavailable context with empty content and an explicit reason; an otherwise valid raw replay still exits successfully. Invalid state never triggers a catalog query. DecisionState/Event v1, Advisor, default replay/watch and the existing local title catalog are unchanged.
 
+### MP23 Advisor CLI delivery
+
+Enable read-only evidence assessment on the existing event pipeline:
+
+```powershell
+python -m mtgaplayer watch "<explicit Player.log>" --decision-events --samples 1000 --interval 0.25 | python -m mtgaplayer consume-events --advice
+# Explicit experiment; still research-only and never sends input:
+python -m mtgaplayer consume-events --advice --advice-policy simple_type_research.v1
+# Historical research, optionally alongside the MP22 static-rule sidecar:
+python -m mtgaplayer replay --format player-log --advice --rules-index "<rules-v1.sqlite>" "<explicit Player.log>"
+```
+
+`--advice` defaults to `evidence_only.v1`; `--advice-policy` requires `--advice`. Without these flags, existing status-only consumer output and replay output are unchanged. Opted-in diagnostics add the existing versioned `decision_advice` object, including snapshot/request bindings and candidate references; keep these local. The same Consumer owner thread computes advice; reader/writer workers own no state, and no second ledger or policy algorithm is introduced. Replay/dry-run assessment is always historical, with no current preference; static rules remain separate and never affect policy scores.
+
+Append observations may receive the existing explicitly selected simple-type research preference; historical requests cannot. Liveness retains the identical snapshot-bound advice and `new_live_opportunity=false`. Invalidated, expired, closed, malformed or stopped subscriptions cannot supply a preference or candidates. A final owner-thread check discards advice if assessment crossed the observation lease. Consumers must discard earlier advice on invalidation/termination/EOF; an advice object grants no continuing currentness.
+
+The existing bounded independent output queue, fail-closed overflow, strict event order, leases and shutdown grace are unchanged. Already in-flight bytes cannot be recalled and persistently blocked stdout cannot guarantee timely revocation/terminal delivery; queued records are research observations of their bound snapshots. This finite producer/one-shot consumer is no server-freshness, optimal-strategy, real-game execution or three-second-loop qualification. No database/network/LLM work is added to the current consumer path.
+
 ### MP19 evidence-bounded decision advisor (read-only research)
 
 `mtgaplayer.decision_advisor` assesses existing projections without calling the synthetic harness policy, parsing GRE, querying a database or connecting an executor. The APIs are:

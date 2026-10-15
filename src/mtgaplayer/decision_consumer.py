@@ -573,7 +573,7 @@ class _DiagnosticOutput:
 
 
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
-                   output_queue_capacity=64, output_grace_seconds=.75):
+                   output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -581,11 +581,17 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     be discarded on quarantine, explicitly marked incomplete in the terminal
     diagnostic. A blocked output cannot guarantee terminal delivery. Workers
     own no consumer state; process exit closes the CLI-owned OS pipes.
+    Opt-in advice is computed on this core thread with this Consumer; it is
+    snapshot-bound research data, never an event or permission to execute.
     """
     if (not 0 < tick_seconds <= 1 or type(queue_capacity) is not int or not 1 <= queue_capacity <= 1024
             or type(output_queue_capacity) is not int or not 1 <= output_queue_capacity <= 1024
             or not 0 < output_grace_seconds <= 1):
         raise ValueError('invalid_consumer_stream_bounds')
+    if advice_policy is not None:
+        from .decision_advisor import assess_current_decision, EVIDENCE_POLICY, SIMPLE_TYPE_POLICY
+        if advice_policy not in (EVIDENCE_POLICY, SIMPLE_TYPE_POLICY):
+            raise ValueError('unsupported_advice_policy')
     consumer = consumer if consumer is not None else DecisionConsumer()
     inbox, overflow, done = queue.Queue(queue_capacity), threading.Event(), threading.Event()
 
@@ -642,10 +648,22 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     result = 1
 
     def diagnostic():
+        if advice_policy is not None:
+            advice = assess_current_decision(consumer, policy_version=advice_policy)
         view = consumer.current_view()
-        # Deliberately omit binding, private state and candidate content.
-        return {k: view[k] for k in ('consumer_status', 'last_sequence',
+        if (advice_policy is not None and advice['source_snapshot_ref'] is not None and
+                (view['consumer_status'] != 'OBSERVING' or
+                 advice['source_snapshot_ref'] != view['current_snapshot_ref'])):
+            # Assessment itself may cross a lease boundary. Owner-thread state
+            # cannot advance here except by expiry; do not enqueue old advice.
+            advice = assess_current_decision(consumer, policy_version=advice_policy)
+            view = consumer.current_view()
+        # Default diagnostics retain their exact prior status-only fields.
+        value = {k: view[k] for k in ('consumer_status', 'last_sequence',
             'new_request_observed', 'transport_alive', 'unresolved', 'read_only', *EXECUTION)}
+        if advice_policy is not None:
+            value['decision_advice'] = advice
+        return value
 
     try:
         while True:

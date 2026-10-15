@@ -100,7 +100,11 @@ def _project_decision_state(reducer, document, combat, retain_rows):
 def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
            choice_graph=False, combat_frontier=False, decision_state=False,
-           rules_index_path=None):
+           rules_index_path=None, advice_policy=None):
+    if advice_policy is not None:
+        if format != 'player-log':
+            raise ValueError('advice_requires_player_log_format')
+        decision_state = True
     if rules_index_path is not None:
         if format != 'player-log':
             raise ValueError('rules_index_requires_player_log_format')
@@ -147,6 +151,10 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
                 document['decision_state'], rules_index_path)
+        if advice_policy is not None:
+            from .decision_advisor import assess_decision_state
+            document['decision_advice'] = assess_decision_state(
+                document['decision_state'], policy_version=advice_policy)
         if decision_input:
             from .decision_input import build_decision_input
             document['decision_input'] = build_decision_input(document)
@@ -391,6 +399,7 @@ def doctor(config_path=None, log_path=None):
 
 
 def main(argv=None):
+    from .decision_advisor import EVIDENCE_POLICY, SIMPLE_TYPE_POLICY
     parser = argparse.ArgumentParser(prog='mtgaplayer')
     sub = parser.add_subparsers(dest='command', required=True)
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
@@ -404,6 +413,10 @@ def main(argv=None):
                                    help='opt-in local read-only MTGA card SQLite (raw replay only)')
         replay_parser.add_argument('--rules-index', type=Path,
                                    help='opt-in static reference sidecar; implies --decision-state (player-log only)')
+        replay_parser.add_argument('--advice', action='store_true',
+                                   help='historical read-only Advisor assessment; implies --decision-state')
+        replay_parser.add_argument('--advice-policy', choices=[EVIDENCE_POLICY, SIMPLE_TYPE_POLICY],
+                                   help='requires --advice; default evidence_only.v1')
         replay_parser.add_argument('--decision-input', action='store_true',
                                    help='MP13 read-only, own-request-bound observation (player-log only)')
         replay_parser.add_argument('--action-gaps', action='store_true',
@@ -442,6 +455,10 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
+    consumer_parser.add_argument('--advice', action='store_true',
+                                 help='opt-in snapshot-bound current Advisor output on the same Consumer')
+    consumer_parser.add_argument('--advice-policy', choices=[EVIDENCE_POLICY, SIMPLE_TYPE_POLICY],
+                                 help='requires --advice; default evidence_only.v1')
     consumer_parser.add_argument('--max-event-silence-ms', type=float, default=5000,
                                  help='local transport silence policy >0..86400000ms (default 5000)')
     consumer_parser.add_argument('--max-observation-age-ms', type=float, default=5000,
@@ -463,6 +480,10 @@ def main(argv=None):
     bench.add_argument('--duration', type=float, default=90)
     bench.add_argument('--scenario', choices=['normal', 'reorder', 'unsupported', 'target-disappear'], default='normal')
     args = parser.parse_args(argv)
+    if getattr(args, 'advice_policy', None) is not None and not args.advice:
+        parser.error('--advice-policy requires --advice')
+    advice_policy = ((args.advice_policy or EVIDENCE_POLICY)
+                     if getattr(args, 'advice', False) else None)
     if hasattr(args, 'count') and args.count < 1:
         parser.error('--count must be positive')
     if hasattr(args, 'duration') and args.duration <= 0:
@@ -502,7 +523,8 @@ def main(argv=None):
         if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
             parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
         consumer = DecisionConsumer(*(round(v * 1_000_000) for v in limits))
-        return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic, consumer)
+        return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic,
+                              consumer, advice_policy=advice_policy)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
@@ -510,7 +532,8 @@ def main(argv=None):
                             action_gaps=args.action_gaps,
                             action_frontier=args.action_frontier,
                             choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
-                            decision_state=args.decision_state, rules_index_path=args.rules_index)
+                            decision_state=args.decision_state, rules_index_path=args.rules_index,
+                            advice_policy=advice_policy)
             code = 0 if result['current']['valid'] else 1
         except (OSError, ValueError) as exc:
             result, code = {'error': str(exc), 'input_sent': False}, 1
