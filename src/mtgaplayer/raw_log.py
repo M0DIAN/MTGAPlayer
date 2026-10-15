@@ -539,10 +539,11 @@ class RawFollower:
 
 
 class RawReducer:
-    def __init__(self, observer=None):
+    def __init__(self, observer=None, *, include_state_messages=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
+        self._include_state_messages = include_state_messages
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -947,7 +948,8 @@ class RawReducer:
         self.last_valid = projection
         if self.observer is not None:
             self._observe('state_accepted', kind='full' if full else 'diff',
-                          baseline=baseline)
+                          baseline=baseline,
+                          **({'message': gs} if self._include_state_messages else {}))
 
     def _current(self, include_frontier_rows=False, include_decision_state=False):
         visible, hidden = [], {}

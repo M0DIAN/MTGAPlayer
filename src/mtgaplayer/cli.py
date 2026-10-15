@@ -417,6 +417,8 @@ def main(argv=None):
     export_parser = sub.add_parser('export-semantic-samples', help='export NEW sanitized offline observation episodes')
     export_parser.add_argument('input', type=Path, help='explicit local Player.log; no directory discovery')
     export_parser.add_argument('--output', type=Path, required=True, help='new JSON file, never overwritten')
+    export_parser.add_argument('--schema-version', type=int, choices=(1, 2), default=1,
+                               help='v2 opts into the narrow historical Cast/mana trace')
     export_parser.add_argument('--max-samples', type=int, default=16)
     export_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     export_parser.add_argument('--origin', choices=('unclassified_local', 'retained_scrubbed_real', 'synthetic'),
@@ -511,7 +513,7 @@ def main(argv=None):
         try:
             if args.command == 'export-semantic-samples':
                 result = export_samples(args.input, args.output, origin=args.origin,
-                    max_samples=args.max_samples, max_history_bytes=args.max_history_bytes)
+                    max_samples=args.max_samples, max_history_bytes=args.max_history_bytes, schema_version=args.schema_version)
                 report = {'schema_version': result['schema_version'], 'counts': result['counts'],
                           'unsupported_reasons': result['unsupported_reasons'], 'read_only': True, 'input_sent': False}
             else:
