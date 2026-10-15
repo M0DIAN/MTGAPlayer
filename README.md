@@ -178,6 +178,33 @@ Qualification covers request delivery/consumption/replacement, state advance, co
 
 Run `.\.venv\Scripts\python.exe scripts/qualify_backpressure.py --output artifacts/local-mp18-phase5/backpressure.json` for the bounded Phase 5 counterexamples. They pause reading actual consumer stdout, confirm an actual write remains blocked, and observe core cache clearing before reads resume: observation age with continuing liveness, open-pipe transport silence, a new request, separate input/output overflow, synthetic Python cancellation, abnormal producer EOF and blocking beyond shutdown grace. Temporary read-only probes sample plain internal fields and wrap original core transitions; the observer never calls `tick` or `current_view`. Test stderr is internal evidence only, not a product notification bypass. Output recovery checks the final reason; persistent blocking explicitly permits terminal loss and records the abandoned writer. Normal/deep-copy/default CLI regressions remain in the existing suites.
 
+### MP19 evidence-bounded decision advisor (read-only research)
+
+`mtgaplayer.decision_advisor` assesses existing projections without calling the synthetic harness policy, parsing GRE, querying a database or connecting an executor. The APIs are:
+
+```python
+from mtgaplayer.decision_advisor import (
+    assess_current_decision, assess_decision_state, SIMPLE_TYPE_POLICY,
+)
+
+# consumer is the existing DecisionConsumer; call on its owner thread.
+evidence = assess_current_decision(consumer)
+experiment = assess_current_decision(consumer, policy_version=SIMPLE_TYPE_POLICY)
+history = assess_decision_state(replayed_decision_state)
+```
+
+The current entry reads one fresh `consumer.current_view()` before pure assessment. A detached view dictionary is rejected because it cannot notice subsequent invalidation, EOF or expiry. Current research requires OBSERVING, a matching snapshot/state/request binding, a newly observed request and watch/append provenance. WAITING, INVALIDATED, STALE, CLOSED, PROTOCOL_ERROR and historical requests explicitly abstain. Re-evaluate the latest consumer after lifecycle changes; an old advice object grants no continuing currentness. The pure state-only entry always marks `historical_research_only`, never creates a live opportunity and never grants a current preference. No second consumer, reducer or lifecycle ledger is created.
+
+Advice uses `schema_version=mtgaplayer.decision-advice.v1`, `assessment_status` (`abstain` or `research_preference`), snapshot/request binding, policy version, coverage, candidate assessments, nullable preferred candidate/basis, abstention reason and unresolved facts. It keeps `read_only=true`, `new_live_opportunity=false` and all execution/legality flags false. Action references normalize the projection's legacy `generation` to `source_generation` and include match/game/seat/state/request/type plus the original engine `list_position`; identical types at different positions remain different candidates. Only active frontier templates supply actions. Count, positions, identities, active-only scope and source links must reconcile; null/conflicting/truncated inventories remain unknown. ChoiceGraph can reveal a conflict but never supply missing actions, and its raw identifiers/parameters are not exported.
+
+The default `evidence_only.v1` policy abstains from preference while preserving all valid candidates, including unsupported ones. Evidence properties such as ENGINE_OFFERED, STRUCTURE_INTERPRETED, PARAMETERS_PARTIAL, UNSUPPORTED_STRUCTURE, COMBINATION_UNKNOWN and RESPONSE_UNVERIFIED are separate from strategic utility, which remains null. LA1/limited structural LA2 evidence provides no new LA3 legal-choice, LA4 execution or LA5 outcome proof.
+
+Explicit `simple_type_research.v1` may prefer the sole Play position only when every active row is an interpreted simple Pass/Play, other rows are Pass, parameter shapes are empty and there are no unknown fields, unsupported reasons or graph conflicts. Both `preference_basis` and `policy_basis` are `unverified_simple_type_heuristic`. This is a type preference experiment, not a claim that Play is correct, Pass is conservative, the source is a land or costs/targets are legal. Multiple Play, complex/unknown actions, incomplete structures and Pass-only inventories abstain; position never supplies strategic weight. No response payload, coordinates or ActionPlan is produced.
+
+SelectN reports existing candidate count and raw maxSel with unknown minimum/combinations. Combat reports only existing public candidate references and explicit blocker relations; attack recipients, mandatory combat, combinations, ordering and damage remain unknown. Neither request participates in strategy ranking.
+
+Run `.\.venv\Scripts\python.exe scripts/measure_decision_advisor.py --samples 200` for bounded scrubbed/synthetic timings: extraction, evidence classification, heuristic preference and the complete current API, with N/p50/p95/p99/max and raw local durations. Stage calls are independent, not additive. Timing fields stay outside deterministic advice. This measures no real source, server freshness or live three-second loop. Default replay/watch, Consumer, DecisionState and the old synthetic policy remain unchanged.
+
 ### MP18 opt-in unified DecisionState v1
 
 `--decision-state` assembles a single read-only snapshot, using the existing GRE reducer and projections. It works alone; the independent `--decision-input`, `--action-frontier`, `--choice-graph` and `--combat-frontier` options retain their existing dependency checks and opt-in output. Examples using committed sanitized fixtures:
