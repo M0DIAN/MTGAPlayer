@@ -235,13 +235,22 @@ class PreparedRulesIndex:
     Queries perform no filesystem/SQLite operations and return detached data.
     The encoded-payload budget is not a Python heap/RSS bound.
     """
-    __slots__ = ('_metadata', '_cards')
+    __slots__ = ('_metadata', '_cards', '_reference_bytes')
 
     def __init__(self, metadata, cards):
         self._metadata, self._cards = metadata, cards
+        self._reference_bytes = {arena: len(json.dumps(match['card'], ensure_ascii=False).encode('utf-8'))
+                                 if match['card'] is not None else 0 for arena, match in cards.items()}
 
-    def lookup(self, arena_ids):
-        ids = _lookup_ids(arena_ids)
+    def lookup(self, arena_ids, *, max_reference_bytes=None):
+        values = list(arena_ids)
+        ids = _lookup_ids(values)
+        if max_reference_bytes is not None:
+            _require(type(max_reference_bytes) is int and 0 <= max_reference_bytes <= DEFAULT_MAX_JSON_BYTES)
+            # Repeated IDs represent repeated visible instances in a sidecar.
+            # Reject before deepcopy, rather than constructing an oversized result.
+            if sum(self._reference_bytes.get(arena, 0) for arena in values) > max_reference_bytes:
+                raise RulesIndexError('rules_context_limits_exceeded')
         return copy.deepcopy((self._metadata, {arena: self._cards.get(arena,
             {'status': 'unresolved', 'card': None}) for arena in ids}))
 

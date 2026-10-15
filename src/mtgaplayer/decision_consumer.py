@@ -573,7 +573,8 @@ class _DiagnosticOutput:
 
 
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
-                   output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None):
+                   output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
+                   prepared_rules=None, rules_error=None):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -581,8 +582,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     be discarded on quarantine, explicitly marked incomplete in the terminal
     diagnostic. A blocked output cannot guarantee terminal delivery. Workers
     own no consumer state; process exit closes the CLI-owned OS pipes.
-    Opt-in advice is computed on this core thread with this Consumer; it is
-    snapshot-bound research data, never an event or permission to execute.
+    Opt-in advice/static context is computed on this core thread with this
+    Consumer and an already-prepared rules snapshot; never an execution grant.
     """
     if (not 0 < tick_seconds <= 1 or type(queue_capacity) is not int or not 1 <= queue_capacity <= 1024
             or type(output_queue_capacity) is not int or not 1 <= output_queue_capacity <= 1024
@@ -592,6 +593,14 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         from .decision_advisor import assess_current_decision, EVIDENCE_POLICY, SIMPLE_TYPE_POLICY
         if advice_policy not in (EVIDENCE_POLICY, SIMPLE_TYPE_POLICY):
             raise ValueError('unsupported_advice_policy')
+    rules_enabled = prepared_rules is not None or rules_error is not None
+    if rules_enabled:
+        from .rule_context import assess_current_rule_context
+        from .rules_index import PreparedRulesIndex
+        if (prepared_rules is not None and not isinstance(prepared_rules, PreparedRulesIndex) or
+                rules_error not in (None, 'rules_index_unavailable_or_invalid', 'rules_index_limits_exceeded') or
+                prepared_rules is not None and rules_error is not None):
+            raise ValueError('invalid_prepared_rules_configuration')
     consumer = consumer if consumer is not None else DecisionConsumer()
     inbox, overflow, done = queue.Queue(queue_capacity), threading.Event(), threading.Event()
 
@@ -650,19 +659,27 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     def diagnostic():
         if advice_policy is not None:
             advice = assess_current_decision(consumer, policy_version=advice_policy)
+        if rules_enabled:
+            context = assess_current_rule_context(consumer, prepared_rules, rules_error=rules_error)
         view = consumer.current_view()
-        if (advice_policy is not None and advice['source_snapshot_ref'] is not None and
-                (view['consumer_status'] != 'OBSERVING' or
-                 advice['source_snapshot_ref'] != view['current_snapshot_ref'])):
-            # Assessment itself may cross a lease boundary. Owner-thread state
-            # cannot advance here except by expiry; do not enqueue old advice.
-            advice = assess_current_decision(consumer, policy_version=advice_policy)
+        sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
+        if any(sidecar['source_snapshot_ref'] is not None and
+               (view['consumer_status'] != 'OBSERVING' or
+                sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
+            # Recheck after ALL assessments: later context work may expire
+            # earlier advice too. Only the owner can change state here (expiry).
+            if advice_policy is not None:
+                advice = assess_current_decision(consumer, policy_version=advice_policy)
+            if rules_enabled:
+                context = assess_current_rule_context(consumer, prepared_rules, rules_error=rules_error)
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
             'new_request_observed', 'transport_alive', 'unresolved', 'read_only', *EXECUTION)}
         if advice_policy is not None:
             value['decision_advice'] = advice
+        if rules_enabled:
+            value['current_rule_context'] = context
         return value
 
     try:
