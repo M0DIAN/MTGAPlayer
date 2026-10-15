@@ -104,7 +104,9 @@ class StaticRuleContextTests(unittest.TestCase):
         duplicated = [o for o in context['objects'] if o['instance_id'] == state['visible_objects'][0]['instance_id']]
         self.assertEqual(len(duplicated), 2)
         self.assertTrue(all(o['status'] == 'ambiguous_visible_identity' and o['reference'] is None for o in duplicated))
-        self.assertEqual(context['counts']['missing_card_id'], 1)
+        # The real fixture can already contain visible noncard instances.
+        missing_before = sum(obj['card_id'] is None for obj in self.state['visible_objects'])
+        self.assertEqual(context['counts']['missing_card_id'], missing_before + 1)
 
     def test_actual_replay_cli_is_opt_in_and_legacy_outputs_unchanged(self):
         self.build([card(self.known)])
