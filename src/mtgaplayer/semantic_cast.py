@@ -248,6 +248,11 @@ def _prediction(sample, position):
     chosen=sample['response']['payload']['action']; rows=sample['request']['payload']['actions']
     unknown='insufficient_evidence'; violated='violated_known_constraints'
     if position is None:return unknown, None
+    # Missing on either side is unknown. Explicitly empty parameters remain
+    # observed values, so a later comparison may identify a real disagreement.
+    for row in (rows[position],chosen):
+        observed=set(row['parameters'])|set(row['observed_empty_parameters'])
+        if not {'manaCost','autoTapSolution'}<=observed:return unknown, None
     if rows[position]!=chosen:return violated, None
     params=chosen['parameters'];cost=params.get('manaCost');tap=params.get('autoTapSolution')
     if cost is None or tap is None:return unknown, None

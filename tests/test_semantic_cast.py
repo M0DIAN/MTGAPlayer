@@ -118,9 +118,19 @@ class SemanticCastTests(unittest.TestCase):
 
     def test_unknown_missing_payment_and_inconsistent_payment_are_different(self):
         original=copy.deepcopy(self.rows)
-        self.request()['actionsAvailableReq']['actions'][1].pop('autoTapSolution')
-        self.response()['performActionResp']['actions'][0].pop('autoTapSolution')
-        self.assertEqual(self.evidence()['known_cost_and_predictive_payment'],'insufficient_evidence')
+        for field in ('manaCost','autoTapSolution'):
+            for missing_from in ('request','response','both'):
+                with self.subTest(field=field,missing_from=missing_from):
+                    self.rows=copy.deepcopy(original)
+                    if missing_from in ('request','both'):
+                        self.request()['actionsAvailableReq']['actions'][1].pop(field)
+                    if missing_from in ('response','both'):
+                        self.response()['performActionResp']['actions'][0].pop(field)
+                    e=self.evidence()
+                    self.assertEqual(e['known_cost_and_predictive_payment'],'insufficient_evidence')
+                    self.assertTrue(e['cast_on_stack_observed'])
+                    self.assertTrue(e['resolution_to_battlefield_observed'])
+                    self.assertFalse(e['complete_observed_interaction'])
         self.rows=copy.deepcopy(original)
         self.response()['performActionResp']['actions'][0]['autoTapSolution']['autoTapActions'][0]['manaPaymentOption']['mana'][0]['count']=2
         self.assertEqual(self.evidence()['known_cost_and_predictive_payment'],'violated_known_constraints')
