@@ -7,6 +7,7 @@ import copy
 import importlib.util
 import io
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 from contextlib import redirect_stderr
@@ -268,6 +269,43 @@ class CoverageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'input_record_limit_exceeded'):
             mod.inspect_stream(io.BytesIO(b'null\n' * (mod.MAX_RECORDS + 1)),
                                assessor=fake_advice)
+
+    def test_stream_read_is_bounded_before_allocating_oversized_line(self):
+        class BoundedReader(io.BytesIO):
+            def __init__(self, data):
+                super().__init__(data)
+                self.sizes = []
+            def readline(self, size=-1):
+                self.sizes.append(size)
+                return super().readline(size)
+
+        oversized = BoundedReader(b'x' * (mod.MAX_LINE_BYTES + 1000) + b'\n')
+        with self.assertRaisesRegex(ValueError, 'input_bytes_limit_exceeded'):
+            mod.inspect_stream(oversized, assessor=fake_advice)
+        self.assertEqual(oversized.sizes, [mod.MAX_LINE_BYTES + 1])
+
+    def test_actual_projected_cli_success_when_repository_available(self):
+        if not (ROOT / 'src/mtgaplayer/decision_advisor.py').is_file():
+            self.skipTest('sandbox package lacks the actual MTGAPlayer checkout')
+        from mtgaplayer.cli import replay
+        fixture = ROOT / 'tests/fixtures/player_log_selectn.jsonl'
+        projected = replay(fixture, format='player-log', decision_state=True)
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / 'projected.jsonl'
+            output = Path(temporary) / 'coverage.json'
+            source.write_text(json.dumps(projected) + '\n', encoding='utf-8')
+            completed = subprocess.run([sys.executable, str(MODULE), '--input', str(source),
+                '--output', str(output), '--dataset-kind', 'scrubbed_projected_offline'],
+                cwd=ROOT, capture_output=True, text=True, timeout=15)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            report = json.loads(output.read_text(encoding='utf-8'))
+            self.assertEqual(report['counts']['input_records'], 1)
+            self.assertEqual(report['counts']['malformed_record_count'], 0)
+            self.assertEqual(report['qualification'], 'SCRUBBED_OFFLINE_SAMPLE_ONLY')
+            self.assertEqual(report['priority_verdict'], 'PRIORITY_EVIDENCE_INSUFFICIENT')
+            self.assertTrue(report['read_only'])
+            self.assertFalse(report['live_or_server_coverage_qualified'])
+            self.assertTrue(all(v is False for v in report['execution'].values()))
 
     def test_projected_jsonl_wrapper_and_direct_document(self):
         state1 = fake_state(1)

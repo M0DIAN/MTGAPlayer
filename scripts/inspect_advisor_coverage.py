@@ -412,11 +412,21 @@ def _strict_json(line):
 def inspect_stream(stream, *, assessor=None, dataset_kind='synthetic_projected_offline'):
     aggregate = CoverageAccumulator(assessor=assessor, dataset_kind=dataset_kind)
     total_bytes = 0
-    for index, line in enumerate(stream, start=1):
+    # Bound each read BEFORE allocating the caller-controlled JSONL line.
+    # A plain ``for line in stream`` can allocate an arbitrarily large line
+    # before MAX_LINE_BYTES is checked; only binary projected streams qualify.
+    for index in range(1, MAX_RECORDS + 2):
+        line = stream.readline(MAX_LINE_BYTES + 1)
+        if not line:
+            break
+        if type(line) is not bytes:
+            raise ValueError('binary_jsonl_stream_required')
+        if len(line) > MAX_LINE_BYTES:
+            raise ValueError('input_bytes_limit_exceeded')
         if index > MAX_RECORDS:
             raise ValueError('input_record_limit_exceeded')
         total_bytes += len(line)
-        if len(line) > MAX_LINE_BYTES or total_bytes > MAX_INPUT_BYTES:
+        if total_bytes > MAX_INPUT_BYTES:
             raise ValueError('input_bytes_limit_exceeded')
         try:
             record = _strict_json(line)
