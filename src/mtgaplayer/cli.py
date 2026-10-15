@@ -84,6 +84,7 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
         staged['combat_frontier'] = combat.project(reducer, staged)
     document['decision_state'] = build_decision_state(staged, version=version)
     document['current'].pop('_turn_context', None)
+    document['current'].pop('_public_stack', None)
     if interrupted and document['decision_state'] is not None:
         document['decision_state']['unresolved'].append('current_request_continuity_unverified')
         document['decision_state']['unresolved'].sort()
@@ -104,7 +105,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            rules_index_path=None, advice_policy=None, decision_state_version=1):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
-    decision_state = decision_state or decision_state_version == 2
+    decision_state = decision_state or decision_state_version != 1
     if advice_policy is not None:
         if format != 'player-log':
             raise ValueError('advice_requires_player_log_format')
@@ -204,7 +205,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     """Finite read-only observations. Each yielded sample is a standalone document."""
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
-    decision_state = decision_state or decision_state_version == 2
+    decision_state = decision_state or decision_state_version != 1
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
     if action_gaps and not decision_input:
@@ -437,8 +438,8 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2), default=1,
-                                   help='explicit v2 adds observed turn context and implies DecisionState')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3), default=1,
+                                   help='explicit v2 adds turn context; v3 also adds literal public Stack order')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -456,17 +457,17 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2), default=1,
-                              help='State/Event version; default1, explicit2 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3), default=1,
+                              help='State/Event version; default1; explicit2/3 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
-                              help='separate read-only DecisionEvent v1 JSONL stream (implies DecisionState)')
+                              help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
                               help='consumer observation age limit >0..86400000ms; needs --decision-events; no protocol TTL')
     rules_parser = sub.add_parser('import-rules', help='build a NEW offline Scryfall static-rule index')
     rules_parser.add_argument('input', type=Path, help='explicit local Scryfall card JSON array')
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
-    consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
+    consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
     consumer_parser.add_argument('--observed-changes', action='store_true',
         help='snapshot-bound visible endpoint changes; no effects or event-history claims')
     consumer_parser.add_argument('--rules-index', type=Path,

@@ -207,7 +207,7 @@ python -m mtgaplayer replay "<explicit Player.log>" --format player-log --decisi
 python -m mtgaplayer watch "<explicit Player.log>" --decision-events --decision-state-version 2 --samples 1000 | python -m mtgaplayer consume-events --advice --rules-index "<rules-v1.sqlite>"
 ```
 
-Version1 remains the default and its three-field turn contract is unchanged. Explicit `--decision-state-version 2` adds observed `phase`, `step` and `priorityPlayer` to `DecisionState v2`; event mode emits `DecisionEvent v2` embedding only State v2. A Consumer accepts either pair but pins the first accepted Event version for its subscription; mixed/crossed/unknown versions fail closed. Python entry points use `decision_state_version=2` on replay/watch/watch_decision_events, `version=2` on build_decision_state and `state_version=2` on DecisionPublisher. Formal v1/v2 schemas are separate local URNs.
+Version1 remains the default and its three-field turn contract is unchanged. Explicit `--decision-state-version 2` adds observed `phase`, `step` and `priorityPlayer` to `DecisionState v2`; event mode emits `DecisionEvent v2` embedding only State v2. A Consumer accepts matching supported version pairs and pins the first accepted Event version for its subscription; mixed/crossed/unknown versions fail closed. Python entry points use `decision_state_version=2` on replay/watch/watch_decision_events, `version=2` on build_decision_state and `state_version=2` on DecisionPublisher. Formal v1/v2 schemas are separate local URNs.
 
 Values are literal bounded `Phase_...` / `Step_...` labels and seat1/2 or null, not a phase rules engine or complete enum claim. Decision player and priority player are independent. Missing entire Diff turnInfo inherits the prior observation; a provided turnInfo replaces it, so omitted fields become null. Never infer step from nextStep, turn changes or prior phase. Invalid new fields withhold State v2 (explicit replay exits1); legacy raw/DecisionInput/v1 output remains unchanged. Private turn staging is removed before CLI output. Existing Advisor/static references accept validated v2, without changing policy, effects, legality or execution rights.
 
@@ -396,3 +396,13 @@ The opt-in simple_type_research.v1 policy requires explicitly interpreted reques
 ### Catalog identity for visible objects
 
 Only an ordinary GRE Card supplies a catalog card_id. Public abilities, tokens and unknown object kinds keep their visible instance facts but have card_id=null: their group numbers do not establish card-index identity. Static references therefore remain missing, and observed card endpoint comparisons remain unknown for these objects. This does not remove instance-based action or combat references.
+
+### Opt-in literal public Stack order (v3)
+
+Use `mtgaplayer replay --format player-log --decision-state-version 3 Player.log` or
+`mtgaplayer watch Player.log --decision-events --decision-state-version 3 | mtgaplayer consume-events --advice`.
+State/Event v3 adds game.stack with availability, zone_id and ordered members (list_position, instance_id, object_type). The order_basis is literal_gre_zone_objectInstanceIds: no end is asserted to be the top or next to resolve. Only Card/Ability/Token type labels are retained; other types are null. Card identity still comes only from visible_objects, with noncards unknown.
+
+A wholly absent Diff zone update inherits current reducer data. A replaced Stack zone without membership is unknown; only an explicit empty array confirms empty. Missing/private/ambiguous/unprojectable/over-512-member Stack data is wholly unknown with no member prefix. Default v1 and explicit v2 remain unchanged, and each Consumer subscription requires one matching State/Event version. No resolution, causality, complete event history or execution authority follows.
+
+Formal v3 contracts: [DecisionState](schemas/decision-state.v3.schema.json) and [DecisionEvent](schemas/decision-event.v3.schema.json). Cross-object identity and membership consistency are additionally checked at runtime.
