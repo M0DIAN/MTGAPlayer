@@ -178,6 +178,18 @@ Qualification covers request delivery/consumption/replacement, state advance, co
 
 Run `.\.venv\Scripts\python.exe scripts/qualify_backpressure.py --output artifacts/local-mp18-phase5/backpressure.json` for the bounded Phase 5 counterexamples. They pause reading actual consumer stdout, confirm an actual write remains blocked, and observe core cache clearing before reads resume: observation age with continuing liveness, open-pipe transport silence, a new request, separate input/output overflow, synthetic Python cancellation, abnormal producer EOF and blocking beyond shutdown grace. Temporary read-only probes sample plain internal fields and wrap original core transitions; the observer never calls `tick` or `current_view`. Test stderr is internal evidence only, not a product notification bypass. Output recovery checks the final reason; persistent blocking explicitly permits terminal loss and records the abandoned writer. Normal/deep-copy/default CLI regressions remain in the existing suites.
 
+### MP21 offline static-rule reference index
+
+Prepare a local Scryfall **card JSON array** yourself, then create a new versioned index:
+
+```powershell
+python -m mtgaplayer import-rules "<local-card-array.json>" --output "<new-rules-v1.sqlite>" --source-version "<dataset-version>"
+```
+
+The command streams UTF-8 input (up to 2 GiB, one million records and 1 MiB buffered per card), stores only selected static fields, and reports counts plus the source SHA-256. `source_version` is a user-supplied label, not independent freshness or authenticity proof. Existing outputs are never overwritten; failed imports leave no published index. Select a new path to update.
+
+`mtgaplayer.rules_index.lookup_rules(path, arena_ids)` reads exact Arena IDs from the index with immutable/read-only SQLite. Missing IDs stay unresolved; every duplicate ID stays ambiguous, including identical duplicates. Names never disambiguate. Scryfall printing/Oracle IDs, digital flag, layout and separate card faces are preserved; absent fields stay null. No face is selected, no face texts or costs are merged, and `power`/`toughness` remain literal strings. Reference text/keywords/cost are not current effects, effective stats, payment legality or complete rules. Runtime performs no downloads or LLM calls; the repository bundles no card dataset. Default replay/watch and DecisionState/Event v1 remain unchanged.
+
 ### MP19 evidence-bounded decision advisor (read-only research)
 
 `mtgaplayer.decision_advisor` assesses existing projections without calling the synthetic harness policy, parsing GRE, querying a database or connecting an executor. The APIs are:

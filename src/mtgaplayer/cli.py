@@ -426,6 +426,10 @@ def main(argv=None):
                               help='separate read-only DecisionEvent v1 JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
                               help='consumer observation age limit >0..86400000ms; needs --decision-events; no protocol TTL')
+    rules_parser = sub.add_parser('import-rules', help='build a NEW offline Scryfall static-rule index')
+    rules_parser.add_argument('input', type=Path, help='explicit local Scryfall card JSON array')
+    rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
+    rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
     consumer_parser.add_argument('--max-event-silence-ms', type=float, default=5000,
                                  help='local transport silence policy >0..86400000ms (default 5000)')
@@ -474,6 +478,13 @@ def main(argv=None):
     if args.command == 'doctor':
         result = doctor(args.config, args.log)
         code = 0 if result['interpreter_supported'] and result['config']['valid'] else 1
+    elif args.command == 'import-rules':
+        from .rules_index import build_rules_index, RulesIndexError
+        try:
+            result = build_rules_index(args.input, args.output, source_version=args.source_version)
+            code = 0
+        except RulesIndexError as exc:
+            result, code = {'error': str(exc), 'input_sent': False}, 1
     elif args.command == 'consume-events':
         from .decision_consumer import DecisionConsumer, consume_events
         limits = (args.max_event_silence_ms, args.max_observation_age_ms)
