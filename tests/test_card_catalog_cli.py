@@ -1,5 +1,6 @@
 """MP11: opt-in CLI catalog replay and source-only count summary."""
 import copy
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -18,7 +19,7 @@ SCRIPT = ROOT / "scripts/inspect_card_catalog.py"
 
 
 def create_card_db(path):
-    with sqlite3.connect(path) as conn:
+    with closing(sqlite3.connect(path)) as conn, conn:
         conn.execute("CREATE TABLE Cards (GrpId INTEGER, TitleId INTEGER, ExpansionCode TEXT, CollectorNumber TEXT)")
         conn.execute("CREATE TABLE Localizations_enUS (LocId INTEGER, Loc TEXT, Formatted INTEGER)")
         conn.executemany("INSERT INTO Cards VALUES (?,?,?,?)", [
@@ -95,7 +96,7 @@ class CardCatalogCLITests(unittest.TestCase):
             log, db = root / "Player.log", root / "cards.mtga"
             fixture_prefix(log)
             create_card_db(db)
-            with sqlite3.connect(db) as conn:
+            with closing(sqlite3.connect(db)) as conn, conn:
                 for name in ("Types", "Colors", "Power", "Toughness",
                              "AbilityIds"):
                     conn.execute('ALTER TABLE Cards ADD COLUMN "' + name + '" TEXT')
