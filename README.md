@@ -200,6 +200,17 @@ python -m mtgaplayer replay --format player-log --rules-index "<rules-v1.sqlite>
 
 For a subscription, `mtgaplayer.rules_index.load_rules_index(index_path)` prepares the explicit local index once before starting event consumption. The returned `PreparedRulesIndex.lookup(arena_ids)` has the same valid-data result as file lookup, returns detached copies and performs no filesystem or SQLite operations. Its source version/SHA stay fixed even if the original path is removed or replaced; start a new subscription to change versions. Defaults bound 100,000 indexed IDs and 64 MiB of encoded JSON payload, including metadata values (Python heap overhead is additional). Complete row/metadata validation and count reconciliation precede publication; limits or corruption fail explicitly. Missing IDs stay unresolved and duplicate catalog IDs stay ambiguous. No downloads or implicit reload.
 
+### Optional DecisionState / DecisionEvent v2 turn context
+
+```powershell
+python -m mtgaplayer replay "<explicit Player.log>" --format player-log --decision-state-version 2
+python -m mtgaplayer watch "<explicit Player.log>" --decision-events --decision-state-version 2 --samples 1000 | python -m mtgaplayer consume-events --advice --rules-index "<rules-v1.sqlite>"
+```
+
+Version1 remains the default and its three-field turn contract is unchanged. Explicit `--decision-state-version 2` adds observed `phase`, `step` and `priorityPlayer` to `DecisionState v2`; event mode emits `DecisionEvent v2` embedding only State v2. A Consumer accepts either pair but pins the first accepted Event version for its subscription; mixed/crossed/unknown versions fail closed. Python entry points use `decision_state_version=2` on replay/watch/watch_decision_events, `version=2` on build_decision_state and `state_version=2` on DecisionPublisher. Formal v1/v2 schemas are separate local URNs.
+
+Values are literal bounded `Phase_...` / `Step_...` labels and seat1/2 or null, not a phase rules engine or complete enum claim. Decision player and priority player are independent. Missing entire Diff turnInfo inherits the prior observation; a provided turnInfo replaces it, so omitted fields become null. Never infer step from nextStep, turn changes or prior phase. Invalid new fields withhold State v2 (explicit replay exits1); legacy raw/DecisionInput/v1 output remains unchanged. Private turn staging is removed before CLI output. Existing Advisor/static references accept validated v2, without changing policy, effects, legality or execution rights.
+
 ### Current Consumer static references
 
 ```powershell

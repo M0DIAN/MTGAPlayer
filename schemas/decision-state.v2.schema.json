@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mtgaplayer:decision-state:v2",
+  "title": "MTGAPlayer read-only DecisionState v2",
+  "$comment": "Null means invalid, discontinuous or partial current source. Identity equality across child projections is additionally enforced by the assembler and invariant tests. Legacy projections retain their own field names; generation there equals binding.source_generation.",
+  "type": ["object", "null"],
+  "required": ["schema_version", "status", "binding", "source", "game", "visible_objects", "card_knowledge", "effect_claims", "legal_action_space", "unresolved", "execution", "read_only"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "mtgaplayer.decision-state.v2"},
+    "status": {"enum": ["state_and_request_observed", "state_observed_without_request"]},
+    "binding": {"$ref": "#/$defs/binding"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["format", "mode", "byte_offset", "phase", "stopped", "partial_record", "freshness_verified", "snapshot_scope"],
+      "properties": {
+        "format": {"const": "player-log-gre-v1"}, "mode": {"enum": ["offline", "watch"]},
+        "byte_offset": {"type": ["integer", "null"], "minimum": 0},
+        "phase": {"enum": [null, "history", "append"]}, "stopped": {"type": ["boolean", "null"]},
+        "partial_record": {"const": false}, "freshness_verified": {"const": false},
+        "snapshot_scope": {"const": "single_reducer_document"}
+      }
+    },
+    "game": {
+      "type": "object", "additionalProperties": false,
+      "required": ["room_state", "game_stage", "source_state_timestamp", "turn", "players", "hidden_counts", "mana", "effective_combat_stats", "rules"],
+      "properties": {
+        "room_state": {"type": ["string", "null"]}, "game_stage": {"type": ["string", "null"]},
+        "source_state_timestamp": {"type": ["string", "null"]},
+        "turn": {
+          "type": "object", "additionalProperties": false,
+          "required": ["turnNumber", "activePlayer", "decisionPlayer", "phase", "step", "priorityPlayer"],
+          "properties": {"turnNumber": {"type": ["integer", "null"]}, "activePlayer": {"type": ["integer", "null"]}, "decisionPlayer": {"type": ["integer", "null"]}, "priorityPlayer": {"type": ["integer", "null"], "minimum": 1, "maximum": 2}, "phase": {"type": ["string", "null"], "pattern": "^Phase_[A-Za-z0-9_]{1,80}$"}, "step": {"type": ["string", "null"], "pattern": "^Step_[A-Za-z0-9_]{1,80}$"}}
+        },
+        "players": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["seat", "life"], "properties": {"seat": {"enum": [1, 2]}, "life": {"type": ["integer", "null"]}}}},
+        "hidden_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+        "mana": {"type": "null"}, "effective_combat_stats": {"type": "null"}, "rules": {"type": "null"}
+      }
+    },
+    "visible_objects": {"type": "array", "maxItems": 512, "items": {"$ref": "#/$defs/visibleObject"}},
+    "card_knowledge": {
+      "type": ["object", "null"], "additionalProperties": false, "required": ["source", "objects"],
+      "properties": {
+        "source": {"const": "local_catalog_static_only"},
+        "objects": {"type": "array", "maxItems": 512, "items": {
+          "type": "object", "additionalProperties": false, "required": ["instance_id", "card_id", "knowledge"],
+          "properties": {"instance_id": {"$ref": "#/$defs/id"}, "card_id": {"$ref": "#/$defs/nullableId"}, "knowledge": {
+            "type": "object", "required": ["status"], "additionalProperties": false,
+            "properties": {
+              "status": {"enum": ["resolved", "unresolved", "ambiguous", "missing_card_id"]},
+              "name": {"type": "string"}, "set_code": {"type": ["string", "null"]}, "collector_number": {"type": ["string", "null"]},
+              "static_catalog_stats": {"type": "object", "additionalProperties": false, "required": ["power", "toughness", "source", "effective_in_game", "rules_verified"],
+                "properties": {"power": {"type": ["integer", "null"]}, "toughness": {"type": ["integer", "null"]}, "source": {"const": "Cards.Power/Toughness"}, "effective_in_game": {"const": false}, "rules_verified": {"const": false}}}
+            }
+          }}
+        }}
+      }
+    },
+    "effect_claims": {"type": "null"},
+    "legal_action_space": {
+      "type": "object", "additionalProperties": false,
+      "required": ["request_type", "immediate_frontier", "choice_graph", "expanded_plans"],
+      "properties": {
+        "request_type": {"type": ["string", "null"]},
+        "immediate_frontier": {
+          "type": "object", "additionalProperties": false, "required": ["kind", "availability", "completeness", "projection"],
+          "properties": {
+            "kind": {"enum": [null, "actions_available", "select_n", "declare_attackers", "declare_blockers"]},
+            "availability": {"enum": ["observed", "confirmed_empty", "unknown", "not_provided", "unsupported", "not_applicable"]},
+            "completeness": {"$ref": "#/$defs/phase1Completeness"},
+            "projection": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/actionFrontier"}, {"$ref": "#/$defs/selectN"}, {"$ref": "#/$defs/combatFrontier"}]}
+          },
+          "allOf": [
+            {"if": {"properties": {"kind": {"const": null}}}, "then": {"properties": {"projection": {"type": "null"}, "completeness": {"const": "unknown"}}}},
+            {"if": {"properties": {"availability": {"enum": ["unknown", "not_provided", "unsupported", "not_applicable"]}}}, "then": {"properties": {"completeness": {"const": "unknown"}}}},
+            {"if": {"properties": {"availability": {"enum": ["observed", "confirmed_empty"]}}}, "then": {"properties": {"projection": {"type": "object"}, "completeness": {"const": "partial"}}}},
+            {"if": {"properties": {"kind": {"const": "actions_available"}}}, "then": {"properties": {"projection": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/actionFrontier"}]}}}},
+            {"if": {"properties": {"kind": {"const": "select_n"}}}, "then": {"properties": {"projection": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/selectN"}]}}}},
+            {"if": {"properties": {"kind": {"const": "declare_attackers"}}}, "then": {"properties": {"projection": {"anyOf": [{"type": "null"}, {"allOf": [{"$ref": "#/$defs/combatFrontier"}, {"properties": {"combat_request_type": {"const": "GREMessageType_DeclareAttackersReq"}}}]}]}}}},
+            {"if": {"properties": {"kind": {"const": "declare_blockers"}}}, "then": {"properties": {"projection": {"anyOf": [{"type": "null"}, {"allOf": [{"$ref": "#/$defs/combatFrontier"}, {"properties": {"combat_request_type": {"const": "GREMessageType_DeclareBlockersReq"}}}]}]}}}},
+            {"if": {"properties": {"kind": {"const": "actions_available"}, "availability": {"const": "confirmed_empty"}}}, "then": {"properties": {"projection": {"required": ["engine_active_action_count"], "properties": {"engine_active_action_count": {"const": 0}, "templates": {"const": []}}}}}},
+            {"if": {"properties": {"kind": {"const": "select_n"}, "availability": {"const": "confirmed_empty"}}}, "then": {"properties": {"projection": {"properties": {"offered_instance_ids": {"const": []}}}}}},
+            {"if": {"properties": {"kind": {"enum": ["declare_attackers", "declare_blockers"]}, "availability": {"const": "confirmed_empty"}}}, "then": {"properties": {"projection": {"required": ["observed_candidate_count"], "properties": {"observed_candidate_count": {"const": 0}, "engine_offered_candidates": {"const": []}}}}}}
+          ]
+        },
+        "choice_graph": {"type": ["object", "null"], "required": ["schema_version", "request_identity", "action_nodes", "completeness", "read_only", "legal_choice_verified", "response_encoding_verified", "execution_ready", "input_sent"],
+          "properties": {"schema_version": {"const": "mtga-choice-graph-v1"}, "request_identity": {"$ref": "#/$defs/legacyIdentity"}, "action_nodes": {"type": "array", "items": {"$ref": "#/$defs/actionNode"}}, "expanded_choices": {"type": "object", "additionalProperties": false, "required": ["completeness", "legal_combinations"], "properties": {"completeness": {"const": "unknown"}, "legal_combinations": {"type": "null"}}}, "completeness": {"$ref": "#/$defs/phase1Completeness"}, "read_only": {"const": true}, "legal_choice_verified": {"const": false}, "response_encoding_verified": {"const": false}, "execution_ready": {"const": false}, "input_sent": {"const": false}}},
+        "expanded_plans": {"type": "object", "additionalProperties": false, "required": ["completeness", "plans"], "properties": {"completeness": {"const": "unknown"}, "plans": {"type": "null"}}}
+      },
+      "allOf": [
+        {"if": {"properties": {"immediate_frontier": {"properties": {"kind": {"not": {"const": "actions_available"}}}}}}, "then": {"properties": {"choice_graph": {"type": "null"}}}},
+        {"if": {"properties": {"immediate_frontier": {"properties": {"kind": {"const": "actions_available"}}}}}, "then": {"properties": {"request_type": {"const": "GREMessageType_ActionsAvailableReq"}}}},
+        {"if": {"properties": {"immediate_frontier": {"properties": {"kind": {"const": "select_n"}}}}}, "then": {"properties": {"request_type": {"const": "GREMessageType_SelectNReq"}}}},
+        {"if": {"properties": {"immediate_frontier": {"properties": {"kind": {"const": "declare_attackers"}}}}}, "then": {"properties": {"request_type": {"const": "GREMessageType_DeclareAttackersReq"}}}},
+        {"if": {"properties": {"immediate_frontier": {"properties": {"kind": {"const": "declare_blockers"}}}}}, "then": {"properties": {"request_type": {"const": "GREMessageType_DeclareBlockersReq"}}}}
+      ]
+    },
+    "unresolved": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "execution": {"type": "object", "additionalProperties": false,
+      "required": ["actionable", "executor_connected", "legal_choice_verified", "complete_legality_verified", "response_encoding_verified", "server_acceptance_verified", "execution_ready", "input_sent"],
+      "properties": {"actionable": {"const": false}, "executor_connected": {"const": false}, "legal_choice_verified": {"const": false}, "complete_legality_verified": {"const": false}, "response_encoding_verified": {"const": false}, "server_acceptance_verified": {"const": false}, "execution_ready": {"const": false}, "input_sent": {"const": false}}},
+    "read_only": {"const": true}
+  },
+  "allOf": [
+    {"$ref": "#/$defs/readOnlyValue"},
+    {"if": {"type": "object", "properties": {"status": {"const": "state_observed_without_request"}}}, "then": {"properties": {"binding": {"properties": {"request_id": {"type": "null"}, "request_type": {"type": "null"}}}, "legal_action_space": {"properties": {"request_type": {"type": "null"}, "choice_graph": {"type": "null"}, "immediate_frontier": {"properties": {"kind": {"type": "null"}, "availability": {"const": "not_provided"}, "projection": {"type": "null"}}}}}}}},
+    {"if": {"type": "object", "properties": {"status": {"const": "state_and_request_observed"}}}, "then": {"properties": {"binding": {"properties": {"request_id": {"$ref": "#/$defs/id"}, "request_type": {"type": "string"}}}}}}
+  ],
+  "$defs": {
+    "readOnlyValue": {
+      "$comment": "Apply read-only and no-new-completeness-proof invariants recursively, including extensible legacy child projections. This constrains claims without interpreting opaque parameter structures.",
+      "properties": {
+        "read_only": {"const": true}, "actionable": {"const": false},
+        "usable_now": {"const": false}, "executor_connected": {"const": false},
+        "legal_choice_verified": {"const": false}, "complete_legality_verified": {"const": false},
+        "response_encoding_verified": {"const": false}, "server_acceptance_verified": {"const": false},
+        "execution_ready": {"const": false}, "input_sent": {"const": false}
+      },
+      "patternProperties": {"completeness": {
+        "allOf": [{"not": {"const": "complete_verified"}}, {"$ref": "#/$defs/readOnlyValue"}]
+      }},
+      "additionalProperties": {"$ref": "#/$defs/readOnlyValue"},
+      "items": {"$ref": "#/$defs/readOnlyValue"}
+    },
+    "id": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "nullableId": {"type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991},
+    "completenessVocabulary": {"enum": ["partial", "unknown", "not_applicable", "complete_verified"]},
+    "phase1Completeness": {"$comment": "Phase 1 supplies no new completeness proof.", "allOf": [{"$ref": "#/$defs/completenessVocabulary"}, {"enum": ["partial", "unknown"]}]},
+    "binding": {"type": "object", "additionalProperties": false, "required": ["source_generation", "match", "game", "self_seat", "game_state_id", "request_id", "request_type"],
+      "properties": {"source_generation": {"$ref": "#/$defs/id"}, "match": {"type": "string", "minLength": 1}, "game": {"type": "integer", "minimum": 1}, "self_seat": {"enum": [1, 2]}, "game_state_id": {"$ref": "#/$defs/id"}, "request_id": {"$ref": "#/$defs/nullableId"}, "request_type": {"type": ["string", "null"]}}},
+    "legacyIdentity": {"type": "object", "additionalProperties": false, "required": ["generation", "match", "game", "self_seat", "game_state_id", "request_id"],
+      "properties": {"generation": {"$ref": "#/$defs/id"}, "match": {"type": "string", "minLength": 1}, "game": {"type": "integer", "minimum": 1}, "self_seat": {"enum": [1, 2]}, "game_state_id": {"$ref": "#/$defs/id"}, "request_id": {"$ref": "#/$defs/id"}, "request_type": {"type": "string"}}},
+    "visibleObject": {"type": "object", "additionalProperties": false, "required": ["instance_id", "card_id", "zone", "owner_seat", "controller_seat", "tapped", "effective_power", "effective_toughness"],
+      "properties": {"instance_id": {"$ref": "#/$defs/id"}, "card_id": {"$ref": "#/$defs/nullableId"}, "zone": {"type": ["string", "null"]}, "owner_seat": {"enum": [1, 2, null]}, "controller_seat": {"enum": [1, 2, null]}, "tapped": {"type": ["boolean", "null"]}, "effective_power": {"type": "null"}, "effective_toughness": {"type": "null"}}},
+    "actionFrontier": {"type": "object", "required": ["schema", "request_identity", "templates", "immediate_completeness", "expanded_choice_completeness", "read_only", "actionable", "input_sent"],
+      "properties": {"schema": {"const": "mtga-action-frontier-v1"}, "request_identity": {"$ref": "#/$defs/legacyIdentity"}, "immediate_completeness": {"$ref": "#/$defs/phase1Completeness"}, "expanded_choice_completeness": {"const": "unknown"}, "templates": {"type": ["array", "null"], "maxItems": 256, "items": {"$ref": "#/$defs/actionTemplate"}}, "read_only": {"const": true}, "actionable": {"const": false}, "input_sent": {"const": false}}},
+    "selectN": {"type": "object", "additionalProperties": false, "required": ["offered_instance_ids", "max_sel_raw", "min_sel_verified", "combinations_complete", "source_ids_not_visibility_joined"],
+      "$comment": "Supported decoder slice is a nonempty unique domain; runtime also checks max_sel_raw <= domain length.",
+      "properties": {"offered_instance_ids": {"type": "array", "minItems": 1, "maxItems": 256, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}}, "max_sel_raw": {"type": "integer", "minimum": 1, "maximum": 256}, "min_sel_verified": {"type": "null"}, "combinations_complete": {"const": false}, "source_ids_not_visibility_joined": {"const": true}}},
+    "combatFrontier": {"type": "object", "required": ["schema", "request_identity", "combat_request_type", "engine_offered_candidates", "completeness", "known_constraints", "read_only", "legal_choice_verified", "complete_legality_verified", "response_encoding_verified", "server_acceptance_verified", "execution_ready", "input_sent"],
+      "properties": {"schema": {"const": "mtga-combat-frontier-v1"}, "request_identity": {"$ref": "#/$defs/legacyIdentity"}, "combat_request_type": {"enum": ["GREMessageType_DeclareAttackersReq", "GREMessageType_DeclareBlockersReq"]}, "engine_offered_candidates": {"type": ["array", "null"], "maxItems": 256, "items": {"$ref": "#/$defs/combatCandidate"}}, "completeness": {"$ref": "#/$defs/phase1Completeness"}, "known_constraints": {"const": []}, "read_only": {"const": true}, "legal_choice_verified": {"const": false}, "complete_legality_verified": {"const": false}, "response_encoding_verified": {"const": false}, "server_acceptance_verified": {"const": false}, "execution_ready": {"const": false}, "input_sent": {"const": false}}},
+    "actionKey": {"type": "object", "required": ["request_identity", "list_position"], "properties": {"request_identity": {"$ref": "#/$defs/legacyIdentity"}, "list_position": {"type": "integer", "minimum": 0}}},
+    "actionTemplate": {"type": "object", "required": ["action_key", "request_identity", "list_position", "engine_action_type", "engine_offered", "observed_parameter_shapes", "unresolved_parameters", "legal_choice_verified", "response_encoding_verified", "execution_ready", "actionable", "input_sent"],
+      "properties": {"action_key": {"$ref": "#/$defs/actionKey"}, "request_identity": {"$ref": "#/$defs/legacyIdentity"}, "list_position": {"type": "integer", "minimum": 0}, "engine_action_type": {"type": "string"}, "engine_offered": {"const": true}, "observed_parameter_shapes": {"type": "object"}, "unresolved_parameters": {"type": "array", "items": {"type": "string"}}, "legal_choice_verified": {"const": false}, "response_encoding_verified": {"const": false}, "execution_ready": {"const": false}, "actionable": {"const": false}, "input_sent": {"const": false}}},
+    "actionNode": {"type": "object", "required": ["action_key", "constraints", "legal_choice_verified", "response_encoding_verified", "execution_ready", "input_sent"], "properties": {"action_key": {"$ref": "#/$defs/actionKey"}, "constraints": {"type": "array", "items": {"type": "object"}}, "legal_choice_verified": {"const": false}, "response_encoding_verified": {"const": false}, "execution_ready": {"const": false}, "input_sent": {"const": false}}},
+    "combatCandidate": {"type": "object", "required": ["candidate_key", "candidate_position", "candidate_instance_id", "reference_verified", "legal_choice_verified", "complete_legality_verified", "response_encoding_verified", "server_acceptance_verified", "execution_ready", "input_sent"],
+      "properties": {"candidate_key": {"type": "object", "required": ["request_identity", "candidate_position"], "properties": {"request_identity": {"$ref": "#/$defs/legacyIdentity"}, "candidate_position": {"type": "integer", "minimum": 0}}}, "candidate_position": {"type": "integer", "minimum": 0}, "candidate_instance_id": {"$ref": "#/$defs/nullableId"}, "reference_verified": {"type": "boolean"}, "legal_choice_verified": {"const": false}, "complete_legality_verified": {"const": false}, "response_encoding_verified": {"const": false}, "server_acceptance_verified": {"const": false}, "execution_ready": {"const": false}, "input_sent": {"const": false}}}
+  }
+}

@@ -11,9 +11,11 @@ import re
 import time
 import uuid
 
-from .decision_state import FLAGS, SCHEMA_VERSION, _bound_readonly
+from .decision_state import FLAGS, SCHEMA_VERSIONS, state_schema_version, _bound_readonly
 
 EVENT_VERSION = 'mtgaplayer.decision-event.v1'
+EVENT_VERSIONS = {1: EVENT_VERSION, 2: 'mtgaplayer.decision-event.v2'}
+EVENT_STATE_VERSIONS = {EVENT_VERSIONS[key]: value for key, value in SCHEMA_VERSIONS.items()}
 IDENTITY = ('source_generation', 'match', 'game', 'self_seat', 'game_state_id',
             'request_id', 'request_type')
 MAX_AGE_NS = 86_400_000_000_000  # Consumer policy bound (24h), not protocol TTL.
@@ -55,7 +57,9 @@ class DecisionPublisher:
     No empty poll or retransmission can reactivate an expired reference.
     """
 
-    def __init__(self, max_observation_age_ns=None, clock_ns=None, session_id=None):
+    def __init__(self, max_observation_age_ns=None, clock_ns=None, session_id=None, *, state_version=1):
+        self.state_version = state_schema_version(state_version)
+        self.event_version = EVENT_VERSIONS[state_version]
         if max_observation_age_ns is not None and (
                 type(max_observation_age_ns) is not int or
                 not 1 <= max_observation_age_ns <= MAX_AGE_NS):
@@ -87,7 +91,7 @@ class DecisionPublisher:
 
     def _event(self, kind, **fields):
         self.sequence += 1
-        return {'schema_version': EVENT_VERSION, 'session_id': self.session_id,
+        return {'schema_version': self.event_version, 'session_id': self.session_id,
                 'sequence': self.sequence, 'event_type': kind,
                 'binding': copy.deepcopy(self._binding), 'phase': self._phase,
                 'source_status': self._status, 'subscription_active': not self.closed,
@@ -148,7 +152,7 @@ class DecisionPublisher:
         if state is not None:
             identity = {'generation': self._binding['source_generation'],
                         **{k: self._binding[k] for k in IDENTITY if k not in ('source_generation', 'request_type')}}
-            if (state.get('schema_version') != SCHEMA_VERSION or state.get('read_only') is not True or
+            if (state.get('schema_version') != self.state_version or state.get('read_only') is not True or
                     not _bound_readonly(state, identity, self._binding['request_type'])):
                 raise ValueError('invalid_decision_state_observation')
         self._status = (state['status'] if state is not None else
