@@ -12,6 +12,7 @@ import queue
 import re
 import threading
 import time
+from collections import deque
 
 from .decision_publisher import EVENT_VERSION, IDENTITY, MAX_AGE_NS, STOP_REASONS
 from .decision_state import FLAGS, KINDS, SCHEMA_VERSION, _bound_readonly
@@ -483,14 +484,105 @@ def _json_line(line):
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite_json')))
 
 
-def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64):
-    """Thin one-shot JSONL adapter. A daemon reader cannot block lease checks.
+class _DiagnosticOutput:
+    """One bounded, consumer-independent writer. Never emit under its lock.
 
-    No lines are coalesced or dropped. Overflow quarantines the subscription.
-    A blocked reader is abandoned on cancellation/timeout; it owns no consumer
-    state. The CLI process owns stdin and exits, closing that OS pipe.
+    Capacity bounds pending ordinary diagnostics, plus one in-flight call and
+    one terminal slot. An arbitrary blocking callback cannot be cancelled;
+    close abandons at most that daemon call after the bounded grace period.
     """
-    if not 0 < tick_seconds <= 1 or type(queue_capacity) is not int or not 1 <= queue_capacity <= 1024:
+    def __init__(self, emit, capacity):
+        self._emit, self._capacity = emit, capacity
+        self._condition = threading.Condition()
+        self._pending = deque()
+        self._terminal = None
+        self._closed = False
+        self.failure = None
+        self._peak = self._overflows = self._dropped = 0
+        self._inflight = False
+        self.thread = threading.Thread(target=self._run, name='decision-diagnostic-writer', daemon=True)
+        self.thread.start()
+
+    def metrics(self):
+        with self._condition:
+            return {'capacity': self._capacity, 'pending': len(self._pending), 'peak': self._peak,
+                    'overflows': self._overflows, 'dropped': self._dropped,
+                    'inflight': self._inflight, 'terminal_pending': self._terminal is not None,
+                    'writer_alive': self.thread.is_alive()}
+
+    def offer(self, diagnostic):
+        with self._condition:
+            if len(self._pending) >= self._capacity:
+                self._overflows += 1
+                self._dropped += 1
+                return False
+            self._pending.append(diagnostic)
+            self._peak = max(self._peak, len(self._pending))
+            self._condition.notify()
+            return True
+
+    def finish(self, diagnostic, priority=False):
+        with self._condition:
+            if priority:
+                self._dropped += len(self._pending)
+                self._pending.clear()
+            self._terminal = dict(diagnostic)
+            if self._dropped:
+                self._terminal.update(diagnostics_complete=False, diagnostics_dropped=self._dropped)
+            self._closed = True
+            self._condition.notify()
+
+    def close(self, grace):
+        with self._condition:
+            self._closed = True
+            self._condition.notify()
+        self.thread.join(grace)
+        with self._condition:
+            # Never begin another emit after abandoning a blocked callback.
+            self._dropped += len(self._pending) + int(self._terminal is not None)
+            self._pending.clear()
+            self._terminal = None
+        return not self.thread.is_alive()
+
+    def _run(self):
+        try:
+            while True:
+                with self._condition:
+                    self._condition.wait_for(lambda: self._pending or self._terminal is not None or self._closed)
+                    if self._pending:
+                        value = self._pending.popleft()
+                    elif self._terminal is not None:
+                        value, self._terminal = self._terminal, None
+                    else:
+                        return
+                    self._inflight = True
+                try:
+                    self._emit(value)
+                finally:
+                    with self._condition:
+                        self._inflight = False
+        except BaseException as exc:
+            with self._condition:
+                self.failure = exc
+                self._closed = True
+                self._dropped += len(self._pending) + int(self._terminal is not None)
+                self._pending.clear()
+                self._terminal = None
+
+
+def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
+                   output_queue_capacity=64, output_grace_seconds=.75):
+    """One-shot JSONL adapter with bounded independent input/output workers.
+
+    Input ordering is strict; overflow quarantines rather than skipping events.
+    Output backpressure cannot stop core lease checks. Pending diagnostics may
+    be discarded on quarantine, explicitly marked incomplete in the terminal
+    diagnostic. A blocked output cannot guarantee terminal delivery. Workers
+    own no consumer state; process exit closes the CLI-owned OS pipes.
+    """
+    if (not 0 < tick_seconds <= 1 or type(queue_capacity) is not int or not 1 <= queue_capacity <= 1024
+            or type(output_queue_capacity) is not int or not 1 <= output_queue_capacity <= 1024
+            or not 0 < output_grace_seconds <= 1):
         raise ValueError('invalid_consumer_stream_bounds')
     consumer = consumer if consumer is not None else DecisionConsumer()
     inbox, overflow, done = queue.Queue(queue_capacity), threading.Event(), threading.Event()
@@ -543,9 +635,20 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 overflow.set()
 
     threading.Thread(target=reader, name='decision-jsonl-reader', daemon=True).start()
+    output = _DiagnosticOutput(emit, output_queue_capacity)
     last_diagnostic = None
+    result = 1
+
+    def diagnostic():
+        view = consumer.current_view()
+        # Deliberately omit binding, private state and candidate content.
+        return {k: view[k] for k in ('consumer_status', 'last_sequence',
+            'new_request_observed', 'transport_alive', 'unresolved', 'read_only', *EXECUTION)}
+
     try:
         while True:
+            if output.failure is not None:
+                raise output.failure
             if overflow.is_set():
                 consumer._clear('PROTOCOL_ERROR', 'input_queue_overflow')
             else:
@@ -565,23 +668,30 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                             consumer._clear('PROTOCOL_ERROR', 'invalid_json_line')
                         else:
                             consumer.accept_event(event, received_ns=received)
-            view = consumer.current_view()
-            # Deliberately omit binding, private state and candidate content.
-            diagnostic = {k: view[k] for k in ('consumer_status', 'last_sequence',
-                'new_request_observed', 'transport_alive', 'unresolved', 'read_only', *EXECUTION)}
-            if diagnostic != last_diagnostic:
-                emit(diagnostic)
-                last_diagnostic = diagnostic
-            if view['consumer_status'] in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
-                return 0 if consumer._stopped and view['unresolved'] != ['source_error'] else 1
+            value = diagnostic()
+            if value['consumer_status'] in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
+                result = 0 if consumer._stopped and value['unresolved'] != ['source_error'] else 1
+                output.finish(value, priority=result != 0)
+                break
+            if value != last_diagnostic:
+                if not output.offer(value):
+                    consumer._clear('PROTOCOL_ERROR', 'diagnostic_output_queue_overflow')
+                    output.finish(diagnostic(), priority=True)
+                    break
+                last_diagnostic = value
     except KeyboardInterrupt:
         consumer.close('cancelled')
-        emit({'consumer_status': 'CLOSED', 'unresolved': ['cancelled'], 'read_only': True, **EXECUTION})
-        return 1
+        output.finish(diagnostic(), priority=True)
     except OSError:
         consumer.close('output_stream_error')
-        return 1
     finally:
         done.set()
         if consumer._status not in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
             consumer._clear('CLOSED', 'subscription_ended')
+        drained = output.close(output_grace_seconds)
+    # A failure during normal terminal drain must never report success.
+    if output.failure is not None:
+        if isinstance(output.failure, OSError):
+            return 1
+        raise output.failure
+    return result if drained else 1

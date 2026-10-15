@@ -84,7 +84,8 @@ def expected_tag(generation, state_id, request_id):
 
 
 def version():
-    paths = ('scripts/qualify_delivery.py', 'scripts/delivery_probe.py', 'tests/test_delivery_qualification.py',
+    paths = ('scripts/qualify_delivery.py', 'scripts/qualify_backpressure.py', 'scripts/delivery_probe.py',
+             'tests/test_delivery_qualification.py', 'tests/test_consumer_backpressure.py',
              'src/mtgaplayer/raw_log.py', 'src/mtgaplayer/cli.py', 'src/mtgaplayer/decision_state.py',
              'src/mtgaplayer/decision_publisher.py', 'src/mtgaplayer/decision_consumer.py')
     def git(*args):
@@ -98,7 +99,7 @@ class Session:
     """Two actual -m CLI processes, direct OS pipe, bounded controller readers."""
 
     def __init__(self, directory, interval, samples, silence_ms=1500, probed=True, pause_file=None,
-                 event_probes=True):
+                 event_probes=True, consumer_role=None, consumer_options=None, age_ms=30000):
         self.directory, self.interval = Path(directory), interval
         self.path = self.directory / 'synthetic.jsonl'
         self.path.write_bytes(encoded(baseline() + [request(40, 1)]))
@@ -116,6 +117,7 @@ class Session:
         self.event_kinds = {}
         self.producer_gated = False
         self.terminal_view = None
+        self.internal = []
         self.threads = []
         self.processes = []
         env = os.environ.copy()
@@ -127,7 +129,7 @@ class Session:
         self.producer_argv = [sys.executable, '-m', 'mtgaplayer', 'watch', str(self.path),
             '--decision-events', '--samples', str(samples), '--interval', str(interval)]
         self.consumer_argv = [sys.executable, '-m', 'mtgaplayer', 'consume-events',
-            '--max-event-silence-ms', str(silence_ms), '--max-observation-age-ms', '30000']
+            '--max-event-silence-ms', str(silence_ms), '--max-observation-age-ms', str(age_ms)]
         self.started = time.perf_counter_ns()
         try:
             producer_env = {**env, 'MTGAPLAYER_DELIVERY_PROBE_ROLE': 'producer'}
@@ -138,7 +140,11 @@ class Session:
                                              cwd=ROOT, env=producer_env)
             self.processes.append(self.producer)
             consumer_env = {**env, 'MTGAPLAYER_DELIVERY_PROBE_ROLE':
-                            'consumer' if self.event_probes else 'consumer_terminal'}
+                            consumer_role or ('consumer' if self.event_probes else 'consumer_terminal')}
+            consumer_env['MTGAPLAYER_CONSUMER_TEST_OPTIONS'] = json.dumps(consumer_options or {})
+            if consumer_role == 'consumer_internal':
+                consumer_env['MTGAPLAYER_TEST_SLOW_ACCEPT_FILE'] = str(self.directory / 'input_overflow.trigger')
+                consumer_env['MTGAPLAYER_TEST_CANCEL_FILE'] = str(self.directory / 'cancel.trigger')
             self.consumer = subprocess.Popen(self.consumer_argv, stdin=self.producer.stdout,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=ROOT, env=consumer_env)
             self.processes.append(self.consumer)
@@ -209,6 +215,9 @@ class Session:
             if value['has_state'] or value['has_reference']:
                 raise QualificationError('terminal_cache_not_cleared')
             self.terminal_view = value
+        elif value.get('_consumer_internal'):
+            value['observed_ns'] = observed
+            self.internal.append(value)
         elif name == 'consumer' and 'consumer_status' in value:
             value['observed_ns'] = observed
             self.diagnostics.append(value)
@@ -335,7 +344,8 @@ class Session:
         if self.probed and self.terminal_view is None:
             raise QualificationError('terminal_view_not_confirmed')
         consumed_sequences = sorted({d['last_sequence'] for d in self.diagnostics if d.get('last_sequence', 0) > 0})
-        if consumed_sequences and consumed_sequences != list(range(1, consumed_sequences[-1] + 1)):
+        if (consumed_sequences and consumed_sequences != list(range(1, consumed_sequences[-1] + 1))
+                and self.diagnostics[-1].get('diagnostics_complete', True)):
             raise QualificationError('diagnostic_sequence_gap')
         consumed_kinds = ([e['event_type'] for e in self.events] if self.event_probes else
                           [self.event_kinds.get(seq) for seq in consumed_sequences])

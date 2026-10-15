@@ -14,6 +14,27 @@ from .stream import Follower
 from .raw_log import RawFollower, RawReducer
 
 
+def _emit_consumer_diagnostic(value):
+    """Raw stdout writes avoid an abandoned daemon holding BufferedWriter.
+
+    Only consume-events uses this path. In-memory redirected stdout remains
+    supported for callers that do not expose an OS descriptor.
+    """
+    line = json.dumps(value, ensure_ascii=False) + '\n'
+    try:
+        descriptor = sys.stdout.fileno()
+    except (AttributeError, OSError, ValueError):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        return
+    pending = line.encode('utf-8')
+    while pending:
+        written = os.write(descriptor, pending)
+        if written <= 0:
+            raise OSError('consumer_diagnostic_short_write')
+        pending = pending[written:]
+
+
 def _project_action_frontier(document):
     """Consume private row evidence, then remove it from the public snapshot."""
     from .action_frontier import build_action_frontier
@@ -459,8 +480,7 @@ def main(argv=None):
         if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
             parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
         consumer = DecisionConsumer(*(round(v * 1_000_000) for v in limits))
-        return consume_events(getattr(sys.stdin, 'buffer', sys.stdin),
-            lambda value: print(json.dumps(value, ensure_ascii=False), flush=True), consumer)
+        return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic, consumer)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
