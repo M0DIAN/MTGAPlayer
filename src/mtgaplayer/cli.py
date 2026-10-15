@@ -455,6 +455,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent v1 JSONL from stdin')
+    consumer_parser.add_argument('--rules-index', type=Path,
+        help='explicit offline rules index prepared once before consumption; static reference only')
     consumer_parser.add_argument('--advice', action='store_true',
                                  help='opt-in snapshot-bound current Advisor output on the same Consumer')
     consumer_parser.add_argument('--advice-policy', choices=[EVIDENCE_POLICY, SIMPLE_TYPE_POLICY],
@@ -522,9 +524,17 @@ def main(argv=None):
         limits = (args.max_event_silence_ms, args.max_observation_age_ms)
         if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
             parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
+        prepared, rules_error = None, None
+        if args.rules_index is not None:
+            from .rules_index import load_rules_index, RulesIndexError
+            try:
+                prepared = load_rules_index(args.rules_index)
+            except RulesIndexError as exc:
+                rules_error = str(exc)
         consumer = DecisionConsumer(*(round(v * 1_000_000) for v in limits))
         return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic,
-                              consumer, advice_policy=advice_policy)
+                              consumer, advice_policy=advice_policy,
+                              prepared_rules=prepared, rules_error=rules_error)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
