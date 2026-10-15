@@ -975,7 +975,10 @@ class RawReducer:
                     obj.get('zoneId') == zone.get('zoneId') and
                     obj.get('visibility') == 'Visibility_Public')
                 if can_see:
-                    visible.append({'id': instance, 'card_id': obj.get('grpId') if _id(obj.get('grpId')) else None,
+                    # An ability/token group number is not established as an
+                    # Arena card catalog ID. Preserve its visible instance.
+                    visible.append({'id': instance, 'card_id': obj.get('grpId') if
+                                    obj.get('type') == 'GameObjectType_Card' and _id(obj.get('grpId')) else None,
                                     'owner': obj.get('ownerSeatId') if _id(obj.get('ownerSeatId')) else None,
                                     'controller': obj.get('controllerSeatId') if _id(obj.get('controllerSeatId')) else None,
                                     'zone': kind, 'tapped': obj.get('isTapped') if type(obj.get('isTapped')) is bool else None})

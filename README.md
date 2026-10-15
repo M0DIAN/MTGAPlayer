@@ -392,3 +392,7 @@ Measured status/blockers and raw evidence: [docs/progress.md](docs/progress.md).
 ### Research preference admission
 
 The opt-in simple_type_research.v1 policy requires explicitly interpreted request fields and positive source card-ID agreement for Play. Unknown request-envelope/body fields and missing legacy evidence withhold a preference while retaining engine-offered rows and their positions. A unique visible instance and agreement of card IDs are independent observations; mismatch is not proof of an illegal action. Evidence-only remains the default, and no result grants execution authority.
+
+### Catalog identity for visible objects
+
+Only an ordinary GRE Card supplies a catalog card_id. Public abilities, tokens and unknown object kinds keep their visible instance facts but have card_id=null: their group numbers do not establish card-index identity. Static references therefore remain missing, and observed card endpoint comparisons remain unknown for these objects. This does not remove instance-based action or combat references.
