@@ -1,5 +1,9 @@
 # Source inspection and reuse
 
+## MP33 bounded semantic-sample comparison (2026-10-15)
+
+Rechecked pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`, `gamestate_decisions.py::_handle_select_n_req` and `_handle_actions_available`. Its raw-action retention and AutoTap/mana field access are useful schema leads, but count defaults, prompt guesses, castability inference and unrestricted deep copies cannot establish our privacy or legality boundary. Retain the existing single reducer's evidenced SelectN slice and separate action identities; export only reviewed fields/empty containers, refusing unknown or nonempty parameter payloads whole. No upstream code, dependency, protocol sender or resource is copied. Real choice evidence is the existing documented MP5 request/response; all added Cast/Activate action bodies and successors are synthetic controls.
+
 ## MP27–29 bounded comparison (2026-10-15)
 
 Rechecked pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`, `gamestate_decisions.py::_handle_select_n_req` and `gamestate.py::_update_turn_info`. Retain our existing reducer and supported real request slice: the upstream count/minCount/maxCount defaults, prompt-text selection-type guesses and general option coercion do not improve exact domain evidence. Its turn update synthesizes Beginning/Untap on a new turn and preserves absent same-turn fields; we do not port those assumptions. Existing real minimal states4/5/6 support literal phase/step/priority observations only, with absent step unknown. For visible endpoint changes, compare our already-validated published projections, rather than importing inferred gameplay-event tracking. No upstream code, resource or new dependency is copied.
