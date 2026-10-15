@@ -1,5 +1,13 @@
 # MTGAPlayer progress
 
+## MP21 — offline versioned static-rule index (2026-10-15)
+
+Base is accepted MP20 main `ea1e6a7ad4b096b8e6ba4f3234d8aef22913097c`, tree `a836868a4f8c58358c308186d7dbd19cd3bea005`. PR #27 and its exact-main natural push run `38736170990` both passed Linux and Windows full 315-test suites plus Windows doctor. Exact remote candidate `36236aa65ec34379b493f2888ac43539a5469350` was independently reviewed before squash. Historical Windows cleanup FAIL entries below remain historical; they do not describe the repaired current main.
+
+This task adds one offline Scryfall card-array importer/exact-ID lookup module, an import CLI, focused synthetic-format tests and usage/source notes. No new runtime dependency, parser for GRE, product catalog change, online request or bundled dataset. The importer streams bounded UTF-8 and hashes the exact source bytes; creates SQLite off to the side; closes/commits before atomic create-if-absent publication; never overwrites an existing index. Missing Arena IDs are counted, duplicate IDs are retained only as ambiguity, malformed/truncated input prevents publication and can be retried with corrected input. The version label is user supplied. Separate faces, printing/Oracle IDs and digital identity remain literal metadata; current face, current rules, dynamic effects and legality are not inferred.
+
+External comparison is fixed to mtgacoach `2a9cab586ed120a9244f81834af72b7ab144be86` and official Scryfall field documentation/types, recorded in THIRD_PARTY.md. Existing local SQLite and exact identity boundaries are retained; upstream network fallback, same-name fallback, duplicate overwrite and face merging have no benefit under these contracts and are excluded. Focused tests exercise the actual import CLI, exact-ID/duplicate/missing/digital/face behavior, 7-byte chunks across multibyte UTF-8, corrupt indices, malformed/truncated input, no overwrite and successful recovery. A public API one-card sample is validated locally, outside Git; no private Player.log or installed game resource is accessed. Final full-suite, source-format result, candidate review and CI evidence accompany this task's PR/delivery.
+
 ## Authorized mainline package MP20–MP23 (2026-10-15)
 
 Baseline: actual main `06befed4985e39a3e975700b706045d3582657a2` (MP19 Phase 1, PR #26), clean checkout. The current owner instruction authorizes scoped implementation, repairs, tests, commits, push, PR, independent final-candidate review, conditional squash and exact-main natural push CI, sequentially. `M0DIAN/MTGAPlay` returned 404; the attached project specification and verified repository identify `M0DIAN/MTGAPlayer`. Older local-only task restrictions below describe their historical tasks, not this package.
