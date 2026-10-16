@@ -106,9 +106,11 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
            choice_graph=False, combat_frontier=False, decision_state=False,
            rules_index_path=None, advice_policy=None, decision_state_version=1,
-           known_choice_candidates=False):
+           known_choice_candidates=False, observed_action_target_menus=False):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if observed_action_target_menus and format != 'player-log':
+        raise ValueError('action_target_menus_require_player_log')
     if known_choice_candidates and (format != 'player-log' or decision_state_version < 5):
         raise ValueError('known_choice_candidates_require_player_log_state_v5_or_v6')
     decision_state = decision_state or decision_state_version != 1
@@ -137,11 +139,16 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
     if format == 'player-log':
         follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
+        if observed_action_target_menus:
+            from .action_target_menus import TargetMenuObserver
+            menu_observer = TargetMenuObserver()
         reset, records = follower.poll()
         if reset:
             reducer.reset(follower.generation)
         for record in records:
             reducer.apply(record)
+            if observed_action_target_menus:
+                menu_observer.observe(reducer,record)
         document = reducer.document(include_frontier_rows=action_frontier or decision_state,
                                     include_decision_state=decision_state)
         if follower.framer.partial:
@@ -156,6 +163,9 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
+        if observed_action_target_menus:
+            document['observed_action_target_menus'] = menu_observer.current(
+                reducer,source_complete=not follower.framer.partial and not follower.framer.errors)
         if decision_state:
             _project_decision_state(reducer, document, combat, action_frontier, decision_state_version)
         if known_choice_candidates:
@@ -210,7 +220,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
 def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
           choice_graph=False, combat_frontier=False, decision_state=False,
-          _poll_observer=None, _clock_ns=None, decision_state_version=1):
+          _poll_observer=None, _clock_ns=None, decision_state_version=1,
+          observed_action_target_menus=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
@@ -225,6 +236,9 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('choice_graph_requires_action_frontier')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
+    if observed_action_target_menus:
+        from .action_target_menus import TargetMenuObserver
+        menu_observer = TargetMenuObserver()
     clock = _clock_ns or time.perf_counter_ns
     facts = {}
     previous_request = None
@@ -271,6 +285,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         newly_accepted = set()
         for record in records:
             reducer.apply(record)
+            if observed_action_target_menus:
+                menu_observer.observe(reducer,record)
             # Record *every* accepted supported request before a later record
             # can invalidate the outward snapshot. A subsequent identical Full
             # recovery must not turn its retransmission into a new opportunity.
@@ -333,6 +349,9 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                               'candidate_event': candidate_event, 'input_sent': False,
                               'executor_connected': False, 'stopped': index + 1 == samples,
                               'stop_reason': 'sample_limit' if index + 1 == samples else None}
+        if observed_action_target_menus:
+            document['observed_action_target_menus'] = menu_observer.current(
+                reducer,source_complete=not follower.framer.partial and not follower.framer.errors)
         if decision_state:
             if _poll_observer is not None:
                 assembly_start = clock()
@@ -460,12 +479,16 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
+        replay_parser.add_argument('--observed-action-target-menus', action='store_true',
+                                   help='read-only current Activate public target menu evidence')
         replay_parser.add_argument('--known-choice-candidates', action='store_true',
                                    help='opt-in MP47 current known choices; requires player-log v5/v6')
         replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6), default=1,
                                    help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T; v5 adds reviewed request literals; v6 adds observed payment selection')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
+    watch_parser.add_argument('--observed-action-target-menus', action='store_true',
+                              help='read-only current public target menu evidence')
     watch_parser.add_argument('--interval', type=float, default=0.25)
     watch_parser.add_argument('--samples', type=int, default=5)
     watch_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
@@ -613,7 +636,8 @@ def main(argv=None):
                             choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
                             decision_state=args.decision_state, rules_index_path=args.rules_index,
                             advice_policy=advice_policy, decision_state_version=args.decision_state_version,
-                            known_choice_candidates=args.known_choice_candidates)
+                            known_choice_candidates=args.known_choice_candidates,
+                            observed_action_target_menus=args.observed_action_target_menus)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1
         except (OSError, ValueError) as exc:
@@ -650,7 +674,8 @@ def main(argv=None):
                                 action_gaps=args.action_gaps,
                                 action_frontier=args.action_frontier,
                                 choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
-                                decision_state=args.decision_state, decision_state_version=args.decision_state_version):
+                                decision_state=args.decision_state, decision_state_version=args.decision_state_version,
+                                observed_action_target_menus=args.observed_action_target_menus):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:
