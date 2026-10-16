@@ -249,19 +249,19 @@ class ActivateChoiceTests(unittest.TestCase):
         proposal=self.root/'proposal.json';proposal.write_text(json.dumps(self.proposal))
         self.write(self.rows[:4])
         producer=subprocess.Popen([sys.executable,'-m','mtgaplayer','watch',str(self.path),
-            '--decision-events','--decision-state-version','5','--interval','.025','--samples','240'],
+            '--decision-events','--decision-state-version','5','--interval','.025','--samples','120'],
             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        # Lifecycle/consumption E2E, NOT the lease-expiry test. 240 fixed-rate
-        # polls exceed the default 5s observation lease on both Linux/Windows;
-        # choose an explicit test-only 15s local policy without touching the
-        # Consumer's production default or its fail-closed expiry checks.
+        # This consumer's local 15s lease isolates the lifecycle assertions
+        # from expiration timing; the real Consumer default remains 5s.
         consumer=subprocess.Popen([sys.executable,'-m','mtgaplayer','consume-events',
             '--validate-choice',str(proposal),'--max-observation-age-ms','15000'],
             stdin=producer.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         producer.stdout.close();lines=queue.Queue()
-        # Diagnostic stress pass: 240 polls at the prior 25ms cadence. This
-        # intentionally tests bounded fail-closed behavior under 2x the prior
-        # event count, to obtain a concrete reason for intermittent exit 1.
+        # A 240-poll controlled stress exposed the correct default 5s
+        # observation_age_expired lease on Linux and Windows. This test
+        # exercises normal request/revocation/stream stop, not lease expiry.
+        # Keep its original 120-poll workload and use an explicit test-only
+        # observation lease; other tests verify the default 5s fail-closed gate.
         # Windows CI intermittently returns consumer exit=1 with empty
         # stderr. Retain only bounded public lifecycle diagnostics on failure,
         # never raw GRE/request/proposal values.
@@ -302,6 +302,8 @@ class ActivateChoiceTests(unittest.TestCase):
                 ' producer_exit='+repr(producer.poll())+
                 ' consumer_stderr='+repr(consumer.stderr.read()))
             self.assertEqual(producer.wait(timeout=5),0,producer.stderr.read())
+            self.assertEqual(observed[-1][0], 'CLOSED')
+            self.assertEqual(observed[-1][2], ['sample_limit'])
             report=replay_samples(collect_samples(self.path,schema_version=5))
             self.assertTrue(report['samples'][0]['activate_evidence']['matching_ability_resolution_observed'])
         finally:
