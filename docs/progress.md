@@ -749,3 +749,58 @@ Implementation validation uses only invented structural inputs and existing repo
 Root's final bounded read-only comparison sends the same 14,592,534-byte snapshot (2309 complete records, no framing errors or partial record) through the original committed reducer and repaired production reducer. Both observe 2513 authenticated state messages and accept 9 Fulls. Accepted state events increase from 2287 to 2500: the original one object-zone conflict and its 212 latched gap calls disappear. The repaired reducer retains 13 gap calls, comprising one valid-baseline predecessor mismatch and 12 cascades; no unsupported-view rejection remains. Neither of the two accepted opaque-view snapshots exposes an opaque object in the physical projection. Unique authenticated own ActionsAvailable/SelectN observations are 106/23 before and 118/25 after; these are whole-file offline replay counts, not new live-event or server-acceptance evidence. The existing 600-second report, including its 653 invalid polling snapshots, remains historical and is not rewritten as a repaired live run.
 
 Root's required full unittest executes 187 tests on independent Python 3.11.16, exit 1, with 13 error headers identical to the previous 183-test run and zero assertion failures. These remain the historical Windows SQLite TemporaryDirectory WinError32 cleanup errors; no test is skipped, masked or weakened for this repair. Windows doctor, default synthetic replay/dry-run and the opted-in raw fixture replay with DecisionInput/Frontier/ChoiceGraph each exit 0. Raw outputs, code/test hashes and the final same-bound comparison are retained in ignored `artifacts/local-gre-continuity/`. The stable local candidate still requires its separate exact-HEAD/tree review, recorded in the final handoff; no remote write, new 600-second performance claim, full GRE continuity claim or game input is made.
+## Local real-match multi-source observation PoC (2026-10-16)
+
+The latest fetched main was `8c211a620df675c04324d98e022940ca8e30f5aa`.
+The experiment uses the separate `codex/live-observation-poc` worktree and fixed
+collector commit `7a9c8776e819bfc56f9180b221c5088db9dc1f94`, with per-file source
+hashes. The owner manually played a real Sparky match. No input was sent to MTGA;
+the only UI input by Codex closed its own marker window after the experiment.
+
+The actual 783.844-second run completed 783 log polls, 278 framed records (40
+startup, 238 appended), 315 appended GRE messages and 15 client responses. It
+saved 776 PNGs, of which 759 passed API/blank-frame heuristics; 17 black frames
+remain explicit failures. Ten distinct frames were independently inspected,
+including eight opening-hand/gameplay frames. Sixteen explicit user markers form
+eight action intervals. Seven have a unique compatible protocol submission; one
+has three Pass candidates. Targeted/untargeted marker labels are not independently
+established by the absent target fields. No log read/framing/continuity error or
+post-startup file reset occurred; live rotation/partial-tail recovery was not
+exercised in this match.
+
+The existing semantic v4 exporter produced 11 samples from 13 exact request/client
+pairs; Mulligan and TurnBased/Discard SelectN remain unsupported profiles. Two
+Play chains include contiguous state updates and explicit PlayLand Hand-to-
+Battlefield transfers. Two Cast traces separately observe submission, stack entry
+and resolution to Battlefield; complete payment and legality remain unverified.
+GameOver and MatchCompleted are retained. Independent replay agrees with the
+collector. A retained original-byte prefix re-frames to the same 278 payloads in
+the same order, and v4/v5 exports and replay results match payload reconstruction.
+
+Sixteen visual field comparisons retain 13 agreements, one visible-count versus
+GRE-total discrepancy, one temporal ambiguity and one obscured-hand unknown.
+The discrepancy is five visibly counted opposing cards versus six GRE Cards;
+the sixth is a public Aura with explicit attachment evidence. The original visual
+five is unchanged. Attachment visibility, coverage and rendering delay remain
+uncertain; there is no demonstrated reducer defect. Empirically interpreted Unix
+millisecond source timestamps trail collection wall time by 2.279–3.862 seconds,
+combining unknown clock skew and delivery/poll delay rather than proving latency.
+
+During the still-running match, snapshot03 analysis of 107 GRE messages actually
+overlapped completed poll 369 and capture 366; 33 GRE-containing records and 12
+owner markers followed that analysis. During analysis of the completed match
+snapshot, the independent collector
+actually completed polls 641/642/643 and captures 635/636/637. It later stopped
+normally at poll 783, with the capture worker stopped. This establishes parallel
+capture and snapshot analysis, not concurrent live core repair. P1–P9 each PASS;
+P10 NOT_RUN because no real-source implementation defect warrants a repair.
+
+Nineteen focused regressions and the final required full suite pass: 473 tests,
+92.293 seconds, exit 0, using the independent project Python 3.11. Earlier sandbox
+permission failures are retained separately. Development review fixed partial-
+only poll invalidation, capture failure accounting and snapshot index boundaries
+before version freeze; these are not mislabeled real-match repair results.
+Private logs, screenshots, snapshots, independent reviews and the detailed report
+remain local and ignored under `artifacts/local-live-poc/`; no push, PR or merge
+was performed. Next work should address visual coverage/freshness and the observed
+narrow semantic gaps, without strategy, model training or performance expansion.
