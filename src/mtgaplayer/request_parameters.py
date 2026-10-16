@@ -1,7 +1,8 @@
 """Finite current-request literals, projected after the existing visibility gate.
 
 No response, raw message retention, private card lookup or execution authority.
-The reviewed profile is deliberately all-or-unknown across the active list.
+The original mana profile is all-or-unknown across the active list. The explicit
+v2 Activate profile keeps every position while marking unsupported values opaque.
 """
 import copy
 from collections import Counter
@@ -19,7 +20,11 @@ class LiteralRefs:
         return value
 
 
-def _action(value):
+def _action(value, *, activate=False):
+    if activate:
+        from .semantic_activate import check_action
+        check_action(value)
+        return
     from .semantic_cast import action
     from .semantic_samples import IDS, BOOLS, PARAMS
     if (type(value) is not dict or set(value) != {'action_type', 'identifier_refs', 'flags',
@@ -62,7 +67,7 @@ def _visible_references(action, visible):
     return True
 
 
-def project(message, visible, seat=None):
+def _project_existing(message, visible, seat=None):
     """Called only in the reducer's accepted, authenticated request path."""
     from .semantic_cast import action
     try:
@@ -87,8 +92,28 @@ def project(message, visible, seat=None):
         return None
 
 
+def project(message, visible, seat=None, source_abilities=None):
+    result = _project_existing(message, visible, seat)
+    if result is not None or source_abilities is None:
+        return result
+    from .semantic_activate import project as activate_project
+    try:
+        return activate_project(message, visible, seat, source_abilities)
+    except (ValueError, TypeError, KeyError, RecursionError):
+        return None
+
+
 def check(value, binding, visible):
     if value is None:
+        return
+    from .semantic_activate import PROFILE as ACTIVATE_PROFILE, REQUEST_VERSION, check_rows
+    if type(value) is dict and value.get('profile') == ACTIVATE_PROFILE:
+        if (set(value) != {'schema_version', 'profile', 'binding', 'rows', 'historical_response_used'} or
+                value['schema_version'] != REQUEST_VERSION or value['binding'] != binding or
+                binding['request_type'] != 'GREMessageType_ActionsAvailableReq' or
+                binding['request_id'] is None or value['historical_response_used'] is not False):
+            raise ValueError('invalid_request_parameters')
+        check_rows(value['rows'], visible)
         return
     from .semantic_targets import PROFILE as TARGET_PROFILE, check_request
     if type(value) is dict and value.get('profile') == TARGET_PROFILE:
@@ -117,6 +142,12 @@ def check(value, binding, visible):
 def assemble(rows, binding, visible):
     if rows is None or binding['request_id'] is None:
         return None
+    from .semantic_activate import PROFILE as ACTIVATE_PROFILE, REQUEST_VERSION
+    if type(rows) is dict and rows.get('profile') == ACTIVATE_PROFILE:
+        value = {'schema_version': REQUEST_VERSION, **copy.deepcopy(rows),
+                 'binding': copy.deepcopy(binding), 'historical_response_used': False}
+        check(value, binding, visible)
+        return value
     from .semantic_targets import PROFILE as TARGET_PROFILE
     target = binding['request_type'] == 'GREMessageType_SelectTargetsReq'
     value = {'schema_version': VERSION, 'profile': TARGET_PROFILE if target else PROFILE,
@@ -132,7 +163,8 @@ def check_space(space, binding, visible):
     check(value, binding, visible)
     if value is None:
         return
-    if value['profile'] != PROFILE:
+    from .semantic_activate import PROFILE as ACTIVATE_PROFILE
+    if value['profile'] not in (PROFILE, ACTIVATE_PROFILE):
         # Target constraints live in this explicit v5 profile. The legacy graph
         # remains unknown rather than receiving an invented action inventory.
         if (space['request_type'] != 'GREMessageType_SelectTargetsReq' or
@@ -141,7 +173,8 @@ def check_space(space, binding, visible):
         return
     from .raw_log import _RAW_ID_FIELDS
     frontier, graph = space['immediate_frontier']['projection'], space['choice_graph']
-    rows = value['actions']
+    partial = value['profile'] == ACTIVATE_PROFILE
+    rows = value['rows'] if partial else value['actions']
     if (type(frontier) is not dict or frontier.get('engine_active_action_count') != len(rows) or
             type(frontier.get('templates')) is not list or len(frontier['templates']) != len(rows) or
             type(graph) is not dict or type(graph.get('action_nodes')) is not list):
@@ -155,13 +188,16 @@ def check_space(space, binding, visible):
         if (template['list_position'] != position or template['engine_action_type'] != row['action_type'] or
                 row['identifier_refs'].get('instanceId') != template.get('visible_object_id')):
             raise ValueError('request_projection_mismatch')
-        shapes = {}
-        for key in set(row['parameters']) | set(row['observed_empty_parameters']):
-            count = (len(row['parameters'][key]['autoTapActions']) if key == 'autoTapSolution' else
-                     len(row['parameters'][key])) if key in row['parameters'] else 0
-            shapes[key] = ({'kind': 'object', 'auto_tap_actions_count': count} if key == 'autoTapSolution' else
-                           {'kind': 'array', 'element_count': count})
+        shapes = copy.deepcopy(row['parameter_shapes']) if partial else {}
+        if not partial:
+            for key in set(row['parameters']) | set(row['observed_empty_parameters']):
+                count = (len(row['parameters'][key]['autoTapActions']) if key == 'autoTapSolution' else
+                         len(row['parameters'][key])) if key in row['parameters'] else 0
+                shapes[key] = ({'kind': 'object', 'auto_tap_actions_count': count} if key == 'autoTapSolution' else
+                               {'kind': 'array', 'element_count': count})
         if template['observed_parameter_shapes'] != shapes:
+            raise ValueError('request_projection_mismatch')
+        if partial and template['unknown_parameter_fields_present'] != row['other_fields_present']:
             raise ValueError('request_projection_mismatch')
         if position in nodes:
             identity = nodes[position]['action_identity']

@@ -36,7 +36,8 @@ def check_proposal(value):
     if value['request_identity']['request_id'] is None:
         raise ValueError('invalid_choice_proposal')
     _integer(value['list_position'], 0, 255)
-    _action(value['proposed_action'])
+    _action(value['proposed_action'], activate=type(value['proposed_action']) is dict and
+            value['proposed_action'].get('action_type') == 'ActionType_Activate')
     if 'source_snapshot_ref' in value:
         ref = value['source_snapshot_ref']
         _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
@@ -100,6 +101,22 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        from .semantic_activate import PROFILE as ACTIVATE_PROFILE, SCOPE as ACTIVATE_SCOPE, check_payment
+        if evidence['profile'] == ACTIVATE_PROFILE:
+            result['validation_scope'] = ACTIVATE_SCOPE
+            result['complete_costs_verified'] = False
+            result['additional_costs'] = 'unknown'
+            result['future_parameters'] = 'unknown'
+            position = proposal['list_position']
+            rows, chosen = evidence['rows'], proposal['proposed_action']
+            if (position >= len(rows) or chosen['action_type'] != rows[position]['action_type'] or
+                    chosen['identifier_refs'] != rows[position]['identifier_refs']):
+                return _result('proposal_binding_invalid')
+            status, reason, checks = check_payment(rows, chosen, state['visible_objects'],
+                state['binding']['self_seat'], position)
+            result.update(known_constraints=status, reasons=[reason], known_checks=checks,
+                          source_snapshot_ref=copy.deepcopy(source_snapshot_ref))
+            return result
         if state['binding']['request_type'] == 'GREMessageType_SelectTargetsReq':
             from .semantic_targets import PROFILE, SCOPE as TARGET_SCOPE, check_final_set
             if evidence['profile'] != PROFILE:

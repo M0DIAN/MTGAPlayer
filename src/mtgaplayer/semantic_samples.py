@@ -111,6 +111,14 @@ def _action(row, refs, scope):
 
 def _request(message, request, refs, scope, version=1, snapshot=None):
     kind = KINDS.get(request['type'])
+    if version == 5:
+        from .semantic_activate import PROFILE, alias_rows
+        from .semantic_cast import RequestManaRefs
+        evidence = request.get('_request_parameters')
+        _need(kind == 'actions_available' and type(evidence) is dict and
+              evidence.get('profile') == PROFILE, 'request_unsupported')
+        return {'kind': kind, 'payload': {'profile': PROFILE,
+            'rows': alias_rows(evidence['rows'], RequestManaRefs(refs, request), scope)}}
     if version >= 3 and kind in ('declare_attackers','declare_blockers'):
         from .semantic_combat import request as combat_request
         try:
@@ -179,6 +187,8 @@ def _response(payload, request, refs, scope, version=1):
             refs = RequestManaRefs(refs, request)
             if version == 4:
                 from .semantic_targets import action as project_action
+            elif version == 5:
+                from .semantic_activate import action as project_action
         else:
             project_action = _action
         action = project_action(body['actions'][0], refs, scope)
@@ -205,7 +215,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     Source consistency is metadata/boundary consistency, not a byte fingerprint.
     At most max_samples pairs are retained; omissions are explicit counts.
     """
-    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
+    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4, 5) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
           type(max_history_bytes) is int and 1 <= max_history_bytes <= 1024**3, 'invalid_export_bounds')
     path = Path(path)
     before_stat = path.stat()
@@ -257,7 +267,12 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                         snap = _snapshot(reducer, refs, _scope(reducer))
                         previous = (tracing['trace']['states'][-1]['snapshot'] if tracing['trace']['states'] else tracing['before'])
                         gs = details['message']
-                        if tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
+                        if schema_version == 5:
+                            from .semantic_activate import facts as activate_facts
+                            prior_facts = [f for s in tracing['trace']['states'] for f in s['facts']]
+                            fact_rows, fact_status, omitted = activate_facts(gs, reducer, refs, _scope(reducer),
+                                previous, snap, tracing['response']['payload']['action'], prior_facts)
+                        elif tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
                             from . import semantic_combat as combat
                             fact_rows,fact_status,omitted=combat.facts(gs,refs,_scope(reducer),snap)
                         elif tracing['request']['kind'] == 'select_targets':
@@ -320,7 +335,8 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                 active = {'identity': (request['id'], request['game_state_id']), 'scope': scope,
                     'request_ref': refs.ref('request', scope, request['id']), 'before': snap, 'request': projected}
 
-    reducer = RawReducer(observer=observe, include_state_messages=schema_version >= 2)
+    reducer = RawReducer(observer=observe, include_state_messages=schema_version >= 2,
+                         include_request_parameters=schema_version == 5)
     reducer.reset(follower.generation)
     for entry in records:
         before = copy.deepcopy(_current_verified_request(reducer))
@@ -358,6 +374,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                 response = target_response(payload, before, captured['request']['payload'], refs, captured['scope'])
             else:
                 response = _response(payload, before, refs, captured['scope'], schema_version)
+            if schema_version == 5:
+                _need(response['payload']['action']['action_type'] == 'ActionType_Activate' and
+                          sum(r['literal_action'] == response['payload']['action']
+                          for r in captured['request']['payload']['rows']) == 1, 'response_unsupported')
         except SampleError as exc:
             rejected[str(exc)] += 1
             continue
@@ -382,8 +402,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
         from . import semantic_combat as combat
     if schema_version == 4:
         from . import semantic_targets as targets
-    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION if schema_version == 2 else combat.VERSION if schema_version == 3 else targets.VERSION,
-        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2 if schema_version == 2 else combat.PROJECTION_V3 if schema_version == 3 else targets.projection()),
+    if schema_version == 5:
+        from . import semantic_activate as activate
+    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION if schema_version == 2 else combat.VERSION if schema_version == 3 else targets.VERSION if schema_version == 4 else activate.VERSION,
+        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2 if schema_version == 2 else combat.PROJECTION_V3 if schema_version == 3 else targets.projection() if schema_version == 4 else activate.projection()),
         'source': {'format': 'player-log-gre-v1',
         'mode': 'offline', 'origin': origin, 'origin_is_user_supplied': True,
         'framing_complete': True, 'framed_records': len(records),
@@ -519,6 +541,9 @@ def _check_successor(successor, before):
 
 def _replay_samples(document):
     """Validate/replay exported choices, NOT private GRE authentication/effects."""
+    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v5':
+        from .semantic_activate import replay
+        return replay(document)
     if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v4':
         from .semantic_targets import replay
         return replay(document)
