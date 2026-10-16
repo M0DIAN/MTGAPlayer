@@ -313,5 +313,8 @@ def capture_window(hwnd: int, pid: int, output_path: Path, method='printwindow')
     except (OSError, ValueError, RuntimeError) as exc:
         if result['pixel_acquisition_status'] == 'attempted':
             result['pixel_acquisition_status'] = 'failed'
-        result.update(reason=str(exc), last_winerror=c.get_last_error())
+        # ctypes exposes this accessor only on Windows. Platform refusal and
+        # mocked capture stages must still return a diagnostic on other hosts.
+        error_accessor = getattr(c, 'get_last_error', None)
+        result.update(reason=str(exc), last_winerror=error_accessor() if error_accessor else None)
     return result

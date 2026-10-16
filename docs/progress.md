@@ -894,3 +894,21 @@ gaps. They do not reproduce an original real-source implementation defect, so
 the conditional repair loop P10 remains NOT_RUN. The next useful evidence is a
 short run of the new capture diagnostics, clearer phase/request context in
 markers, and actual redraw/bottom-card choices when they naturally occur.
+
+## Phase 2 integration — portable capture diagnostics (2026-10-16)
+
+Authorized integration review of the six inherited candidate commits identified
+a Linux CI blocker: mocked Windows capture tests hit the host platform refusal,
+whose failure handler unconditionally called Windows-only ctypes.get_last_error.
+Two discriminating controls reproduce AttributeError with the old source. The
+failure handler now leaves last_winerror null when that accessor is unavailable;
+mocked capture tests use a module-local platform proxy without changing the host
+os.name or pathlib behavior. Window discovery, geometry checks, pixel copying
+and quality algorithms are unchanged. The source never enables game input.
+
+Twenty-nine focused tests pass; required full regression passes 521 tests in
+105.722s, exit 0. Incremental independent source/test review passes. This checks
+portable control flow on Windows; actual Ubuntu/Windows CI remains pending.
+The compatibility defect is separate from real-match GRE/association defects,
+so P10 remains NOT_RUN. A newly fixed, committed version will be used for the
+authorized short read-only live regression before remote integration.

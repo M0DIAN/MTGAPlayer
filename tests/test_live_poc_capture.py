@@ -4,6 +4,7 @@ from pathlib import Path
 import struct
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zlib
@@ -25,10 +26,39 @@ def snapshot():
 
 class CaptureSafetyTests(unittest.TestCase):
     def setUp(self):
+        # Exercise the mocked Windows control flow without changing the host
+        # os.name, which pathlib/tempfile need to choose their native paths.
+        platform = patch.object(capture, 'os', SimpleNamespace(name='nt'))
+        platform.start()
+        self.addCleanup(platform.stop)
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.output = Path(self.directory.name) / 'sample.bmp'
         self.frame = (2, 2, bytes([0, 0, 0, 0, 255, 255, 255, 0] * 2))
+
+    def test_non_windows_refusal_needs_no_win32_error_accessor(self):
+        with patch.object(capture, 'os', SimpleNamespace(name='posix')), \
+                patch.object(capture, 'c', SimpleNamespace()), \
+                patch.object(capture, '_window_snapshot') as snapshot_probe:
+            result = capture.capture_window(123, 456, self.output)
+        self.assertEqual(result['status'], 'failed')
+        self.assertEqual(result['reason'], 'Windows_required')
+        self.assertEqual(result['pixel_acquisition_status'], 'not_attempted')
+        self.assertIsNone(result['last_winerror'])
+        self.assertFalse(result['input_sent'])
+        snapshot_probe.assert_not_called()
+        self.assertFalse(self.output.exists())
+
+    def test_mocked_quality_failure_needs_no_host_win32_error_accessor(self):
+        with patch.object(capture, 'c', SimpleNamespace()), \
+                patch.object(capture, '_window_snapshot', return_value=snapshot()), \
+                patch.object(capture, '_copy_frame', return_value=(2, 2, bytes(16))):
+            result = capture.capture_window(123, 456, self.output)
+        self.assertEqual(result['status'], 'failed')
+        self.assertEqual(result['reason'], 'black_frame')
+        self.assertEqual(result['pixel_acquisition_status'], 'succeeded')
+        self.assertIsNone(result['last_winerror'])
+        self.assertTrue(self.output.exists())
 
     def test_quality_rejects_black_white_and_flat_color(self):
         for color, expected in (([0, 0, 0, 0], 'black_frame'),

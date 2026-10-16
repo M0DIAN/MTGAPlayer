@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -139,6 +140,9 @@ class DiagnosticsTests(unittest.TestCase):
 
 class CaptureStageTests(unittest.TestCase):
     def setUp(self):
+        platform = patch.object(capture, 'os', SimpleNamespace(name='nt'))
+        platform.start()
+        self.addCleanup(platform.stop)
         (ROOT / '.tmp').mkdir(exist_ok=True)
         self.directory = tempfile.TemporaryDirectory(dir=ROOT / '.tmp')
         self.addCleanup(self.directory.cleanup)
