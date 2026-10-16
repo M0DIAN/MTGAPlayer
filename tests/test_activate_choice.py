@@ -249,11 +249,14 @@ class ActivateChoiceTests(unittest.TestCase):
         proposal=self.root/'proposal.json';proposal.write_text(json.dumps(self.proposal))
         self.write(self.rows[:4])
         producer=subprocess.Popen([sys.executable,'-m','mtgaplayer','watch',str(self.path),
-            '--decision-events','--decision-state-version','5','--interval','.025','--samples','120'],
+            '--decision-events','--decision-state-version','5','--interval','.025','--samples','240'],
             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         consumer=subprocess.Popen([sys.executable,'-m','mtgaplayer','consume-events','--validate-choice',str(proposal)],
             stdin=producer.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         producer.stdout.close();lines=queue.Queue()
+        # Diagnostic stress pass: 240 polls at the prior 25ms cadence. This
+        # intentionally tests bounded fail-closed behavior under 2x the prior
+        # event count, to obtain a concrete reason for intermittent exit 1.
         # Windows CI intermittently returns consumer exit=1 with empty
         # stderr. Retain only bounded public lifecycle diagnostics on failure,
         # never raw GRE/request/proposal values.
