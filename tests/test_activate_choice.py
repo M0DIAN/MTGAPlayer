@@ -251,7 +251,12 @@ class ActivateChoiceTests(unittest.TestCase):
         producer=subprocess.Popen([sys.executable,'-m','mtgaplayer','watch',str(self.path),
             '--decision-events','--decision-state-version','5','--interval','.025','--samples','240'],
             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        consumer=subprocess.Popen([sys.executable,'-m','mtgaplayer','consume-events','--validate-choice',str(proposal)],
+        # Lifecycle/consumption E2E, NOT the lease-expiry test. 240 fixed-rate
+        # polls exceed the default 5s observation lease on both Linux/Windows;
+        # choose an explicit test-only 15s local policy without touching the
+        # Consumer's production default or its fail-closed expiry checks.
+        consumer=subprocess.Popen([sys.executable,'-m','mtgaplayer','consume-events',
+            '--validate-choice',str(proposal),'--max-observation-age-ms','15000'],
             stdin=producer.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         producer.stdout.close();lines=queue.Queue()
         # Diagnostic stress pass: 240 polls at the prior 25ms cadence. This
