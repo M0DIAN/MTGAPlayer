@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:mtgaplayer:decision-state:v5",
   "title": "MTGAPlayer read-only DecisionState v5",
-  "$comment": "Null means invalid, discontinuous or partial current source. Identity equality across child projections is additionally enforced by the assembler and invariant tests. Legacy projections retain their own field names; generation there equals binding.source_generation. v4 current P/T values are exact signed int32 object literals admitted only by the producer from visible Battlefield Cards/Tokens; the portable consumer cannot reauthenticate raw object type. Null is unknown, never inferred zero or static catalog fallback. Sources/durations remain unknown. v5 adds an opt-in all-or-unknown finite literal mana request profile, after the existing visibility gate. No response or successor is used. Passing local proposal checks never establishes complete legality.",
+  "$comment": "Null means invalid, discontinuous or partial current source. Identity equality across child projections is additionally enforced by the assembler and invariant tests. Legacy projections retain their own field names; generation there equals binding.source_generation. v4 current P/T values are exact signed int32 object literals admitted only by the producer from visible Battlefield Cards/Tokens; the portable consumer cannot reauthenticate raw object type. Null is unknown, never inferred zero or static catalog fallback. Sources/durations remain unknown. v5 adds an opt-in all-or-unknown finite literal mana request profile, after the existing visibility gate. No response or successor is used. Passing local proposal checks never establishes complete legality. The v2 nested request profile adds partial public Activate literals: every active position/identity/shape remains present; unsupported row values are null, not absent costs. Ability pair evidence is producer-observed, not raw reauthentication. Complete costs, future parameters and legality remain unknown.",
   "type": [
     "object",
     "null"
@@ -2324,12 +2324,16 @@
       ],
       "properties": {
         "schema_version": {
-          "const": "mtgaplayer.request-parameters.v1"
+          "enum": [
+            "mtgaplayer.request-parameters.v1",
+            "mtgaplayer.request-parameters.v2"
+          ]
         },
         "profile": {
           "enum": [
             "reviewed_literal_mana_slice",
-            "reviewed_single_slot_public_targets"
+            "reviewed_single_slot_public_targets",
+            "partial_public_activate_mana_literals"
           ]
         },
         "binding": {
@@ -2347,6 +2351,13 @@
         },
         "targets": {
           "$ref": "#/$defs/singleSlotTargets"
+        },
+        "rows": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/partialActivateRow"
+          }
         }
       },
       "oneOf": [
@@ -2354,14 +2365,26 @@
           "properties": {
             "profile": {
               "const": "reviewed_literal_mana_slice"
+            },
+            "schema_version": {
+              "const": "mtgaplayer.request-parameters.v1"
             }
           },
           "required": [
             "actions"
           ],
           "not": {
-            "required": [
-              "targets"
+            "anyOf": [
+              {
+                "required": [
+                  "targets"
+                ]
+              },
+              {
+                "required": [
+                  "rows"
+                ]
+              }
             ]
           }
         },
@@ -2369,14 +2392,53 @@
           "properties": {
             "profile": {
               "const": "reviewed_single_slot_public_targets"
+            },
+            "schema_version": {
+              "const": "mtgaplayer.request-parameters.v1"
             }
           },
           "required": [
             "targets"
           ],
           "not": {
-            "required": [
-              "actions"
+            "anyOf": [
+              {
+                "required": [
+                  "actions"
+                ]
+              },
+              {
+                "required": [
+                  "rows"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "properties": {
+            "schema_version": {
+              "const": "mtgaplayer.request-parameters.v2"
+            },
+            "profile": {
+              "const": "partial_public_activate_mana_literals"
+            }
+          },
+          "required": [
+            "rows"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "actions"
+                ]
+              },
+              {
+                "required": [
+                  "targets"
+                ]
+              }
             ]
           }
         }
@@ -2475,6 +2537,292 @@
           "type": [
             "boolean",
             "null"
+          ]
+        }
+      }
+    },
+    "literalActivateAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_type",
+        "identifier_refs",
+        "flags",
+        "observed_empty_parameters",
+        "parameters"
+      ],
+      "properties": {
+        "action_type": {
+          "enum": [
+            "ActionType_Activate",
+            "ActionType_Activate_Mana"
+          ]
+        },
+        "identifier_refs": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/literalManaAction/properties/identifier_refs"
+            },
+            {
+              "required": [
+                "instanceId",
+                "grpId",
+                "facetId",
+                "abilityGrpId",
+                "uniqueAbilityId"
+              ]
+            }
+          ]
+        },
+        "flags": {
+          "$ref": "#/$defs/literalManaAction/properties/flags"
+        },
+        "observed_empty_parameters": {
+          "$ref": "#/$defs/literalManaAction/properties/observed_empty_parameters"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "manaCost": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 64,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "color",
+                  "count"
+                ],
+                "properties": {
+                  "color": {
+                    "$ref": "#/$defs/literalManaAction/properties/parameters/properties/manaCost/items/properties/color"
+                  },
+                  "count": {
+                    "$ref": "#/$defs/literalManaAction/properties/parameters/properties/manaCost/items/properties/count"
+                  },
+                  "abilityGrpId": {
+                    "$ref": "#/$defs/id"
+                  }
+                }
+              }
+            },
+            "manaPaymentOptions": {
+              "$ref": "#/$defs/literalManaAction/properties/parameters/properties/manaPaymentOptions"
+            },
+            "manaSelections": {
+              "$ref": "#/$defs/literalManaAction/properties/parameters/properties/manaSelections"
+            },
+            "autoTapSolution": {
+              "$ref": "#/$defs/literalManaAction/properties/parameters/properties/autoTapSolution"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/0"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/1"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/2"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/3"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/4"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/5"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/6"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/7"
+        },
+        {
+          "$ref": "#/$defs/literalManaAction/allOf/8"
+        }
+      ]
+    },
+    "partialActivateRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "list_position",
+        "action_type",
+        "identifier_refs",
+        "flags",
+        "parameter_shapes",
+        "other_fields_present",
+        "literal_action",
+        "ability_binding"
+      ],
+      "properties": {
+        "list_position": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "action_type": {
+          "$ref": "#/$defs/literalManaAction/properties/action_type"
+        },
+        "identifier_refs": {
+          "$ref": "#/$defs/literalManaAction/properties/identifier_refs"
+        },
+        "flags": {
+          "$ref": "#/$defs/literalManaAction/properties/flags"
+        },
+        "parameter_shapes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "manaCost": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "element_count"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "array",
+                    "unexpected"
+                  ]
+                },
+                "element_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              }
+            },
+            "targets": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "element_count"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "array",
+                    "unexpected"
+                  ]
+                },
+                "element_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              }
+            },
+            "manaPaymentOptions": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "element_count"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "array",
+                    "unexpected"
+                  ]
+                },
+                "element_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              }
+            },
+            "manaSelections": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "element_count"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "array",
+                    "unexpected"
+                  ]
+                },
+                "element_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              }
+            },
+            "autoTapSolution": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "auto_tap_actions_count"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "object",
+                    "unexpected"
+                  ]
+                },
+                "auto_tap_actions_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              }
+            }
+          }
+        },
+        "other_fields_present": {
+          "type": "boolean"
+        },
+        "literal_action": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/literalActivateAction"
+            }
+          ]
+        },
+        "ability_binding": {
+          "enum": [
+            null,
+            "verified_observed_pair",
+            "observed_group_contradiction",
+            "insufficient_evidence"
           ]
         }
       }

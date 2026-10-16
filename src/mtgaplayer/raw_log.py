@@ -809,9 +809,16 @@ class RawReducer:
                                 **_request_semantics(message)}
                 if self._include_request_parameters:
                     from .request_parameters import project
-                    visible = [{'instance_id': o['id'], 'card_id': o['card_id'], 'zone': o['zone']}
+                    visible = [{'instance_id': o['id'], 'card_id': o['card_id'], 'zone': o['zone'],
+                                'controller_seat': o['controller']}
                                for o in self._current()['objects']]
-                    self.request['_request_parameters'] = project(message, visible, self.seat)
+                    # Current whole-row replacement applies before this read.
+                    # The narrow producer evidence never exports the raw list.
+                    source_abilities = {o['instance_id']: self.objects[o['instance_id']].get('uniqueAbilities')
+                        for o in visible if o['zone'] == 'ZoneType_Battlefield' and
+                        o['controller_seat'] == self.seat and
+                        self.objects[o['instance_id']].get('visibility') == 'Visibility_Public'}
+                    self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities)
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)
