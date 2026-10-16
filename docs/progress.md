@@ -1,3 +1,23 @@
+## MP48 — pre-response Cast/Activate known row alternatives (candidate, 2026-10-16)
+
+Baseline MP47 accepted main `a86576fef0a13340d0f9c1dc94973c932408f2a6`.
+The verified current request validator already checks limited Cast and
+Activate proposals, but MP47 did not enumerate them. This opt-in MP48
+extension visits every existing active row once, reuses exactly the
+current request's per-row validator and emits only the supported
+known-consistent Cast/Activate positions, with the complete active-row
+denominator and separate unknown/known-contradiction counts. The retained
+real prefixes provide **Cast 1 of 6** (position1) and **Activate 2 of 20**
+(positions1,3) as narrow known-consistent proposals, not global legal
+action coverage. Unsupported target/mode/X/cost variations remain unknown.
+Output cap64, Consumer leases, private information and input=false
+contracts remain. Only the opt-in report version changes to v2;
+older defaults/State/Event untouched.
+
+Candidate only until exact-head code review (owner permits self-review),
+required Linux/Windows CI and merged-main CI. P10 NOT_RUN.
+See `docs/known-choice-candidates.md`.
+
 ## MP47 — bounded current known-constraint candidates (candidate, 2026-10-16)
 
 Baseline accepted MP46 main `d894afd7433ca08dea73a5dfb6fdf8335fa58451`.
