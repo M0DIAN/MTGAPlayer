@@ -86,6 +86,8 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     document['current'].pop('_turn_context', None)
     document['current'].pop('_public_stack', None)
     document['current'].pop('_observed_combat_stats', None)
+    if isinstance(document['current'].get('request'), dict):
+        document['current']['request'].pop('_request_parameters', None)
     if interrupted and document['decision_state'] is not None:
         document['decision_state']['unresolved'].append('current_request_continuity_unverified')
         document['decision_state']['unresolved'].sort()
@@ -130,7 +132,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
     if decision_input and format != 'player-log':
         raise ValueError('decision_input_requires_player_log_format')
     if format == 'player-log':
-        follower, reducer = RawFollower(path), RawReducer()
+        follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         reset, records = follower.poll()
         if reset:
@@ -215,7 +217,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('action_frontier_requires_decision_input')
     if choice_graph and not action_frontier:
         raise ValueError('choice_graph_requires_action_frontier')
-    follower, reducer = RawFollower(path, max_history_bytes), RawReducer()
+    follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     clock = _clock_ns or time.perf_counter_ns
     facts = {}
@@ -450,8 +452,8 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4), default=1,
-                                   help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5), default=1,
+                                   help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T; v5 adds reviewed request literals')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--interval', type=float, default=0.25)
@@ -469,8 +471,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4), default=1,
-                              help='State/Event version; default1; explicit2/3/4 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5), default=1,
+                              help='State/Event version; default1; explicit2/3/4/5 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
@@ -480,6 +482,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
+    consumer_parser.add_argument('--validate-choice', type=Path,
+        help='read one explicit request-bound proposal before consumption; no input or strategy')
     consumer_parser.add_argument('--observed-changes', action='store_true',
         help='snapshot-bound visible endpoint changes; no effects or event-history claims')
     consumer_parser.add_argument('--rules-index', type=Path,
@@ -567,6 +571,13 @@ def main(argv=None):
         limits = (args.max_event_silence_ms, args.max_observation_age_ms)
         if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
             parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
+        proposal = None
+        if args.validate_choice is not None:
+            from .choice_validation import load_proposal
+            try:
+                proposal = load_proposal(args.validate_choice)
+            except ValueError as exc:
+                parser.error(str(exc))
         prepared, rules_error = None, None
         if args.rules_index is not None:
             from .rules_index import load_rules_index, RulesIndexError
@@ -578,7 +589,7 @@ def main(argv=None):
         return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic,
                               consumer, advice_policy=advice_policy,
                               prepared_rules=prepared, rules_error=rules_error,
-                              observed_changes=args.observed_changes)
+                              observed_changes=args.observed_changes, choice_proposal=proposal)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,

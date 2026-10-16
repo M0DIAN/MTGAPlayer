@@ -211,7 +211,7 @@ class TurnContextV2Tests(unittest.TestCase):
         self.assertEqual(event['$id'], 'urn:mtgaplayer:decision-event:v2')
         self.assertIn('priorityPlayer', state['properties']['game']['properties']['turn']['required'])
         self.assertEqual(event['properties']['decision_state']['allOf'][0]['$ref'], 'urn:mtgaplayer:decision-state:v2')
-        for version in (True, 5, '2'):
+        for version in (True, 6, '2'):
             with self.assertRaises(ValueError):
                 DecisionPublisher(state_version=version)
             with self.assertRaises(ValueError):

@@ -130,7 +130,7 @@ def _state(value, binding):
     game = value['game']
     _keys(game, ('room_state', 'game_stage', 'source_state_timestamp', 'turn', 'players',
         'hidden_counts', 'mana', 'effective_combat_stats', 'rules') +
-        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4]) else ()))
+        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5]) else ()))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
     turn = game['turn']
@@ -152,7 +152,7 @@ def _state(value, binding):
     _require(type(game['hidden_counts']) is dict)
     for count in game['hidden_counts'].values():
         _integer(count)
-    current_stats = value['schema_version'] == SCHEMA_VERSIONS[4]
+    current_stats = value['schema_version'] in (SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5])
     _require(all(game[k] is None for k in ('mana', 'rules')) and
              (current_stats or game['effective_combat_stats'] is None) and
              value['effect_claims'] is None)
@@ -169,7 +169,7 @@ def _state(value, binding):
                  (current_stats or obj['effective_power'] is None and obj['effective_toughness'] is None))
     if current_stats:
         _effective_stats(game['effective_combat_stats'], value['visible_objects'])
-    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4]):
+    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5]):
         _stack(game['stack'], value['visible_objects'])
     cards = value['card_knowledge']
     if cards is not None:
@@ -196,7 +196,11 @@ def _state(value, binding):
     _list(value['unresolved'], 4096)
     _require(all(type(v) is str for v in value['unresolved']))
     space = value['legal_action_space']
-    _keys(space, ('request_type', 'immediate_frontier', 'choice_graph', 'expanded_plans'))
+    _keys(space, ('request_type', 'immediate_frontier', 'choice_graph', 'expanded_plans') +
+          (('request_parameters',) if value['schema_version'] == SCHEMA_VERSIONS[5] else ()))
+    if value['schema_version'] == SCHEMA_VERSIONS[5]:
+        from .request_parameters import check_space
+        check_space(space, binding, value['visible_objects'])
     _require(space['request_type'] == binding['request_type'])
     _keys(space['expanded_plans'], ('completeness', 'plans'))
     _require(space['expanded_plans'] == {'completeness': 'unknown', 'plans': None})
@@ -600,7 +604,7 @@ class _DiagnosticOutput:
 
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
-                   prepared_rules=None, rules_error=None, observed_changes=False):
+                   prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -627,6 +631,10 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 rules_error not in (None, 'rules_index_unavailable_or_invalid', 'rules_index_limits_exceeded') or
                 prepared_rules is not None and rules_error is not None):
             raise ValueError('invalid_prepared_rules_configuration')
+    if choice_proposal is not None:
+        from .choice_validation import assess_current_choice, check_proposal
+        check_proposal(choice_proposal)
+        choice_proposal = copy.deepcopy(choice_proposal)
     consumer = consumer if consumer is not None else DecisionConsumer()
     if type(observed_changes) is not bool:
         raise ValueError('invalid_observed_changes_option')
@@ -698,10 +706,14 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         if changes_observer is not None:
             changes = changes_observer.observe(pending_event)
             pending_event = None
+        if choice_proposal is not None:
+            validation = assess_current_choice(consumer, choice_proposal)
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
             sidecars.append(changes)
+        if choice_proposal is not None:
+            sidecars.append(validation)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -713,6 +725,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 context = assess_current_rule_context(consumer, prepared_rules, rules_error=rules_error)
             if changes_observer is not None:
                 changes = changes_observer.observe()
+            if choice_proposal is not None:
+                validation = assess_current_choice(consumer, choice_proposal)
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -723,6 +737,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['current_rule_context'] = context
         if changes_observer is not None:
             value['observed_changes'] = changes
+        if choice_proposal is not None:
+            value['choice_validation'] = validation
         return value
 
     try:

@@ -8,7 +8,8 @@ from .decision_input import build_decision_input, _catalog, _id
 
 SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
 SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
-                   3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4'}
+                   3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4',
+                   5: 'mtgaplayer.decision-state.v5'}
 EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
                    'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
@@ -213,7 +214,7 @@ def build_decision_state(document, *, version=1):
         except (ValueError, KeyError, TypeError):
             return None
         game['stack'] = copy.deepcopy(stack)
-    if version == 4:
+    if version >= 4:
         observed = current.get('_observed_combat_stats')
         counts = Counter(obj['instance_id'] for obj in visible)
         if type(observed) is not list or len(observed) > 512:
@@ -241,7 +242,7 @@ def build_decision_state(document, *, version=1):
     projection, graph, availability, completeness = None, None, 'not_provided', 'unknown'
     unresolved = ['effective_stats_unknown', 'effects_not_observed', 'mana_payment_unknown',
                   'complete_legality_unknown', 'response_encoding_unknown', 'server_acceptance_unknown']
-    if version == 4:
+    if version >= 4:
         unresolved.remove('effective_stats_unknown')
         unresolved.extend(('current_power_toughness_scope_limited', 'current_power_toughness_unknown_where_null',
                            'effective_stat_effect_sources_unknown', 'effective_stat_durations_unknown'))
@@ -316,4 +317,12 @@ def build_decision_state(document, *, version=1):
             'choice_graph': graph, 'expanded_plans': {'completeness': 'unknown', 'plans': None}},
         'unresolved': sorted(set(unresolved)), 'execution': {'actionable': False,
             'executor_connected': False, **FLAGS}, 'read_only': True}
+    if version >= 5:
+        from .request_parameters import assemble, check_space
+        try:
+            result['legal_action_space']['request_parameters'] = assemble(
+                request.get('_request_parameters') if request is not None else None, binding, visible)
+            check_space(result['legal_action_space'], binding, visible)
+        except (ValueError, TypeError, KeyError, RecursionError):
+            return None
     return copy.deepcopy(result)
