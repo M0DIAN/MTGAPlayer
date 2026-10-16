@@ -9,7 +9,7 @@ from pathlib import Path
 import json
 import re
 
-from .raw_log import RawFollower, RawReducer, _request_digest, COMBAT_SUBMITS
+from .raw_log import RawFollower, RawReducer, _request_digest, COMBAT_SUBMITS, TERMINAL_SUBMITS
 from .semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
 from .choice_graph import (CHOICE_VALIDATION_LEVELS, _selectn_known_constraints,
                            _build_selectn_constraint_graph)
@@ -174,13 +174,18 @@ def _consumed_pair(reducer, before, payload):
 
 def _paired_combat_submit(reducer, before, payload):
     """Only the two fixed terminal combat submissions, after current-request revocation."""
+    return _paired_terminal_submit(reducer, before, payload, COMBAT_SUBMITS)
+
+
+def _paired_terminal_submit(reducer, before, payload, pairs=TERMINAL_SUBMITS):
+    """Finite observed terminal pairs only, after current-request revocation."""
     if (not isinstance(payload, dict) or not isinstance(payload.get('type'), str) or
             not isinstance(before, dict)):
         return False
     binding = before.get('binding')
     if not isinstance(binding, dict):
         return False
-    return (payload['type'] in COMBAT_SUBMITS and COMBAT_SUBMITS[payload['type']] == before.get('type') and
+    return (payload['type'] in pairs and pairs[payload['type']] == before.get('type') and
             before.get('_continuity_verified') is True and reducer.request is None and
             reducer.generation == binding.get('generation') and reducer.seat == binding.get('self_seat') and
             reducer.room_seat == reducer.seat and reducer.version == before.get('game_state_id') and

@@ -420,7 +420,7 @@ def main(argv=None):
     export_parser = sub.add_parser('export-semantic-samples', help='export NEW sanitized offline observation episodes')
     export_parser.add_argument('input', type=Path, help='explicit local Player.log; no directory discovery')
     export_parser.add_argument('--output', type=Path, required=True, help='new JSON file, never overwritten')
-    export_parser.add_argument('--schema-version', type=int, choices=(1, 2, 3), default=1,
+    export_parser.add_argument('--schema-version', type=int, choices=(1, 2, 3, 4), default=1,
                                help='v2 adds narrow Cast/mana traces; v3 adds historical combat final submissions')
     export_parser.add_argument('--max-samples', type=int, default=16)
     export_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)

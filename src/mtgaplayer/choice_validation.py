@@ -12,6 +12,25 @@ def check_proposal(value):
     from .decision_consumer import _bounded_json, _binding, _integer, _keys, _reference
     from .request_parameters import _action
     _bounded_json(value)
+    if (type(value) is dict and type(value.get('request_identity')) is dict and
+            value['request_identity'].get('request_type') == 'GREMessageType_SelectTargetsReq'):
+        from .semantic_targets import check_final_set
+        _keys(value, ('request_identity', 'proposed_final_target_set'), ('source_snapshot_ref',))
+        _binding(value['request_identity'], complete=True)
+        if value['request_identity']['request_id'] is None:
+            raise ValueError('invalid_choice_proposal')
+        # Structural validation only. Quantity/membership contradictions are
+        # meaningful verdicts, not loader failures.
+        proposed = value['proposed_final_target_set']
+        check_final_set({'source_object_ref': proposed['source_object_ref'],
+            'target_idx': proposed['target_idx'], 'min_targets': None, 'max_targets': None,
+            'entries': None}, proposed)
+        if 'source_snapshot_ref' in value:
+            ref = value['source_snapshot_ref']
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != value['request_identity']:
+                raise ValueError('invalid_choice_proposal')
+        return
     _keys(value, ('request_identity', 'list_position', 'proposed_action'), ('source_snapshot_ref',))
     _binding(value['request_identity'], complete=True)
     if value['request_identity']['request_id'] is None:
@@ -81,6 +100,18 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        if state['binding']['request_type'] == 'GREMessageType_SelectTargetsReq':
+            from .semantic_targets import PROFILE, SCOPE as TARGET_SCOPE, check_final_set
+            if evidence['profile'] != PROFILE:
+                return unknown('target_profile_not_observed')
+            status, reason = check_final_set(evidence['targets'], proposal['proposed_final_target_set'])
+            if reason == 'proposal_binding_invalid':
+                return _result(reason)
+            result['validation_scope'] = TARGET_SCOPE
+            result['known_constraints'] = status
+            result['reasons'] = [reason, 'incremental_ui_reachability_and_additional_constraints_unverified']
+            result['source_snapshot_ref'] = copy.deepcopy(source_snapshot_ref)
+            return result
         rows, position = evidence['actions'], proposal['list_position']
         if position >= len(rows):
             return _result('proposal_binding_invalid')

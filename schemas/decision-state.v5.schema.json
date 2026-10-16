@@ -2320,7 +2320,6 @@
         "schema_version",
         "profile",
         "binding",
-        "actions",
         "historical_response_used"
       ],
       "properties": {
@@ -2328,7 +2327,10 @@
           "const": "mtgaplayer.request-parameters.v1"
         },
         "profile": {
-          "const": "reviewed_literal_mana_slice"
+          "enum": [
+            "reviewed_literal_mana_slice",
+            "reviewed_single_slot_public_targets"
+          ]
         },
         "binding": {
           "$ref": "#/$defs/binding"
@@ -2342,6 +2344,138 @@
         },
         "historical_response_used": {
           "const": false
+        },
+        "targets": {
+          "$ref": "#/$defs/singleSlotTargets"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "profile": {
+              "const": "reviewed_literal_mana_slice"
+            }
+          },
+          "required": [
+            "actions"
+          ],
+          "not": {
+            "required": [
+              "targets"
+            ]
+          }
+        },
+        {
+          "properties": {
+            "profile": {
+              "const": "reviewed_single_slot_public_targets"
+            }
+          },
+          "required": [
+            "targets"
+          ],
+          "not": {
+            "required": [
+              "actions"
+            ]
+          }
+        }
+      ]
+    },
+    "singleSlotTargets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_object_ref",
+        "ability_grp_ref",
+        "targeting_ability_grp_ref",
+        "target_idx",
+        "targeting_player",
+        "min_targets",
+        "max_targets",
+        "selected_count",
+        "entries",
+        "allow_cancel",
+        "allow_undo"
+      ],
+      "properties": {
+        "source_object_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "ability_grp_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "targeting_ability_grp_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "target_idx": {
+          "$ref": "#/$defs/id"
+        },
+        "targeting_player": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "min_targets": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 256
+        },
+        "max_targets": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 256
+        },
+        "selected_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 256
+        },
+        "entries": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "maxItems": 256,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "object_ref",
+              "legal_action"
+            ],
+            "properties": {
+              "object_ref": {
+                "$ref": "#/$defs/id"
+              },
+              "legal_action": {
+                "enum": [
+                  "SelectAction_Select",
+                  "SelectAction_Unselect"
+                ]
+              }
+            }
+          }
+        },
+        "allow_cancel": {
+          "const": "AllowCancel_Abort"
+        },
+        "allow_undo": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       }
     }

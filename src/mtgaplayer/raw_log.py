@@ -16,6 +16,8 @@ COMBAT_SUBMITS = {
     'ClientMessageType_SubmitAttackersReq': 'GREMessageType_DeclareAttackersReq',
     'ClientMessageType_SubmitBlockersReq': 'GREMessageType_DeclareBlockersReq',
 }
+TERMINAL_SUBMITS = {**COMBAT_SUBMITS,
+    'ClientMessageType_SubmitTargetsReq': 'GREMessageType_SelectTargetsReq'}
 
 
 def _id(value):
@@ -657,14 +659,16 @@ class RawReducer:
                     payload['type'].endswith('Resp') and _id(payload.get('respId')))
         combat_submit = False
         if (isinstance(payload, dict) and isinstance(payload.get('type'), str) and
-                payload['type'] in COMBAT_SUBMITS):
+                payload['type'] in TERMINAL_SUBMITS):
             req = self.request
             binding = req.get('binding') if isinstance(req, dict) else None
             ident, version = payload.get('respId'), payload.get('gameStateId')
             combat_submit = (not any(k in entry for k in ('greToClientEvent', 'authenticateResponse',
                     'matchGameRoomStateChangedEvent')) and self.error is None and not self.conflict and _id(ident) and _id(version) and
+                (payload['type'] != 'ClientMessageType_SubmitTargetsReq' or
+                 set(payload) == {'type', 'respId', 'gameStateId'}) and
                 isinstance(binding, dict) and req.get('current') is True and
-                req.get('_continuity_verified') is True and req.get('type') == COMBAT_SUBMITS[payload['type']] and
+                req.get('_continuity_verified') is True and req.get('type') == TERMINAL_SUBMITS[payload['type']] and
                 req.get('id') == ident and req.get('game_state_id') == version == self.version and
                 binding == {'generation': self.generation, 'match': self.match, 'game': self.game,
                             'game_state_id': version, 'self_seat': self.seat, 'ownership_verified': True} and
@@ -805,9 +809,9 @@ class RawReducer:
                                 **_request_semantics(message)}
                 if self._include_request_parameters:
                     from .request_parameters import project
-                    visible = [{'instance_id': o['id'], 'card_id': o['card_id']}
+                    visible = [{'instance_id': o['id'], 'card_id': o['card_id'], 'zone': o['zone']}
                                for o in self._current()['objects']]
-                    self.request['_request_parameters'] = project(message, visible)
+                    self.request['_request_parameters'] = project(message, visible, self.seat)
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)

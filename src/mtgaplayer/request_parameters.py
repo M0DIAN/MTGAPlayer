@@ -62,10 +62,14 @@ def _visible_references(action, visible):
     return True
 
 
-def project(message, visible):
+def project(message, visible, seat=None):
     """Called only in the reducer's accepted, authenticated request path."""
     from .semantic_cast import action
     try:
+        if message.get('type') == 'GREMessageType_SelectTargetsReq':
+            from .semantic_targets import project_request
+            objects = [{'object_ref': o['instance_id'], 'zone': o['zone']} for o in visible]
+            return project_request(message, objects, seat, LiteralRefs(), ())
         if (set(message)-{'type', 'systemSeatIds', 'msgId', 'gameStateId', 'actionsAvailableReq'} or
                 message['type'] != 'GREMessageType_ActionsAvailableReq'):
             return None
@@ -86,6 +90,16 @@ def project(message, visible):
 def check(value, binding, visible):
     if value is None:
         return
+    from .semantic_targets import PROFILE as TARGET_PROFILE, check_request
+    if type(value) is dict and value.get('profile') == TARGET_PROFILE:
+        if (set(value) != {'schema_version', 'profile', 'binding', 'targets', 'historical_response_used'} or
+                value['schema_version'] != VERSION or value['binding'] != binding or
+                binding['request_type'] != 'GREMessageType_SelectTargetsReq' or
+                binding['request_id'] is None or value['historical_response_used'] is not False):
+            raise ValueError('invalid_request_parameters')
+        check_request(value['targets'], [{'object_ref': o['instance_id'], 'zone': o['zone']} for o in visible],
+                      binding['self_seat'])
+        return
     if (type(value) is not dict or set(value) != {'schema_version', 'profile',
             'binding', 'actions', 'historical_response_used'} or
             value['schema_version'] != VERSION or value['profile'] != PROFILE or
@@ -103,8 +117,10 @@ def check(value, binding, visible):
 def assemble(rows, binding, visible):
     if rows is None or binding['request_id'] is None:
         return None
-    value = {'schema_version': VERSION, 'profile': PROFILE,
-        'binding': copy.deepcopy(binding), 'actions': copy.deepcopy(rows),
+    from .semantic_targets import PROFILE as TARGET_PROFILE
+    target = binding['request_type'] == 'GREMessageType_SelectTargetsReq'
+    value = {'schema_version': VERSION, 'profile': TARGET_PROFILE if target else PROFILE,
+        'binding': copy.deepcopy(binding), 'targets' if target else 'actions': copy.deepcopy(rows),
         'historical_response_used': False}
     check(value, binding, visible)
     return value
@@ -115,6 +131,13 @@ def check_space(space, binding, visible):
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    if value['profile'] != PROFILE:
+        # Target constraints live in this explicit v5 profile. The legacy graph
+        # remains unknown rather than receiving an invented action inventory.
+        if (space['request_type'] != 'GREMessageType_SelectTargetsReq' or
+                space['immediate_frontier']['projection'] is not None or space['choice_graph'] is not None):
+            raise ValueError('request_projection_mismatch')
         return
     from .raw_log import _RAW_ID_FIELDS
     frontier, graph = space['immediate_frontier']['projection'], space['choice_graph']
