@@ -1073,3 +1073,34 @@ Independent frozen-source, corrected-control, actual-input and privacy review
 passes; final delivery binds that review to the committed candidate identity.
 Original log/index hashes and all real pixel/marker evidence remain unchanged
 and local/ignored. No new match, gameplay input, push, PR or merge was performed.
+
+## MP43 — targeted external reuse assessment (2026-10-16)
+
+Baseline main `902f69b`, pinned mtgacoach `2a9cab5`; the owner's first-priority external
+reuse decision is recorded in THIRD_PARTY and docs/mtgacoach-reuse.md. This change
+is the requested assessment before implementation, not a completed MP43 feature.
+Original stopped bytes reframe to the same 732 captured entries. The existing
+reducer confirms request473/state338→response622→first successor339. The selected
+visible card has matching ObjectIdChanged and explicit Sacrifice annotations,
+consistent public Battlefield/Graveyard endpoints and a shared visible affector.
+Request-source binding, full payment and Activate→PayCosts→Search causality remain
+unverified. No captured data or prior fixture was modified.
+
+The isolated upstream mana matcher agrees with an independent injective-assignment
+oracle on 19,800 bounded synthetic relation cases; counterexamples establish source
+capacity, augmenting-path benefit and the vacuous-empty/unchecked-input boundary.
+The real request has no mana domain, so no product port is justified here. The
+smallest useful implementation is a new opt-in historical sacrifice projection
+through the existing semantic collector, preserving v1–v8 and current State6/
+ChoiceValidation; that implementation is explicitly not included in this commit.
+
+The exact real request prefix still verifies only known constraints for 16 options;
+only submitted position1 has the observed successor. Full real v7/v8 export and
+replay retain their existing counts and unverified-payment flags. Twenty existing
+cost-focused tests pass; required full unittest passes 565 tests in 100.612s on the
+independent Python 3.11.16 venv. Windows read-only doctor exits 0 with input_sent=false.
+No upstream package/runtime was installed, no new game was collected, and no
+upstream full-suite result or P10 repair is claimed. Validation uses source review,
+the original-byte/index cross-check and an independent mathematical oracle; it is
+not a separate-agent final-candidate review. This assessment is local only; no
+new remote delivery was authorized or performed.
