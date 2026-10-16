@@ -5,7 +5,7 @@ from math import comb
 
 from .decision_consumer import DecisionConsumer, EXECUTION, _bounded_json, _state
 
-VERSION = 'mtgaplayer.known-choice-candidates.v1'
+VERSION = 'mtgaplayer.known-choice-candidates.v2'
 SCOPE = 'reviewed_current_request_known_constraints_only'
 MAX_CANDIDATES = 64
 
@@ -16,6 +16,7 @@ def _unknown(reason, ref=None):
         'source_snapshot_ref': copy.deepcopy(ref), 'request_type': None, 'profile': None,
         'candidate_total_for_reviewed_constraints': None, 'returned_candidates': 0,
         'truncated': False, 'exhaustive_for_reviewed_constraints': False, 'candidates': [],
+        'action_row_coverage': None,
         'full_action_domain_complete': False, 'global_restrictions_verified': False,
         'complete_payment_verified': False, 'complete_legality_verified': False,
         'server_acceptance_verified': False, 'historical_response_used': False,
@@ -23,7 +24,7 @@ def _unknown(reason, ref=None):
 
 
 def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CANDIDATES):
-    """No game rules beyond existing current PayCosts/SelectTargets validators.
+    """Enumerate only current PayCosts, SelectTargets and finite offered Cast/Activate checks.
 
     Does not establish freshness: supplied offline states are research only.
     Live users must call assess_current_known_candidates on the Consumer.
@@ -52,6 +53,7 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
         check(evidence, binding, state['visible_objects'])
         request_type, profile = binding['request_type'], evidence['profile']
         proposals = []
+        action_coverage = None
         if request_type == COST_REQUEST and profile == COST_PROFILE:
             current = evidence['cost_selection']
             domain = current['offered_object_refs']
@@ -100,6 +102,61 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
                     proposals.append(proposed)
                 if len(proposals) == limit:
                     break
+        elif request_type == 'GREMessageType_ActionsAvailableReq':
+            # Preserve the complete active denominator while admitting only
+            # existing, request-bound Cast/Activate checks. Unknown other rows
+            # are NOT classified as illegal.
+            from .request_parameters import PROFILE as MANA_PROFILE
+            from .semantic_activate import PROFILE as ACTIVATE_PROFILE
+            from .choice_validation import validate_proposed_choice
+            if profile not in (MANA_PROFILE, ACTIVATE_PROFILE):
+                return _unknown('request_profile_not_supported_for_enumeration')
+            partial_activate = profile == ACTIVATE_PROFILE
+            rows = evidence['rows'] if partial_activate else evidence['actions']
+            selected_type = 'ActionType_Activate' if partial_activate else 'ActionType_Cast'
+            total, unknown_rows, contradicted_rows = 0, 0, 0
+            for position, row in enumerate(rows):
+                if row['action_type'] != selected_type:
+                    unknown_rows += 1
+                    continue
+                literal = row['literal_action'] if partial_activate else row
+                if literal is None:
+                    unknown_rows += 1
+                    continue
+                proposal = {'request_identity': copy.deepcopy(binding),
+                    'list_position': position, 'proposed_action': copy.deepcopy(literal)}
+                if source_snapshot_ref is not None:
+                    proposal['source_snapshot_ref'] = copy.deepcopy(source_snapshot_ref)
+                # Existing validator checks the *current* row, source, ability,
+                # visibility and observed cost. No response/future-state input.
+                verdict = validate_proposed_choice(
+                    state, proposal, source_snapshot_ref=source_snapshot_ref)
+                known = verdict['known_constraints']
+                if verdict['source_snapshot_ref'] != source_snapshot_ref or any(
+                        verdict.get(key) is True for key in (
+                            'complete_costs_verified', 'complete_legality_verified',
+                            'payment_completed_verified', 'server_acceptance_verified',
+                            'all_payment_options_verified')):
+                    return _unknown('choice_validator_contract_mismatch')
+                if known == 'verified_known_constraints':
+                    total += 1
+                    if len(proposals) < limit:
+                        proposals.append(proposal)
+                elif known == 'violated_known_constraints':
+                    contradicted_rows += 1
+                else:
+                    unknown_rows += 1
+            action_coverage = {
+                'engine_active_action_rows': len(rows),
+                'verified_known_consistent_rows': total,
+                'unknown_or_unreviewed_rows': unknown_rows,
+                'contradicted_known_constraint_rows': contradicted_rows}
+            if total + unknown_rows + contradicted_rows != len(rows):
+                return _unknown('action_coverage_inconsistent')
+            if not total:
+                result = _unknown('no_verified_action_row_candidates', source_snapshot_ref)
+                result['action_row_coverage'] = action_coverage
+                return result
         else:
             return _unknown('request_profile_not_supported_for_enumeration')
         result = _unknown('additional_rules_and_future_requests_unverified', source_snapshot_ref)
@@ -108,7 +165,10 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
                       candidate_total_for_reviewed_constraints=total,
                       returned_candidates=len(proposals), truncated=total>len(proposals),
                       exhaustive_for_reviewed_constraints=total==len(proposals),
-                      candidates=proposals)
+                      candidates=proposals, action_row_coverage=action_coverage)
+        # Prevent bounded candidate *count* from producing an oversized
+        # Consumer diagnostic if each projected parameter row is large.
+        _bounded_json(result)
         return result
     except (ValueError, TypeError, KeyError, IndexError, RecursionError,
             UnicodeError, OverflowError):
