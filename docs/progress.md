@@ -1,32 +1,36 @@
-## MP50 — Windows dual-CLI exit diagnosis only (candidate)
+## MP50 — Windows dual-CLI local-lease flake isolation (candidate, 2026-10-17)
 
-Accepted baseline MP49 main `a1408bbef02e74951fda666aa4f3ee17465ebfe3`. Required Windows native-no-input CI
-has intermittently failed an **unchanged old integration test**
-`test_actual_dual_cli_prefix_verdict_response_revocation_and_new_request`
-with Consumer exit1 and empty stderr, while both Windows reruns and Linux
-normally pass. Actual failed original runs: PR #51 Windows attempt1, and
-MP49 natural main push attempt1, plus earlier PR runs. The test currently
-discards all consumer diagnostics before asserting the process exit code.
-Until its last reported `consumer_status`/`unresolved` reason is observed,
-the root cause cannot be assigned to queue pressure, expiration,
-producer EOF, diagnostic drain failure or another mechanism.
+Baseline accepted MP49 main `a1408bbef02e74951fda666aa4f3ee17465ebfe3`.
+The unchanged 120-poll `test_actual_dual_cli_prefix_verdict_response_revocation_and_new_request`
+has intermittently returned consumer exit1 and empty stderr on Windows
+CI, while another attempt on the identical source may PASS. The test had
+previously discarded its Consumer terminal diagnostics.
 
-MP50 first makes the existing test's failing assertion report **only the
-last twelve bounded public status tuples** (status, sequence, reason,
-diagnostics completeness/drop count), the producer exit status, and
-consumer stderr. This is instrumentation of the specific failing test,
-not a safety/timeout change and not a claimed fix. The test still
-strictly demands Consumer exit code 0 and Producer exit code 0.
-No raw GRE, request IDs, card names, proposal values or private bytes
-are logged.
+A bounded source-free diagnostic tail (last 12 public status/sequence/
+reason/dropped-count tuples) makes failure causes inspectable without
+emitting private request or card details. A controlled **240-poll at 25ms**
+same-test stress with the original default Consumer 5s lease reproduced
+`STALE` / `observation_age_expired` on both Linux and Windows in the
+push and PR CI. The Consumer correctly fails closed. Holding that stress
+constant and setting only the **test subprocess's**
+`--max-observation-age-ms 15000` let all four Linux/Windows push+PR
+jobs PASS on the same exact nonproduct code path. The original historical
+120-poll failures were not instrumented, so their precise terminal reason
+cannot be proven retroactively; the controlled reproduction establishes
+a concrete timing-coupling hazard.
 
-Once a Windows failure yields a discriminating reason, change only the
-genuinely responsible test scheduling or runtime issue and rerun the
-same strict E2E and required CI. No default Consumer lifetime, output
-grace, event lease, execution flag or input authorization may be weakened
-without evidence. P10 refers to real MTGA defect repair and remains
-**NOT_RUN**. MP50 is not accepted until full CI, exact revision review,
-squash/main CI are verified.
+The final candidate restores the 120-poll workload and keeps the explicit
+test-only 15s lease, while continuing to demand verified known-constraint
+verdict, response revocation, later request non-revival, normal Consumer
+CLOSED/sample_limit, Producer/Consumer exit0 and historical replay proof.
+The production default 5s observation lease, Consumer/Publisher fail-closed
+staleness, bounded I/O and no-input rules are **not changed**; existing
+separate lease-expiry and backpressure tests remain authoritative.
+
+This is strictly a Windows/Linux CI integration-lifecycle test correction,
+not a real MTGA P10 defect. P10 remains NOT_RUN. The final candidate still
+requires exact-HEAD code review (owner-authorized self-review), full required
+CI, squash tree consistency and naturally triggered main CI before acceptance.
 
 ## MP49 — current public Activate target-menu observation (candidate, 2026-10-16)
 
