@@ -88,10 +88,18 @@ class TargetMenuTests(unittest.TestCase):
         reducer=RawReducer();reducer.reset(1)
         for x in self.rows[:5]:reducer.apply(x)
         observer=TargetMenuObserver()
-        changed=copy.deepcopy(self.rows[4])
-        changed['greToClientEvent']['greToClientMessages'][0]['msgId']+=5
-        observer.observe(reducer,changed)
-        self.assertEqual(observer.current(reducer)['menus'],[])
+        # Both wrong headers and same-header changed nested content must
+        # fail against RawReducer's accepted request digest ledger.
+        for mode in ('wrong_header','same_header_changed_body'):
+            changed=copy.deepcopy(self.rows[4])
+            request=changed['greToClientEvent']['greToClientMessages'][0]
+            if mode=='wrong_header':
+                request['msgId']+=5
+            else:
+                request['actionsAvailableReq']['actions'][2][
+                    'targets'][0]['targets'][0]['targetInstanceId']+=1
+            observer.observe(reducer,changed)
+            self.assertEqual(observer.current(reducer)['menus'],[],mode)
         observer.observe(reducer,self.rows[4])
         self.assertEqual(len(observer.current(reducer)['menus']),6)
 
