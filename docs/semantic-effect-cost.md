@@ -79,3 +79,44 @@ was produced with an exact prefix ending before response622. Formal v6 contracts
 reuse local v5 definitions: [State](../schemas/decision-state.v6.schema.json) and
 [Event](../schemas/decision-event.v6.schema.json). Register all three URNs locally;
 no network schema resolution or product dependency is required.
+
+## First observed sacrifice result (semantic v9)
+
+`export-semantic-samples --schema-version 9` inherits v8 and adds the two explicit
+facts from the real first successor339 after request473/state338 and response622.
+The existing accepted-state observer supplies the message and visible endpoint;
+no second parser, reducer or lifecycle is introduced. The [upstream reuse
+assessment](mtgacoach-reuse.md) establishes why a mana matcher does not address
+this nonmana result.
+
+This finite slice accepts exactly one ObjectIdChanged and one ZoneTransfer with
+category Sacrifice in that state. The selected own battlefield object must leave
+the visible projection; its unique new reference must appear in the own public
+graveyard with the same known Card identity. Both annotations must name one
+affector visible on the own stack at both endpoints. The public source/destination
+zone metadata and existing state continuity must agree. Other migration/transfer
+annotations, malformed fields, conflicting affectors or endpoint ambiguity
+withhold the result even when an additional annotation appears unrelated.
+The two other real annotations remain explicitly omitted. This is intentionally
+a narrow observed shape, not a generalized effect or sacrifice-rules engine.
+
+The portable trace retains `object_id_changed` and `sacrifice_transfer`, each with
+`observed_affector_ref`. Missing or unsupported facts retain the valid submission
+and endpoint but return `selected_card_sacrifice_observed=false` and
+`selected_card_result=insufficient_evidence`. Positive evidence reports
+`selected_card_result=observed_explicit_annotation_chain`. That result binds only
+the actual selected reference; another candidate cannot borrow it. Annotation
+order within the same state is not used as causal evidence. Later states cannot
+repair a missing first-successor result.
+
+The request's `source_object_ref` stays null: the observed affector does not fill
+an absent request binding. `payment_completed_verified`, `rules_effect_verified`,
+`complete_legality_verified` and `server_acceptance_verified` remain false;
+parent Activate and later Search causality remain unknown. Portable replay checks
+internal consistency, not the private original's authenticity.
+
+State/Event v6 and ChoiceValidation keep their existing pre-response current-request
+boundary and tri-state checks. No future successor data enters a current proposal.
+Defaults and semantic v1–v8 retain their earlier contracts, including endpoint-only
+cost observations in v7/v8. The [curated real v9 episode](../tests/fixtures/semantic_effect_cost_result_real_v9.README.md)
+is newly exported; prior fixtures are unchanged.

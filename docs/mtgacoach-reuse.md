@@ -7,9 +7,10 @@ Preferred external source: `josharmour/mtgacoach`, fixed at
 
 The targeted assessment supports reusing the upstream pure mana matcher when
 verified current mana domains are available. It does **not** support inserting
-that matcher into the retained MP43 nonmana payment. This assessment introduces
-no production algorithm, dependency, schema or execution capability. MP43's
-proposed historical sacrifice projection below is not implemented by this change.
+that matcher into the retained MP43 nonmana payment. No upstream algorithm,
+runtime dependency or execution capability is introduced. The implementation
+following this assessment adds only semantic v9's historical sacrifice projection
+through the existing collector; see [the contract](semantic-effect-cost.md).
 
 ## What the frozen real input establishes
 
@@ -111,26 +112,27 @@ dependencies, which are unnecessary for the method and incompatible with this
 project's independent stdlib-only product boundary. Python3.11 can run the method
 without installing that package.
 
-## Smallest useful MP43 implementation boundary
+## Smallest useful MP43 implementation
 
-For this actual blocker, the useful next change is a narrow historical-result
-projection using existing code, not a mana solver:
+The demonstrated benefit for this blocker is retaining the selected card's
+explicit result without inventing complete payment legality. Semantic v9 uses
+the following narrow historical-result projection:
 
-1. Add an explicit new semantic export/replay version, preserving exact v1–v8
+1. An explicit new semantic export/replay version preserves exact v1–v8
    output. Use RawReducer's accepted-message observer and only the first
    continuous successor already retained by MP40.
-2. Reuse the existing typed-annotation reader, scoped references, public endpoint
+2. It reuses the existing typed-annotation reader, scoped references, public endpoint
    projection and request/response consumption. Retain the selected-object
    mapping and explicit Battlefield→Graveyard Sacrifice facts, including their
    common observed affector and raw evidence references kept locally.
-3. Require consistent public endpoints and reject ambiguous mappings, foreign or
+3. It requires consistent public endpoints and withholds ambiguous mappings, foreign or
    conflicting related transfers, missing annotations, wrong identity and state
    gaps. Do not add a second GRE parser, state machine or generalized effect engine.
-4. Report `selected_card_sacrifice_observed` as historical evidence. Keep complete
+4. It reports `selected_card_sacrifice_observed` as historical evidence. Complete
    payment, request-source binding, parent Activate and later Search causality
-   unknown. A new sanitized real fixture must be produced through the exporter;
-   the old v7/v8 artifacts must not be rewritten to add facts they never retained.
-5. Keep State6 and ChoiceValidation's existing current-request input contract.
+   remain unverified. The new sanitized real fixture is produced through the
+   exporter; old v7/v8 artifacts retain their original values.
+5. State6 and ChoiceValidation retain their existing current-request input contract.
    Join a historical result only to its recorded request identity and actual
    selected reference. Never feed state339 into a state338 proposal or validate
    another candidate using position1's result. No new DecisionState version is
@@ -151,7 +153,7 @@ isolated upstream matcher against the independent oracle. Run with the project
 Python3.11 and this checkout's `src` on PYTHONPATH. The script depends on local
 private evidence and is not a portable fixture or part of the installed product.
 
-This is a completed reuse assessment and real-evidence analysis. It does not
-claim a new runtime payment-result feature, new live qualification, an upstream
+The assessment and the opt-in historical-result implementation are distinct.
+Neither establishes a live payment evaluator, new live qualification, an upstream
 full-suite run, a reproduced old defect or a P10 repair. Current validation
 results and delivery status are recorded only in `docs/progress.md`.

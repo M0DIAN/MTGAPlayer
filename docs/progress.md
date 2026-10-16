@@ -1104,3 +1104,33 @@ upstream full-suite result or P10 repair is claimed. Validation uses source revi
 the original-byte/index cross-check and an independent mathematical oracle; it is
 not a separate-agent final-candidate review. This assessment is local only; no
 new remote delivery was authorized or performed.
+
+### MP43 local implementation after the reuse assessment
+
+The demonstrated useful change is opt-in semantic v9, reusing the existing
+collector, RawReducer, typed annotation reader, scoped references and v8 replay
+validation. It adds only selected-card sacrifice observations from the first
+continuous successor. The source shape requires one identity migration and one
+Sacrifice transfer with the same visible stack affector, matching own public
+endpoints and known Card identity. Missing, foreign, duplicate or conflicting
+facts withhold the result. No additional state machine or mana algorithm is added.
+
+Actual original source export/replay through the CLI retains 54 matched pairs,
+29 exported episodes and 25 unsupported pairs, with no omissions. Its v9 episode26
+is the exact producer source of the new sanitized real fixture. It observes
+selected position1's sacrifice but leaves complete payment, full legality,
+request-source binding and Activate/Search causality unverified. The other15
+current candidates receive no historical-outcome evidence. State6/ChoiceValidation
+remain unchanged; response consumption and all existing lifecycle gates apply.
+
+Eight new focused tests pass, including actual CLI export/replay, portable
+real-fixture consistency, endpoint/identity/annotation refusal, first-successor
+boundaries and no outcome lending to another candidate. All 573 unittest tests
+pass in 101.085s on independent Python3.11.16. Windows doctor exits0 read-only with
+input_sent=false. Baseline/candidate separate-process full-value comparison finds
+all semantic v1–v8 documents/reports identical and all State v1–v6 projections
+identical at 57 accepted real requests each. The original source/index hashes and
+old fixtures remain unchanged. Source/diff review and independent data/oracle
+checks are complete; no separate-agent final-candidate review or remote CI is
+claimed. This is local new evidence coverage, not a reproduced old defect;
+P10 remains NOT_RUN. No new collection or gameplay input was performed.
