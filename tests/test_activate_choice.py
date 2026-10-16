@@ -119,6 +119,31 @@ class ActivateChoiceTests(unittest.TestCase):
                 else:actions[11].pop('manaPaymentOptions')
                 state=self.prefix(rows);self.assert_unknown(self.result(state,self.propose(state)))
 
+    def test_distinct_sources_must_not_reuse_one_predictive_mana_unit(self):
+        # Real Generic2 request supplies two different source/unit pairs.
+        # Only the second unit ID is synthetically made equal to the first;
+        # its source action is changed too, preserving the offered-option join.
+        actions = self.actions(self.rows)
+        taps = actions[3]['autoTapSolution']['autoTapActions']
+        self.assertNotEqual(taps[0]['instanceId'], taps[1]['instanceId'])
+        first = taps[0]['manaPaymentOption']['mana'][0]['manaId']
+        self.assertNotEqual(first, taps[1]['manaPaymentOption']['mana'][0]['manaId'])
+        rows = copy.deepcopy(self.rows)
+        actions = self.actions(rows)
+        second = actions[3]['autoTapSolution']['autoTapActions'][1]
+        second['manaPaymentOption']['mana'][0]['manaId'] = first
+        matched = [row for row in actions if row['actionType'] == 'ActionType_Activate_Mana'
+                   and row['instanceId'] == second['instanceId']
+                   and row['abilityGrpId'] == second['abilityGrpId']]
+        self.assertEqual(len(matched), 1)
+        matched[0]['manaPaymentOptions'][0]['mana'][0]['manaId'] = first
+        state = self.prefix(rows)
+        proposal = self.propose(state)
+        self.assertIsNotNone(proposal['proposed_action'])
+        result = self.result(state, proposal)
+        self.assert_unknown(result, 'distinct_mana_units_not_observed')
+        self.assertFalse(result['complete_costs_verified'])
+
     def test_cost_and_internal_payment_contradictions_are_not_alternative_routes(self):
         for mode in ('cost_group','payment_group','offered_option'):
             rows=copy.deepcopy(self.rows);actions=self.actions(rows)
