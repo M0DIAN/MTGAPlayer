@@ -1,3 +1,18 @@
+## MP49 — current public Activate target-menu observation (candidate, 2026-10-16)
+
+Starts from accepted MP48 main `78d39a1c1421236043c42cba4248473bec7cb559`.
+The real 20-row Generic2 Activate request contains six target-bearing
+rows (positions2,4–8). MP49 adds opt-in replay/watch reporting of the
+reviewed visible single-slot public target IDs only, reusing the one
+RawReducer, exact current raw request digest, own-seat and public
+visibility gates. Real counts are 6/10/6/6/6/6. Unknown/nonpublic,
+duplicate, extended or corrupted parameters are withheld. Response
+consumption and partial source revoke menu evidence. This does NOT
+establish legal target sets, selection cardinality, full payment or
+server acceptance. Default State/Event, ChoiceValidation and input
+contracts unchanged. See docs/action-target-menus.md.
+Candidate only pending exact-head direct review and CI. P10 NOT_RUN.
+
 ## MP48 — pre-response Cast/Activate known row alternatives (candidate, 2026-10-16)
 
 Baseline MP47 accepted main `a86576fef0a13340d0f9c1dc94973c932408f2a6`.
