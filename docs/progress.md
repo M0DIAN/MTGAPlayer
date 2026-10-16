@@ -1,3 +1,24 @@
+## MP45 — pre-response distinct predictive mana units (candidate, 2026-10-16)
+
+Starting at accepted main `c2919a0deb6c17980c1434fb216dbc54d46fd51b`, the retained real current Generic2 Activate
+profile observes two distinct battlefield sources and two distinct request-scoped
+predictive mana IDs. Existing `check_payment` verifies source distinctness and
+source/ability/option membership, but did not separately require the two unit IDs
+to be distinct. This narrow amendment refuses a two-source proposal if it reuses
+one unit ID, even when both advertised mana options have been manipulated to
+preserve their per-source joins. The result stays **insufficient_evidence** rather
+than claiming server rejection or a complete rules violation. The unchanged
+real request remains the positive control; one source-derived synthetic mutation
+is the discriminating negative control. No general mana solver, inferred colors,
+new parser, protocol sender, MTGA input, or upstream code is introduced.
+
+MP44/P10 needs a reproduced implementation defect from real source; frame309's
+visual 5 vs GRE 6 is explicitly a scope difference, not such a defect. P10
+remains NOT_RUN. MP46 request-source/parent Activate→Search causality and MP47
+arbitrary-new-combination complete legality remain evidence-blocked until direct
+real-source support exists. This status is a candidate only: CI and genuinely
+independent final-candidate review must pass on an exact SHA before squash.
+
 ## MP39 — response-before Activate proposal slice (2026-10-16)
 
 Starts from accepted actual main5c50ef0c6d83e074f2f17e69dd286482eb6f5ecd/tree78141e4a37ee2ab16e5300c49fc39f2ea44fd6e7 after MP38's exact independently reviewed repair and successful natural main CI38833456773. The authorized MP37→38→39 package continues without another permission step. State/Event v5 and the existing single-proposal Consumer/CLI now support an explicit partial nested request profile: all20 active positions, flat identities and parameter shapes remain; only currently eligible no-target-value Activate/mana rows carry finite literal values. Eligibility visits every row from current request/visible state only, never the response or a hard-coded actual position. Both real positions1/3 naturally pass the same finite checks. Other target-bearing values remain opaque and their denominator is not hidden.

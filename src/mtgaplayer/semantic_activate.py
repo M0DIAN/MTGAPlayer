@@ -225,6 +225,12 @@ def check_payment(rows, chosen, visible, seat, position):
         obj = objects.get(payment['instanceId'])
         if obj is None or obj['zone'] != 'ZoneType_Battlefield' or obj['controller_seat'] != seat:
             return unknown, 'visible_payment_source_not_verified', checks
+    # The two explicit units must also be distinct in this request's mana
+    # namespace. Distinct battlefield sources alone cannot prove that a
+    # predictive mana unit was not reused under two source descriptors.
+    unit_refs = [payment['manaPaymentOption']['mana'][0]['manaId'] for payment in taps]
+    if len(set(unit_refs)) != len(unit_refs):
+        return unknown, 'distinct_mana_units_not_observed', checks
     checks['predictive_payment'] = good
     if checks['ability_identity'] != good:
         return unknown, 'current_source_unique_ability_pair_not_observed', checks
