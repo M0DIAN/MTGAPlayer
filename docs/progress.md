@@ -1,3 +1,26 @@
+## MP52 — targeted Activate evidence audit and capture contract (2026-10-17)
+
+Issue57's accepted baseline and freshly fetched main are both
+`26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`. Audit of all ten retained raw
+fixtures (1,152 records), curated v8/v9 exports, provenance and existing
+semantic checks supports delivery **B**: the actual Generic2 response
+selects no-target Activate position3; its six target-bearing offered rows
+are unchosen, and the retained actual SelectTargets chain originates in
+Cast. Ten other PerformAction responses are header-only. The two curated
+cost/Search exports cannot supply a missing Activate parent or prove
+cross-file causality. Private originals were not reread.
+
+[Evidence report](targeted-activate-evidence.md) records exact fixture/source
+locations, the finite v5/v9 and Cast/Ability validation differences, and a
+minimum same-session owner-local raw capture contract. Its adjacent JSON
+pins every raw fixture's canonical LF hash/count and separates established,
+unsupported and next-required facts; an embedded reproducer reuses existing
+framing/reducer/menu/sample APIs. No product behavior, schemas, fixtures or
+tests are changed; no synthetic targeted positive chain is manufactured.
+Complete legality, acceptance, input and latency authority remain false;
+P10 remains NOT_RUN. Required local checks, separate candidate review and
+exact-head/PR Linux/Windows CI receipts belong to the final delivery.
+
 ## MP51 — bind current targeted Activate menus to observed source abilities (candidate, 2026-10-17)
 
 Accepted baseline MP50 main `ab1d69dfa8699f09610775ba5f5acb2d52692c8c`.
