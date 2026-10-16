@@ -253,7 +253,8 @@ def capture_window(hwnd: int, pid: int, output_path: Path, method='printwindow')
     bounded collector process rather than the analysis process.
     """
     result = {'status': 'failed', 'hwnd': hwnd, 'pid': pid, 'method': method,
-              'input_sent': False, 'path': None, 'sha256': None}
+              'input_sent': False, 'path': None, 'sha256': None,
+              'pixel_acquisition_status': 'not_attempted', 'capture_stage': 'window_validation'}
     try:
         if os.name != 'nt':
             raise ValueError('Windows_required')
@@ -282,7 +283,9 @@ def capture_window(hwnd: int, pid: int, output_path: Path, method='printwindow')
             if occluders:
                 result['occluding_hwnds'] = occluders
                 raise ValueError('window_occluded')
+        result.update(pixel_acquisition_status='attempted', capture_stage='pixel_acquisition')
         frame = _copy_frame(hwnd, before, method)
+        result.update(pixel_acquisition_status='succeeded', capture_stage='post_capture_validation')
         after = _window_snapshot(hwnd, pid)
         for key in ('client_rect', 'client_screen_rect', 'window_rect', 'size', 'dpi'):
             if after[key] != before[key]:
@@ -295,15 +298,20 @@ def capture_window(hwnd: int, pid: int, output_path: Path, method='printwindow')
             if occluders:
                 result['occluding_hwnds'] = occluders
                 raise ValueError('window_occluded_during_capture')
+        result['capture_stage'] = 'quality_check'
         quality = _quality(frame)
         result['quality'] = quality
+        result['capture_stage'] = 'file_write'
         output_path.parent.mkdir(parents=True, exist_ok=True)
         _save_image(output_path, frame)
         result.update(path=str(output_path.resolve()), sha256=hashlib.sha256(output_path.read_bytes()).hexdigest(),
                       foreground_after=after['foreground'])
         if quality['failure_reason']:
+            result['capture_stage'] = 'quality_check'
             raise ValueError(quality['failure_reason'])
-        result.update(status='success', reason=None)
+        result.update(status='success', reason=None, capture_stage='complete')
     except (OSError, ValueError, RuntimeError) as exc:
+        if result['pixel_acquisition_status'] == 'attempted':
+            result['pixel_acquisition_status'] = 'failed'
         result.update(reason=str(exc), last_winerror=c.get_last_error())
     return result

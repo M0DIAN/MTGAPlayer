@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from mtgaplayer.raw_log import RawFollower, RawReducer
 from mtgaplayer.response_evidence import _current_verified_request, _paired_response
 from mtgaplayer.semantic_evidence import SemanticChoiceCounter, ComplexSemanticChoiceCounter
+from mtgaplayer.visual_observation import capture_diagnostics
 
 
 JSONL_FILES = ('raw_records.jsonl', 'log_observations.jsonl',
@@ -109,6 +110,7 @@ class Collector:
         self.capture_thread = None
         self.capture_id = 0
         self.capture_started_ns = None
+        self.previous_capture_observation = None
         self.closed = False
         self.follower = RawFollower(self.log)
         self.events = []
@@ -207,6 +209,8 @@ class Collector:
             self.counts['api_quality_frames'] += int(complete_quality_frame)
             self.counts['capture_failures'] += int(not complete_quality_frame)
             row['capture_completed'] = clocks()
+            row['diagnostics'] = capture_diagnostics(row, self.previous_capture_observation)
+            self.previous_capture_observation = row
             self.write('screenshots.jsonl', row)
             self.capture_started_ns = None
         return target

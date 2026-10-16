@@ -804,3 +804,33 @@ Private logs, screenshots, snapshots, independent reviews and the detailed repor
 remain local and ignored under `artifacts/local-live-poc/`; no push, PR or merge
 was performed. Next work should address visual coverage/freshness and the observed
 narrow semantic gaps, without strategy, model training or performance expansion.
+## Phase 2 — scoped visual evidence (2026-10-16)
+
+The fetched remote main is still `8c211a6`, the common ancestor of the clean PoC
+branch `f1d8a6f` (main-only/Poc-only commits: 0/3). Its six changed files are only
+the PoC tools, their tests and progress. Phase 2 uses the separate
+`codex/live-observation-phase2` checkout; the original evidence is unchanged.
+
+Task 1 adds a source-separated visual-count contract and capture diagnostics.
+Visible subsets, partial/uncertain observations and GRE-only presence cannot be
+silently treated as complete visual coverage. The real frame309 comparison now
+returns scope_mismatch, preserving visual 5 and GRE 6/6 without proving a parser
+error. Capture metadata separates pixel acquisition, quality rejection and file
+storage; repeated hashes never prove a stale or invalid frame. Renderer time and
+network delay remain unknown. Quality thresholds and failed-quality refusal are
+unchanged; capture input remains disabled.
+
+Actual review of all 17 previously termed black frames found 16 waiting-for-
+server screens and one near-black transition with a visible icon, not confirmed
+empty capture failures. Original failure records are preserved. Offline replay
+of the same 17 PNG pixel inputs gives identical quality metrics, failed results
+and encoded PNG hashes before/after. New stage diagnostics apply only to that
+offline replay; old metadata without an explicit acquisition status stays
+unknown. This corrects diagnostic/report interpretation rather than proving a
+new backend or GRE defect. P10 is not claimed.
+
+Task 1 validation: 35 focused tests pass; full required regression passes 489
+tests in 89.662s, exit 0. Independent source/evidence review reports no blocking
+findings, checks original hashes and separately probes stage exceptions. No new
+match, live-capture claim, model training, push or PR is introduced. Tasks 2 and
+3 remain pending implementation.

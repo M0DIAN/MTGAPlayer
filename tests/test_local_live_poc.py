@@ -164,6 +164,27 @@ class LocalLivePocTests(unittest.TestCase):
         self.assertFalse(row['api_quality_success'])
         self.assertFalse(row['visual_content_verified'])
 
+    def test_diagnostics_preserve_quality_failure_and_identical_capture_events(self):
+        def near_black(hwnd, pid, path, method='printwindow'):
+            path.write_bytes(b'identical-test-content-not-a-real-frame')
+            return {'status': 'failed', 'reason': 'black_frame',
+                    'pixel_acquisition_status': 'succeeded', 'capture_stage': 'quality_check',
+                    'quality': {'failure_reason': 'black_frame', 'heuristic_only': True}}
+        save(self.log, [])
+        collector = self.collect(near_black)
+        collector.poll_once()
+        collector.poll_once()
+        observations = rows(self.output / 'screenshots.jsonl')
+        self.assertEqual(len(observations), 2)
+        self.assertEqual([row['capture_id'] for row in observations], [1, 2])
+        self.assertEqual(observations[1]['diagnostics']['freshness']['content_relation'], 'unchanged')
+        self.assertEqual(observations[1]['diagnostics']['pixel_acquisition_status'], 'succeeded')
+        self.assertEqual(observations[1]['diagnostics']['quality_status'], 'failed')
+        self.assertEqual(observations[1]['diagnostics']['visual_state_usable'], 'unknown')
+        self.assertFalse(observations[1]['diagnostics']['freshness']['stale_capture_proven'])
+        self.assertEqual(collector.counts['capture_failures'], 2)
+        self.assertEqual(collector.counts['api_quality_frames'], 0)
+
     def test_failed_api_and_file_publication_error_count_one_failed_attempt(self):
         def black(hwnd, pid, path, method='printwindow'):
             path.write_bytes(b'failed-test-artifact')
