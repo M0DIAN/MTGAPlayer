@@ -70,7 +70,7 @@ class SharedStackObservationTests(unittest.TestCase):
         for original in (self.cost,):
             self.assertEqual(self.replay(original)['shared_stack_observation']['links'], [])
         # A v8-only file is NOT silently promoted to v9.
-        with self.assertRaisesRegex(SampleError,'shared_stack_requires_valid_v9'):
+        with self.assertRaisesRegex(SampleError,'invalid_semantic_sample'):
             self.replay(self.search)
 
     def test_missing_cost_result_and_search_transfer_withhold_link(self):
