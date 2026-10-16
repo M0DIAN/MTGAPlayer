@@ -1,0 +1,1080 @@
+{
+  "schema_version": "mtgaplayer.semantic-samples.v6",
+  "projection": {
+    "raw_equivalent": false,
+    "state_fields": "visible_endpoint_subset",
+    "omitted_categories": [
+      "private_identity_and_log_metadata",
+      "prompt_payloads",
+      "hidden_object_identity",
+      "unfiltered_selection_ids",
+      "inactive_actions",
+      "nonprojected_state_fields"
+    ],
+    "nonempty_action_parameters": "reviewed_literal_mana_target_candidates_and_opaque_cost_ability_ref",
+    "trace_annotations": "visible_references_and_fixed_fact_schemas_only",
+    "combat": "complete_current_request_selection_and_selected_public_result_only",
+    "combat_cost": "single_empty_object_uninterpreted",
+    "combat_damage_and_global_requirements": "unverified",
+    "targets": "single_slot_public_literals_and_actual_submission_chain",
+    "target_selected_count_missing": "unknown_not_zero",
+    "target_domain_after_selection": "incomplete",
+    "target_reachability_and_complete_legality": "unverified",
+    "hand_choices": "london_accept_and_single_turn_based_discard",
+    "hand_trace": "first_continuous_successor_only",
+    "hand_prompt_numbers": "uninterpreted_literals_without_prompt_identifiers",
+    "hand_missing_constraints": "unknown_not_protocol_defaults",
+    "hand_complete_legality_and_server_acceptance": "unverified"
+  },
+  "source": {
+    "format": "player-log-gre-v1",
+    "mode": "offline",
+    "origin": "retained_scrubbed_real",
+    "origin_is_user_supplied": true,
+    "framing_complete": true,
+    "framed_records": 278,
+    "raw_gre_replay": false,
+    "source_auth_revalidated_by_portable_replay": false
+  },
+  "counts": {
+    "matched_pairs": 2,
+    "exported": 2,
+    "sample_limit_omissions": 0,
+    "unsupported_pairs": 0
+  },
+  "unsupported_reasons": [],
+  "samples": [
+    {
+      "identity": {
+        "match_ref": 1,
+        "game": 1,
+        "self_seat": 1,
+        "request_ref": 1
+      },
+      "before": {
+        "state_ref": 1,
+        "players": [
+          {
+            "seat": 1,
+            "life": 20
+          },
+          {
+            "seat": 2,
+            "life": 20
+          }
+        ],
+        "objects": [
+          {
+            "object_ref": 1,
+            "card_id": 96626,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 2,
+            "card_id": 94858,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 3,
+            "card_id": 95548,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 4,
+            "card_id": 96830,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 5,
+            "card_id": 96830,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 6,
+            "card_id": 96626,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 7,
+            "card_id": 95548,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          }
+        ],
+        "turn": {
+          "turnNumber": null,
+          "activePlayer": 2,
+          "decisionPlayer": 1
+        }
+      },
+      "request": {
+        "kind": "mulligan",
+        "payload": {
+          "profile": "observed_london_accept_hand",
+          "mulligan_type": "MulliganType_London",
+          "prompt_numbers": [
+            7
+          ],
+          "choice_domain": null,
+          "mulligan_count": null,
+          "bottom_count": null,
+          "remaining_attempts": null
+        }
+      },
+      "response": {
+        "kind": "mulligan",
+        "payload": {
+          "decision": "MulliganOption_AcceptHand"
+        }
+      },
+      "successor": {
+        "status": "continuous_state_observed",
+        "snapshot": {
+          "state_ref": 2,
+          "players": [
+            {
+              "seat": 1,
+              "life": 20
+            },
+            {
+              "seat": 2,
+              "life": 20
+            }
+          ],
+          "objects": [
+            {
+              "object_ref": 1,
+              "card_id": 96626,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 2,
+              "card_id": 94858,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 3,
+              "card_id": 95548,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 4,
+              "card_id": 96830,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 5,
+              "card_id": 96830,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 6,
+              "card_id": 96626,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 7,
+              "card_id": 95548,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            }
+          ],
+          "turn": {
+            "turnNumber": 1,
+            "activePlayer": 2,
+            "decisionPlayer": 1
+          }
+        },
+        "request_kind": null,
+        "request_ref": null
+      },
+      "provenance": {
+        "exact_source_pair_verified_by_producer": true,
+        "private_auth_revalidated_by_replay": false,
+        "client_submission_only": true
+      },
+      "trace": {
+        "status": "first_continuous_state_observed",
+        "truncated": false,
+        "next_request_ref": null,
+        "states": [
+          {
+            "snapshot": {
+              "state_ref": 2,
+              "players": [
+                {
+                  "seat": 1,
+                  "life": 20
+                },
+                {
+                  "seat": 2,
+                  "life": 20
+                }
+              ],
+              "objects": [
+                {
+                  "object_ref": 1,
+                  "card_id": 96626,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 2,
+                  "card_id": 94858,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 3,
+                  "card_id": 95548,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 4,
+                  "card_id": 96830,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 5,
+                  "card_id": 96830,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 6,
+                  "card_id": 96626,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 7,
+                  "card_id": 95548,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                }
+              ],
+              "turn": {
+                "turnNumber": 1,
+                "activePlayer": 2,
+                "decisionPlayer": 1
+              }
+            },
+            "previous_state_ref": 1,
+            "facts": [],
+            "facts_status": "reviewed_hand_subset",
+            "omitted_annotations": 2
+          }
+        ]
+      }
+    },
+    {
+      "identity": {
+        "match_ref": 1,
+        "game": 1,
+        "self_seat": 1,
+        "request_ref": 10
+      },
+      "before": {
+        "state_ref": 250,
+        "players": [
+          {
+            "seat": 1,
+            "life": 7
+          },
+          {
+            "seat": 2,
+            "life": 20
+          }
+        ],
+        "objects": [
+          {
+            "object_ref": 1,
+            "card_id": 96626,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 2,
+            "card_id": 94858,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 3,
+            "card_id": 95548,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 6,
+            "card_id": 96626,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 7,
+            "card_id": 95548,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 8,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 11,
+            "card_id": 96830,
+            "zone": "ZoneType_Battlefield",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 14,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 21,
+            "card_id": 96843,
+            "zone": "ZoneType_Battlefield",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 24,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 28,
+            "card_id": 96626,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 30,
+            "card_id": 96830,
+            "zone": "ZoneType_Battlefield",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 33,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 34,
+            "card_id": 75466,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 41,
+            "card_id": 96601,
+            "zone": "ZoneType_Battlefield",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 43,
+            "card_id": 75485,
+            "zone": "ZoneType_Exile",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 44,
+            "card_id": 75476,
+            "zone": "ZoneType_Exile",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 45,
+            "card_id": 75473,
+            "zone": "ZoneType_Graveyard",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 48,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 49,
+            "card_id": 75466,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": true
+          },
+          {
+            "object_ref": 53,
+            "card_id": 94858,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 55,
+            "card_id": 105144,
+            "zone": "ZoneType_Battlefield",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          },
+          {
+            "object_ref": 58,
+            "card_id": 75554,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 59,
+            "card_id": 75470,
+            "zone": "ZoneType_Battlefield",
+            "owner": 2,
+            "controller": 2,
+            "tapped": null
+          },
+          {
+            "object_ref": 61,
+            "card_id": 86758,
+            "zone": "ZoneType_Hand",
+            "owner": 1,
+            "controller": 1,
+            "tapped": null
+          }
+        ],
+        "turn": {
+          "turnNumber": 12,
+          "activePlayer": 1,
+          "decisionPlayer": 1
+        }
+      },
+      "request": {
+        "kind": "select_n",
+        "payload": {
+          "profile": "observed_turn_based_discard_single",
+          "offered_object_refs": [
+            61,
+            53,
+            28,
+            7,
+            6,
+            3,
+            2,
+            1
+          ],
+          "min_sel": 1,
+          "max_sel": 1,
+          "prompt_numbers": [
+            1
+          ],
+          "id_type": "IdType_InstanceId",
+          "list_type": "SelectionListType_Dynamic",
+          "context": "SelectionContext_Discard",
+          "option_context": "OptionContext_TurnBased",
+          "validation_type": "SelectionValidationType_NonRepeatable",
+          "allow_cancel": null,
+          "source_object_ref": null,
+          "unfiltered_domain": null,
+          "min_weight": null,
+          "max_weight": null
+        }
+      },
+      "response": {
+        "kind": "select_n",
+        "payload": {
+          "selected_object_refs": [
+            6
+          ]
+        }
+      },
+      "successor": {
+        "status": "continuous_state_observed",
+        "snapshot": {
+          "state_ref": 251,
+          "players": [
+            {
+              "seat": 1,
+              "life": 7
+            },
+            {
+              "seat": 2,
+              "life": 20
+            }
+          ],
+          "objects": [
+            {
+              "object_ref": 1,
+              "card_id": 96626,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 2,
+              "card_id": 94858,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 3,
+              "card_id": 95548,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 7,
+              "card_id": 95548,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 8,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 11,
+              "card_id": 96830,
+              "zone": "ZoneType_Battlefield",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 14,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 21,
+              "card_id": 96843,
+              "zone": "ZoneType_Battlefield",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 24,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 28,
+              "card_id": 96626,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 30,
+              "card_id": 96830,
+              "zone": "ZoneType_Battlefield",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 33,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 34,
+              "card_id": 75466,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 41,
+              "card_id": 96601,
+              "zone": "ZoneType_Battlefield",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 43,
+              "card_id": 75485,
+              "zone": "ZoneType_Exile",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 44,
+              "card_id": 75476,
+              "zone": "ZoneType_Exile",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 45,
+              "card_id": 75473,
+              "zone": "ZoneType_Graveyard",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 48,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 49,
+              "card_id": 75466,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 53,
+              "card_id": 94858,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 55,
+              "card_id": 105144,
+              "zone": "ZoneType_Battlefield",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 58,
+              "card_id": 75554,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 59,
+              "card_id": 75470,
+              "zone": "ZoneType_Battlefield",
+              "owner": 2,
+              "controller": 2,
+              "tapped": null
+            },
+            {
+              "object_ref": 61,
+              "card_id": 86758,
+              "zone": "ZoneType_Hand",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            },
+            {
+              "object_ref": 63,
+              "card_id": 96626,
+              "zone": "ZoneType_Graveyard",
+              "owner": 1,
+              "controller": 1,
+              "tapped": null
+            }
+          ],
+          "turn": {
+            "turnNumber": 13,
+            "activePlayer": 2,
+            "decisionPlayer": null
+          }
+        },
+        "request_kind": null,
+        "request_ref": null
+      },
+      "provenance": {
+        "exact_source_pair_verified_by_producer": true,
+        "private_auth_revalidated_by_replay": false,
+        "client_submission_only": true
+      },
+      "trace": {
+        "status": "first_continuous_state_observed",
+        "truncated": false,
+        "next_request_ref": null,
+        "states": [
+          {
+            "snapshot": {
+              "state_ref": 251,
+              "players": [
+                {
+                  "seat": 1,
+                  "life": 7
+                },
+                {
+                  "seat": 2,
+                  "life": 20
+                }
+              ],
+              "objects": [
+                {
+                  "object_ref": 1,
+                  "card_id": 96626,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 2,
+                  "card_id": 94858,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 3,
+                  "card_id": 95548,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 7,
+                  "card_id": 95548,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 8,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 11,
+                  "card_id": 96830,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 14,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 21,
+                  "card_id": 96843,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 24,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 28,
+                  "card_id": 96626,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 30,
+                  "card_id": 96830,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 33,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 34,
+                  "card_id": 75466,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 41,
+                  "card_id": 96601,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 43,
+                  "card_id": 75485,
+                  "zone": "ZoneType_Exile",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 44,
+                  "card_id": 75476,
+                  "zone": "ZoneType_Exile",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 45,
+                  "card_id": 75473,
+                  "zone": "ZoneType_Graveyard",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 48,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 49,
+                  "card_id": 75466,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 53,
+                  "card_id": 94858,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 55,
+                  "card_id": 105144,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 58,
+                  "card_id": 75554,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 59,
+                  "card_id": 75470,
+                  "zone": "ZoneType_Battlefield",
+                  "owner": 2,
+                  "controller": 2,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 61,
+                  "card_id": 86758,
+                  "zone": "ZoneType_Hand",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                },
+                {
+                  "object_ref": 63,
+                  "card_id": 96626,
+                  "zone": "ZoneType_Graveyard",
+                  "owner": 1,
+                  "controller": 1,
+                  "tapped": null
+                }
+              ],
+              "turn": {
+                "turnNumber": 13,
+                "activePlayer": 2,
+                "decisionPlayer": null
+              }
+            },
+            "previous_state_ref": 250,
+            "facts": [
+              {
+                "kind": "object_id_changed",
+                "original_object_ref": 6,
+                "new_object_ref": 63
+              },
+              {
+                "kind": "discard_transfer",
+                "object_ref": 63,
+                "source_zone": "ZoneType_Hand",
+                "destination_zone": "ZoneType_Graveyard"
+              }
+            ],
+            "facts_status": "reviewed_hand_subset",
+            "omitted_annotations": 10
+          }
+        ]
+      }
+    }
+  ],
+  "read_only": true,
+  "execution": {
+    "actionable": false,
+    "executor_connected": false,
+    "legal_choice_verified": false,
+    "complete_legality_verified": false,
+    "response_encoding_verified": false,
+    "server_acceptance_verified": false,
+    "execution_ready": false,
+    "input_sent": false
+  }
+}

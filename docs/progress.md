@@ -749,3 +749,227 @@ Implementation validation uses only invented structural inputs and existing repo
 Root's final bounded read-only comparison sends the same 14,592,534-byte snapshot (2309 complete records, no framing errors or partial record) through the original committed reducer and repaired production reducer. Both observe 2513 authenticated state messages and accept 9 Fulls. Accepted state events increase from 2287 to 2500: the original one object-zone conflict and its 212 latched gap calls disappear. The repaired reducer retains 13 gap calls, comprising one valid-baseline predecessor mismatch and 12 cascades; no unsupported-view rejection remains. Neither of the two accepted opaque-view snapshots exposes an opaque object in the physical projection. Unique authenticated own ActionsAvailable/SelectN observations are 106/23 before and 118/25 after; these are whole-file offline replay counts, not new live-event or server-acceptance evidence. The existing 600-second report, including its 653 invalid polling snapshots, remains historical and is not rewritten as a repaired live run.
 
 Root's required full unittest executes 187 tests on independent Python 3.11.16, exit 1, with 13 error headers identical to the previous 183-test run and zero assertion failures. These remain the historical Windows SQLite TemporaryDirectory WinError32 cleanup errors; no test is skipped, masked or weakened for this repair. Windows doctor, default synthetic replay/dry-run and the opted-in raw fixture replay with DecisionInput/Frontier/ChoiceGraph each exit 0. Raw outputs, code/test hashes and the final same-bound comparison are retained in ignored `artifacts/local-gre-continuity/`. The stable local candidate still requires its separate exact-HEAD/tree review, recorded in the final handoff; no remote write, new 600-second performance claim, full GRE continuity claim or game input is made.
+## Local real-match multi-source observation PoC (2026-10-16)
+
+The latest fetched main was `8c211a620df675c04324d98e022940ca8e30f5aa`.
+The experiment uses the separate `codex/live-observation-poc` worktree and fixed
+collector commit `7a9c8776e819bfc56f9180b221c5088db9dc1f94`, with per-file source
+hashes. The owner manually played a real Sparky match. No input was sent to MTGA;
+the only UI input by Codex closed its own marker window after the experiment.
+
+The actual 783.844-second run completed 783 log polls, 278 framed records (40
+startup, 238 appended), 315 appended GRE messages and 15 client responses. It
+saved 776 PNGs, of which 759 passed API/blank-frame heuristics; 17 black frames
+remain explicit failures. Ten distinct frames were independently inspected,
+including eight opening-hand/gameplay frames. Sixteen explicit user markers form
+eight action intervals. Seven have a unique compatible protocol submission; one
+has three Pass candidates. Targeted/untargeted marker labels are not independently
+established by the absent target fields. No log read/framing/continuity error or
+post-startup file reset occurred; live rotation/partial-tail recovery was not
+exercised in this match.
+
+The existing semantic v4 exporter produced 11 samples from 13 exact request/client
+pairs; Mulligan and TurnBased/Discard SelectN remain unsupported profiles. Two
+Play chains include contiguous state updates and explicit PlayLand Hand-to-
+Battlefield transfers. Two Cast traces separately observe submission, stack entry
+and resolution to Battlefield; complete payment and legality remain unverified.
+GameOver and MatchCompleted are retained. Independent replay agrees with the
+collector. A retained original-byte prefix re-frames to the same 278 payloads in
+the same order, and v4/v5 exports and replay results match payload reconstruction.
+
+Sixteen visual field comparisons retain 13 agreements, one visible-count versus
+GRE-total discrepancy, one temporal ambiguity and one obscured-hand unknown.
+The discrepancy is five visibly counted opposing cards versus six GRE Cards;
+the sixth is a public Aura with explicit attachment evidence. The original visual
+five is unchanged. Attachment visibility, coverage and rendering delay remain
+uncertain; there is no demonstrated reducer defect. Empirically interpreted Unix
+millisecond source timestamps trail collection wall time by 2.279–3.862 seconds,
+combining unknown clock skew and delivery/poll delay rather than proving latency.
+
+During the still-running match, snapshot03 analysis of 107 GRE messages actually
+overlapped completed poll 369 and capture 366; 33 GRE-containing records and 12
+owner markers followed that analysis. During analysis of the completed match
+snapshot, the independent collector
+actually completed polls 641/642/643 and captures 635/636/637. It later stopped
+normally at poll 783, with the capture worker stopped. This establishes parallel
+capture and snapshot analysis, not concurrent live core repair. P1–P9 each PASS;
+P10 NOT_RUN because no real-source implementation defect warrants a repair.
+
+Nineteen focused regressions and the final required full suite pass: 473 tests,
+92.293 seconds, exit 0, using the independent project Python 3.11. Earlier sandbox
+permission failures are retained separately. Development review fixed partial-
+only poll invalidation, capture failure accounting and snapshot index boundaries
+before version freeze; these are not mislabeled real-match repair results.
+Private logs, screenshots, snapshots, independent reviews and the detailed report
+remain local and ignored under `artifacts/local-live-poc/`; no push, PR or merge
+was performed. Next work should address visual coverage/freshness and the observed
+narrow semantic gaps, without strategy, model training or performance expansion.
+## Phase 2 — scoped visual evidence (2026-10-16)
+
+The fetched remote main is still `8c211a6`, the common ancestor of the clean PoC
+branch `f1d8a6f` (main-only/Poc-only commits: 0/3). Its six changed files are only
+the PoC tools, their tests and progress. Phase 2 uses the separate
+`codex/live-observation-phase2` checkout; the original evidence is unchanged.
+
+Task 1 adds a source-separated visual-count contract and capture diagnostics.
+Visible subsets, partial/uncertain observations and GRE-only presence cannot be
+silently treated as complete visual coverage. The real frame309 comparison now
+returns scope_mismatch, preserving visual 5 and GRE 6/6 without proving a parser
+error. Capture metadata separates pixel acquisition, quality rejection and file
+storage; repeated hashes never prove a stale or invalid frame. Renderer time and
+network delay remain unknown. Quality thresholds and failed-quality refusal are
+unchanged; capture input remains disabled.
+
+Actual review of all 17 previously termed black frames found 16 waiting-for-
+server screens and one near-black transition with a visible icon, not confirmed
+empty capture failures. Original failure records are preserved. Offline replay
+of the same 17 PNG pixel inputs gives identical quality metrics, failed results
+and encoded PNG hashes before/after. New stage diagnostics apply only to that
+offline replay; old metadata without an explicit acquisition status stays
+unknown. This corrects diagnostic/report interpretation rather than proving a
+new backend or GRE defect. P10 is not claimed.
+
+Task 1 validation: 35 focused tests pass; full required regression passes 489
+tests in 89.662s, exit 0. Independent source/evidence review reports no blocking
+findings, checks original hashes and separately probes stage exceptions. No new
+match, live-capture claim, model training, push or PR is introduced. Tasks 2 and
+3 remain pending implementation.
+
+## Phase 2 — protocol evidence and marker candidates (2026-10-16)
+
+Task 2 adds an offline observation timeline using RawReducer and existing
+authenticated request, response-consumption, choice and v4 semantic gates. It
+separates unique protocol candidates, multiple candidates, temporal-only
+observations and unreliable input. Marker causality is never inferred. Missing
+polls, incomplete marker-window coverage and source-integrity failures cannot
+silently strengthen an association. Original log timestamps are not treated as
+capture clocks or network/decision latency. A bounded private stable copy lets
+the existing follower and semantic exporter inspect identical source bytes.
+
+The same 278 real records retain 13 strict protocol pairs, seven unique candidate
+groups and one group with all three Pass responses (208, 210, 212). Main1,
+BeginCombat and Main2 explain their distinct protocol contexts; no marker phase
+constraint exists, so ambiguity remains. The two Cast traces separately retain
+submission, stack entry and resolution evidence. Missing targets do not prove
+targeted or targetless subtypes. Original input hashes remain unchanged.
+
+Task 2 focused validation passes 17 tests; full required regression passes 506
+tests in 91.291s, exit 0. Development review hardened new boundary handling; it
+does not demonstrate an original real-match parser defect. Independent frozen
+source/evidence review passes, including actual replay equality, unchanged input
+hashes, temporary-copy cleanup and privacy checks. Task 3 remains pending.
+
+## Phase 2 — observed hand-choice semantics (2026-10-16)
+
+Task 3 adds opt-in semantic-samples v6: the unchanged v4 profile plus the real
+London/AcceptHand and explicit single-card TurnBased/Discard shapes. Existing
+RawFollower/RawReducer and authenticated response gates remain authoritative.
+Hand episodes stop at the first continuous Diff. Mulligan records preservation
+of the visible own-hand reference set, not card-catalog identity, complete hand
+visibility or later draws. Discard requires offered membership, explicit 1/1
+bounds, selected-ID migration, disappearance of the old visible reference,
+Discard Hand-to-Graveyard evidence and known matching visible card identity.
+Missing constraints remain null; 8-to-7 never establishes a hand-limit rule.
+
+The identical 3,237,895-byte real prefix still has 278 framed records and 13
+strict pairs. V6 exports all 13; v4 still exports 11 with the two hand profiles
+unsupported. Independent before/after checks find every v1-v5 complete document
+and replay value unchanged. A curated two-episode fixture retains full producer
+indices 0 and 9 without changing their values or provenance. Its artifact-scoped
+2/2 counts are explicitly distinguished from the original producer's 13/13;
+portable replay does not reauthenticate private source data.
+
+Thirteen new focused tests pass. Final required full regression passes 519 tests
+in 90.899s, exit 0. Read-only Windows doctor and actual real-source v6 CLI export
+and replay pass. Independent code review checks strict reference types, selected
+old-reference removal, unknown card identity, bounded duplicate annotations and
+legacy Targets cross-episode links. Restricted subagent CLI attempts hit the
+existing NTFS hard-link permission boundary; failure records are retained, while
+the root full suite and real CLI validate those paths successfully without a
+product workaround. Original real input remains unchanged.
+
+Phase 2 reuses frozen real evidence; it creates no new match or live-capture
+claim. The changes define observation contracts and fill two observed profile
+gaps. They do not reproduce an original real-source implementation defect, so
+the conditional repair loop P10 remains NOT_RUN. The next useful evidence is a
+short run of the new capture diagnostics, clearer phase/request context in
+markers, and actual redraw/bottom-card choices when they naturally occur.
+
+## Phase 2 integration — portable capture diagnostics (2026-10-16)
+
+Authorized integration review of the six inherited candidate commits identified
+a Linux CI blocker: mocked Windows capture tests hit the host platform refusal,
+whose failure handler unconditionally called Windows-only ctypes.get_last_error.
+Two discriminating controls reproduce AttributeError with the old source. The
+failure handler now leaves last_winerror null when that accessor is unavailable;
+mocked capture tests use a module-local platform proxy without changing the host
+os.name or pathlib behavior. Window discovery, geometry checks, pixel copying
+and quality algorithms are unchanged. The source never enables game input.
+
+Twenty-nine focused tests pass; required full regression passes 521 tests in
+105.722s, exit 0. Incremental independent source/test review passes. This checks
+portable control flow on Windows; actual Ubuntu/Windows CI remains pending.
+The compatibility defect is separate from real-match GRE/association defects,
+so P10 remains NOT_RUN. A newly fixed, committed version will be used for the
+authorized short read-only live regression before remote integration.
+
+## Phase 2 integration — automated window markers (2026-10-16)
+
+The user explicitly authorized automated PoC markers and native window
+management, while gameplay keyboard/mouse input remains disabled. The marker
+tool now has an opt-in codex_window_validation source exposing only minimize,
+restore and resize events. Its API rejects game-action events under that source;
+markers remain pending evidence and cannot masquerade as human game actions.
+The old user source, default game selection and record fields remain available.
+The GRE timeline keeps window-only markers unsupported rather than inventing a
+game association. Six focused tests and independent incremental review pass;
+required full regression passes 527 tests in 90.783s, exit 0.
+
+The first fixed a107396 live session was stopped and sealed before this source
+change. It saved 1,165 real menu/settings PNGs and refused two captures after
+window geometry changed despite successful pixel acquisition. Normal quality
+flags do not establish a battlefield observation. Its 315 GRE submessages and
+13 request/response pairs came from startup history, with no new GRE append or
+user game marker. The next controlled run will use this newly committed marker
+version and separately hashed local window-management helper. New battlefield
+and server-wait scenes are not claimed from this menu-only evidence; P10 remains
+NOT_RUN for real-match parsing/association repair.
+
+## Phase 2 integration — controlled live window regression (2026-10-16)
+
+The clean, fixed 0be3b48 collector completed a second controlled Windows run
+without keyboard/mouse or gameplay input. It saved 110 real client PNGs across
+1280x720, 1184x666 and restored 1280x720 sizes. Five attempts correctly refused
+the minimized window before pixel acquisition; one refused changed geometry
+after successful pixel acquisition. Every saved PNG hash matches its index.
+The original window rectangle and client dimensions were verified restored.
+Ten before/after markers describe five window-management operations using the
+existing append_marker API and codex_window_validation source, not human game
+actions or GUI button clicks. Computer Use approval rejected control of the
+Python marker window; the explicit API mechanism leaves that GUI path untested.
+
+An independent image-only review of three actual frames confirms clear home-menu
+content and the recorded size sequence. It does not establish battlefield state,
+server-wait recognition or renderer freshness. The 315 GRE submessages and 13
+protocol pairs are startup history; subsequent polls contain zero new GRE. All
+five window-marker groups remain unsupported by the game-action timeline, with
+no invented association. A running snapshot was analyzed at completed poll 54;
+after the analysis report, the collector was still alive at poll 116. It then
+stopped by stop-file with no log errors and no capture worker left running.
+
+The preceding controlled attempt also retained 14 correct window_minimized
+refusals. Its restoration failure belonged to a new private helper which
+rediscovered the window instead of revalidating its bound PID/HWND. Two
+independent reviews refuted the initial product-misdiagnosis hypothesis. Only
+the private helper was corrected; invalid HWND and changed PID still refuse.
+The default unbound finder filters zero-size clients, a diagnostic limitation
+not exercised by these bound collectors. No product finder change or P10 claim
+is justified by this evidence.
+
+The original frame309 5/6/6 observations, 17 failed-quality records and three
+Pass candidates remain unchanged. New battlefield/server-wait gameplay and
+appended GRE regression remain NOT_RUN/NOT_OBSERVED; they require an appropriate
+real scene and gameplay permission or user play. Required 527-test regression,
+Windows doctor and incremental independent reviews pass. Only this evidence
+summary changed after the tested source commit. Remote PR/base/head identity,
+Linux/Windows CI and actual-main CI remain integration gates; P10 stays NOT_RUN.
