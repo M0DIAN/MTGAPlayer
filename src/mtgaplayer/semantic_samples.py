@@ -707,7 +707,7 @@ def replay_samples(document):
         raise SampleError('invalid_semantic_sample') from None
 
 
-def load_and_replay(path):
+def load_and_replay(path, *, shared_stack_observation=False):
     with Path(path).open('rb') as stream:
         data = stream.read(MAX_BYTES + 1)
     _need(len(data) <= MAX_BYTES, 'semantic_sample_output_limit')
@@ -720,6 +720,10 @@ def load_and_replay(path):
     try:
         document = json.loads(data, object_pairs_hook=pairs,
             parse_constant=lambda _: (_ for _ in ()).throw(SampleError('invalid_semantic_sample')))
-        return replay_samples(document)
+        report = replay_samples(document)
+        if shared_stack_observation:
+            from .semantic_cross_request import analyze
+            report['shared_stack_observation'] = analyze(document, report)
+        return report
     except (ValueError, TypeError, KeyError, RecursionError, UnicodeError):
         raise SampleError('invalid_semantic_sample') from None
