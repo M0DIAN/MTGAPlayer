@@ -3,6 +3,8 @@ import copy
 import json
 import tempfile
 import unittest
+import subprocess
+import sys
 from pathlib import Path
 from mtgaplayer.cli import replay,watch
 from mtgaplayer.raw_log import RawReducer
@@ -102,6 +104,27 @@ class TargetMenuTests(unittest.TestCase):
             self.assertEqual(observer.current(reducer)['menus'],[],mode)
         observer.observe(reducer,self.rows[4])
         self.assertEqual(len(observer.current(reducer)['menus']),6)
+
+
+    def test_real_cli_replay_and_finite_watch_opt_in_only(self):
+        cmd=[sys.executable,'-m','mtgaplayer']
+        replay_run=subprocess.run([*cmd,'replay',str(self.path),
+            '--format','player-log','--observed-action-target-menus'],
+            capture_output=True,text=True,timeout=20)
+        self.assertEqual(replay_run.returncode,0,replay_run.stderr)
+        report=json.loads(replay_run.stdout)['observed_action_target_menus']
+        self.assertEqual(report['reviewed_public_menu_rows'],6)
+        self.assertFalse(report['input_sent'])
+        watch_run=subprocess.run([*cmd,'watch',str(self.path),'--samples','1',
+            '--interval','.01','--observed-action-target-menus'],
+            capture_output=True,text=True,timeout=20)
+        self.assertEqual(watch_run.returncode,0,watch_run.stderr)
+        report=json.loads(watch_run.stdout.splitlines()[0])['observed_action_target_menus']
+        self.assertEqual(report['reviewed_public_menu_rows'],6)
+        self.assertFalse(report['input_sent'])
+        refused=subprocess.run([*cmd,'replay',str(self.path),
+            '--observed-action-target-menus'],capture_output=True,text=True,timeout=20)
+        self.assertNotEqual(refused.returncode,0)
 
     def test_default_replay_and_watch_values_stay_unchanged(self):
         default=replay(self.path,format='player-log')
