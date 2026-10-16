@@ -40,6 +40,11 @@ class TargetMenuTests(unittest.TestCase):
             [20,6,6,0])
         self.assertEqual([x['list_position'] for x in r['menus']],[2,4,5,6,7,8])
         self.assertEqual([x['offered_visible_target_count'] for x in r['menus']],[6,10,6,6,6,6])
+        self.assertEqual((r['verified_source_ability_menu_rows'],
+                          r['unverified_source_ability_menu_rows'],
+                          r['contradicted_source_ability_rows_withheld']),(6,0,0))
+        self.assertTrue(all(x['source_ability_pair_status']=='verified_observed_pair' and
+                            x['source_ability_pair_verified'] for x in r['menus']))
         objects={obj['id']:obj for obj in d['current']['objects']}
         for menu in r['menus']:
             self.assertTrue(all(objects[x]['zone']=='ZoneType_Battlefield'
@@ -70,6 +75,54 @@ class TargetMenuTests(unittest.TestCase):
                 self.assertNotIn(2,[x['list_position'] for x in report['menus']])
                 self.assertNotIn('PRIVATE_SENTINEL',json.dumps(report))
                 self.assertNotIn('987654321',json.dumps(report))
+
+    def test_missing_or_duplicate_public_ability_pair_stays_unknown_not_legal(self):
+        for mode in ('missing', 'duplicate'):
+            with self.subTest(mode=mode):
+                rows=copy.deepcopy(self.rows[:5])
+                # This is the same real public source for target-bearing
+                # position 2 and non-targeted position 3.
+                objects=rows[2]['greToClientEvent']['greToClientMessages'][0][
+                    'gameStateMessage']['gameObjects']
+                src=next(o for o in objects if o['instanceId']==1004)
+                if mode=='missing':
+                    src.pop('uniqueAbilities')
+                else:
+                    src['uniqueAbilities'].append(copy.deepcopy(src['uniqueAbilities'][0]))
+                    # Repeating the exact pair used at position 2 is genuinely
+                    # ambiguous; do not accidentally duplicate a different ID.
+                    target_ability=self.rows[4]['greToClientEvent']['greToClientMessages'][0][
+                        'actionsAvailableReq']['actions'][2]['uniqueAbilityId']
+                    pair=next(p for p in src['uniqueAbilities'] if p['id']==target_ability)
+                    src['uniqueAbilities'][-1]=copy.deepcopy(pair)
+                report=self.inspect(rows)['observed_action_target_menus']
+                self.assertEqual([x['list_position'] for x in report['menus']],
+                                 [2,4,5,6,7,8])
+                row=next(x for x in report['menus'] if x['list_position']==2)
+                self.assertEqual(row['source_ability_pair_status'],'insufficient_evidence')
+                self.assertFalse(row['source_ability_pair_verified'])
+                self.assertEqual((report['verified_source_ability_menu_rows'],
+                                  report['unverified_source_ability_menu_rows'],
+                                  report['contradicted_source_ability_rows_withheld']), (5,1,0))
+                self.assertFalse(report['complete_legality_verified'])
+
+    def test_explicit_current_ability_group_contradiction_withholds_only_row(self):
+        rows=copy.deepcopy(self.rows[:5])
+        row=rows[4]['greToClientEvent']['greToClientMessages'][0][
+            'actionsAvailableReq']['actions'][2]
+        row['abilityGrpId']+=999
+        report=self.inspect(rows)['observed_action_target_menus']
+        self.assertEqual([x['list_position'] for x in report['menus']],
+                         [4,5,6,7,8])
+        self.assertEqual((report['target_bearing_action_rows'],
+                          report['reviewed_public_menu_rows'],
+                          report['withheld_target_rows'],
+                          report['verified_source_ability_menu_rows'],
+                          report['unverified_source_ability_menu_rows'],
+                          report['contradicted_source_ability_rows_withheld']),
+                         (6,5,1,5,0,1))
+        self.assertFalse(report['target_selection_legal_verified'])
+        self.assertFalse(report['complete_payment_verified'])
 
     def test_response_and_later_request_never_revive_prior_menu(self):
         r=self.inspect(self.rows[:6])['observed_action_target_menus']
