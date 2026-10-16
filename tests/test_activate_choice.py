@@ -1,6 +1,7 @@
 """Real pre-response Activate prefix; mutations are synthetic controls."""
 import copy
 import json
+from collections import deque
 from pathlib import Path
 import queue
 import subprocess
@@ -253,8 +254,18 @@ class ActivateChoiceTests(unittest.TestCase):
         consumer=subprocess.Popen([sys.executable,'-m','mtgaplayer','consume-events','--validate-choice',str(proposal)],
             stdin=producer.stdout,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         producer.stdout.close();lines=queue.Queue()
+        # Windows CI intermittently returns consumer exit=1 with empty
+        # stderr. Retain only bounded public lifecycle diagnostics on failure,
+        # never raw GRE/request/proposal values.
+        observed=deque(maxlen=12)
         def read():
-            for line in consumer.stdout:lines.put(json.loads(line))
+            for line in consumer.stdout:
+                record=json.loads(line)
+                observed.append((record.get('consumer_status'),
+                    record.get('last_sequence'), record.get('unresolved'),
+                    record.get('diagnostics_complete'),
+                    record.get('diagnostics_dropped')))
+                lines.put(record)
             lines.put(None)
         reader=threading.Thread(target=read,daemon=True);reader.start()
         def until(predicate):
@@ -277,7 +288,11 @@ class ActivateChoiceTests(unittest.TestCase):
                 row=lines.get(timeout=8)
                 if row is None:break
                 self.assert_unknown(row['choice_validation'])
-            self.assertEqual(consumer.wait(timeout=5),0,consumer.stderr.read())
+            code=consumer.wait(timeout=5)
+            self.assertEqual(code,0,
+                'bounded consumer tail='+repr(list(observed))+
+                ' producer_exit='+repr(producer.poll())+
+                ' consumer_stderr='+repr(consumer.stderr.read()))
             self.assertEqual(producer.wait(timeout=5),0,producer.stderr.read())
             report=replay_samples(collect_samples(self.path,schema_version=5))
             self.assertTrue(report['samples'][0]['activate_evidence']['matching_ability_resolution_observed'])

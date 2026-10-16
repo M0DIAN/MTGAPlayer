@@ -1,3 +1,33 @@
+## MP50 — Windows dual-CLI exit diagnosis only (candidate)
+
+Accepted baseline MP49 main `a1408bbef02e74951fda666aa4f3ee17465ebfe3`. Required Windows native-no-input CI
+has intermittently failed an **unchanged old integration test**
+`test_actual_dual_cli_prefix_verdict_response_revocation_and_new_request`
+with Consumer exit1 and empty stderr, while both Windows reruns and Linux
+normally pass. Actual failed original runs: PR #51 Windows attempt1, and
+MP49 natural main push attempt1, plus earlier PR runs. The test currently
+discards all consumer diagnostics before asserting the process exit code.
+Until its last reported `consumer_status`/`unresolved` reason is observed,
+the root cause cannot be assigned to queue pressure, expiration,
+producer EOF, diagnostic drain failure or another mechanism.
+
+MP50 first makes the existing test's failing assertion report **only the
+last twelve bounded public status tuples** (status, sequence, reason,
+diagnostics completeness/drop count), the producer exit status, and
+consumer stderr. This is instrumentation of the specific failing test,
+not a safety/timeout change and not a claimed fix. The test still
+strictly demands Consumer exit code 0 and Producer exit code 0.
+No raw GRE, request IDs, card names, proposal values or private bytes
+are logged.
+
+Once a Windows failure yields a discriminating reason, change only the
+genuinely responsible test scheduling or runtime issue and rerun the
+same strict E2E and required CI. No default Consumer lifetime, output
+grace, event lease, execution flag or input authorization may be weakened
+without evidence. P10 refers to real MTGA defect repair and remains
+**NOT_RUN**. MP50 is not accepted until full CI, exact revision review,
+squash/main CI are verified.
+
 ## MP49 — current public Activate target-menu observation (candidate, 2026-10-16)
 
 Starts from accepted MP48 main `78d39a1c1421236043c42cba4248473bec7cb559`.
