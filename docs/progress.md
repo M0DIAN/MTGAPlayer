@@ -912,3 +912,25 @@ portable control flow on Windows; actual Ubuntu/Windows CI remains pending.
 The compatibility defect is separate from real-match GRE/association defects,
 so P10 remains NOT_RUN. A newly fixed, committed version will be used for the
 authorized short read-only live regression before remote integration.
+
+## Phase 2 integration — automated window markers (2026-10-16)
+
+The user explicitly authorized automated PoC markers and native window
+management, while gameplay keyboard/mouse input remains disabled. The marker
+tool now has an opt-in codex_window_validation source exposing only minimize,
+restore and resize events. Its API rejects game-action events under that source;
+markers remain pending evidence and cannot masquerade as human game actions.
+The old user source, default game selection and record fields remain available.
+The GRE timeline keeps window-only markers unsupported rather than inventing a
+game association. Six focused tests and independent incremental review pass;
+required full regression passes 527 tests in 90.783s, exit 0.
+
+The first fixed a107396 live session was stopped and sealed before this source
+change. It saved 1,165 real menu/settings PNGs and refused two captures after
+window geometry changed despite successful pixel acquisition. Normal quality
+flags do not establish a battlefield observation. Its 315 GRE submessages and
+13 request/response pairs came from startup history, with no new GRE append or
+user game marker. The next controlled run will use this newly committed marker
+version and separately hashed local window-management helper. New battlefield
+and server-wait scenes are not claimed from this menu-only evidence; P10 remains
+NOT_RUN for real-match parsing/association repair.
