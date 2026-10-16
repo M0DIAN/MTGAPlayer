@@ -24,3 +24,31 @@ input is verified. No new parser, DecisionState/Event schema,
 candidate proposal, native input or live game interaction is added;
 the default replay/watch output is unchanged without the flag.
 P10 remains NOT_RUN.
+
+## MP51 — Request-time public source/ability pair consistency
+
+The existing opt-in target-menu report is now
+`mtgaplayer.action-target-menu-observation.v2`. It reuses
+`semantic_activate.ability_observation` to join each targeted Activate
+row's `uniqueAbilityId` and `abilityGrpId` with its **current,
+own-visible, public Battlefield source's** published `uniqueAbilities`
+list. This upgrades source/ability **identity evidence**, not target
+legality or a future response link.
+
+The retained real request's six target-bearing rows all have a unique
+matching source-ability pair. The report counts
+`verified_source_ability_menu_rows`,
+`unverified_source_ability_menu_rows`, and
+`contradicted_source_ability_rows_withheld` separately. A missing,
+malformed or duplicate public ability observation keeps the offered
+menu for research but marks its pairing **insufficient_evidence**;
+an explicit group mismatch with the uniquely observed matching
+ability **withholds the affected row** rather than exposing it as a
+candidate. The pair is never reconstituted from a previous Full frame,
+another source or a later client response.
+
+Although these six source/ability **pairs** are now observed consistently,
+the **targets are still not verified legal choices**. The snapshot
+does not establish min/max, global restrictions, multiple stages,
+complete payment, ability resolution, encoding, acceptance or a
+parent Activate→SelectTargets/PayCosts/Search causal edge.

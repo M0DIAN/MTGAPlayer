@@ -1,3 +1,26 @@
+## MP51 — bind current targeted Activate menus to observed source abilities (candidate, 2026-10-17)
+
+Accepted baseline MP50 main `ab1d69dfa8699f09610775ba5f5acb2d52692c8c`.
+MP49 already extracts six public target-bearing Activate menus but
+does not verify that their current public Battlefield source publishes
+the same `uniqueAbilityId` → `abilityGrpId` pair. MP51 reuses the
+existing `semantic_activate.ability_observation` (not a second rules
+engine) and reads only the one current reducer's own-visible public
+source. The retained real Generic2 request supports six matched pairs.
+Missing/duplicate ability evidence stays unknown while retaining a
+research-only menu; explicit observed group contradiction withholds
+the affected menu and reports that count separately. The optional
+report version is bumped v1→v2, leaving the default CLI, decision
+contracts, privacy and no-input behavior unchanged.
+
+This establishes **source-ability identity consistency only**.
+It does NOT prove whether a target is a legal selection, what
+target count is required, complete payment, request-parent causality,
+client response shape or MTGA acceptance. Those blockers need real
+sequential request-response evidence. P10 remains NOT_RUN.
+Candidate requires direct author-led review and required exact-head,
+PR and post-squash main CI before accepted delivery.
+
 ## MP50 — Windows dual-CLI local-lease flake isolation (candidate, 2026-10-17)
 
 Baseline accepted MP49 main `a1408bbef02e74951fda666aa4f3ee17465ebfe3`.

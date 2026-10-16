@@ -7,7 +7,7 @@ import copy
 from .raw_log import _id
 from .response_evidence import _current_verified_request,_current_verified_raw_request
 
-VERSION='mtgaplayer.action-target-menu-observation.v1'
+VERSION='mtgaplayer.action-target-menu-observation.v2'
 REQ='GREMessageType_ActionsAvailableReq'
 ALLOWED={'actionType','grpId','instanceId','facetId','abilityGrpId',
          'uniqueAbilityId','shouldStop','manaCost','autoTapSolution','targets'}
@@ -23,6 +23,8 @@ def unknown(reason):
             'request_binding':None,'request_id':None,'game_state_id':None,
             'engine_active_action_rows':None,'target_bearing_action_rows':None,
             'reviewed_public_menu_rows':0,'withheld_target_rows':None,'menus':[],
+            'verified_source_ability_menu_rows':0,'unverified_source_ability_menu_rows':0,
+            'contradicted_source_ability_rows_withheld':0,
             'source_authentication':'not_currently_verified',
             'source_freshness_verified':False,**DENIALS}
 
@@ -86,14 +88,37 @@ def project(reducer,message,req):
         if type(obj) is not dict or not _id(obj.get('id')) or obj['id'] in visible:
             return unknown('public_object_inventory_invalid')
         visible[obj['id']]=obj
-    targeted=withheld=0;menus=[]
+    # Reuse semantic_activate's pre-response uniqueAbilityId -> abilityGrpId
+    # observation, rather than constructing new rules for target-bearing rows.
+    from .semantic_activate import ability_observation
+    targeted=withheld=verified=unverified=contradicted=0;menus=[]
     for i,row in enumerate(body['actions']):
         if type(row) is not dict or 'targets' not in row or row['targets']==[]:
             continue
         targeted+=1
         menu=reviewed_row(row,i,visible,req['binding']['self_seat'])
-        if menu is None:withheld+=1
-        else:menus.append(menu)
+        if menu is None:
+            withheld+=1
+            continue
+        # Raw object's uniqueAbilities list is consulted ONLY for the
+        # already-accepted, own-visible public Battlefield source. None and
+        # ambiguous rows are evidence gaps, not game illegality.
+        source=reducer.objects.get(menu['source_visible_object_ref'])
+        abilities=(source.get('uniqueAbilities')
+                   if type(source) is dict and source.get('visibility')=='Visibility_Public'
+                   else None)
+        pair=ability_observation(row,abilities)
+        if pair=='observed_group_contradiction':
+            # The request row contradicts the *current* public source's
+            # explicit ability pairing; do not attach a usable menu to it.
+            contradicted+=1
+            withheld+=1
+            continue
+        menu['source_ability_pair_status']=pair
+        menu['source_ability_pair_verified']=pair=='verified_observed_pair'
+        verified+=int(menu['source_ability_pair_verified'])
+        unverified+=int(not menu['source_ability_pair_verified'])
+        menus.append(menu)
     result=unknown(None if menus else 'no_reviewed_public_target_menu')
     result.update(status='observed_public_target_menus' if menus else 'insufficient_evidence',
                   request_binding=copy.deepcopy(req['binding']),request_id=req['id'],
@@ -102,6 +127,9 @@ def project(reducer,message,req):
                   target_bearing_action_rows=targeted,
                   reviewed_public_menu_rows=len(menus),
                   withheld_target_rows=withheld,menus=menus,
+                  verified_source_ability_menu_rows=verified,
+                  unverified_source_ability_menu_rows=unverified,
+                  contradicted_source_ability_rows_withheld=contradicted,
                   source_authentication='same_current_request_digest_verified')
     return result
 
