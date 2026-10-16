@@ -509,3 +509,10 @@ unchanged. See [payment evidence and proposal contract](docs/semantic-effect-cos
 Semantic export v8 additionally retains observed opaque Search choices and the
 first explicit public result. It adds historical evidence without a new Search
 legality validator. See [Search observation scope](docs/semantic-search.md).
+
+Semantic export v9 adds the actual selected card's first-successor sacrifice
+evidence for the retained nonmana payment. It binds explicit identity-migration
+and Sacrifice annotations to consistent public endpoints, while complete payment,
+legality and request-source causality remain unverified. Current State6 and
+ChoiceValidation keep their existing inputs and constraints. See [the result
+contract](docs/semantic-effect-cost.md) and [pinned mtgacoach reuse assessment](docs/mtgacoach-reuse.md).

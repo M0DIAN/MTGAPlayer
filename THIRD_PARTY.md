@@ -1,5 +1,9 @@
 # Source inspection and reuse
 
+## MP43 targeted mtgacoach reuse assessment (2026-10-16)
+
+`josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86` is the owner's first-priority external source for legal-action algorithms. [The targeted assessment](docs/mtgacoach-reuse.md) checks `gamestate_decisions.py`, `rules_engine.py` and `request_tracker.py` against the frozen real PayCosts state338→339. Its pure `_match_pips_to_sources` algorithm agrees with an independent finite matching oracle and needs no package dependency; it remains the preferred implementation when verified mana domains make it applicable. This actual request is a nonmana selection followed by an explicit public sacrifice, so mana matching cannot establish its result. No upstream code or dependency is copied into the product. The pinned metadata declares MIT but supplies no standalone license/copyright notice in the inspected targets; the assessment records the attribution boundary for any later port. Raw private evidence stays local and ignored.
+
 ## MP39 pre-response Activate and public Ability evidence (2026-10-16)
 
 Rechecked pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`, `decisions.py::_default_activation_unaffordable` and `gre_serializer.py` action identity/payment fields. The independent flat instance/group/unique-ability fields are useful leads. Do not adopt its missing/false/zero coercions, inferred affordability, unfiltered parameter copying or protocol sender. The current projector and fixed public relation checks reuse this repository's accepted reducer and finite parsers; no upstream code, resource or dependency is copied.
