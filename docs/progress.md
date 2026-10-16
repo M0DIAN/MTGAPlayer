@@ -1026,3 +1026,50 @@ an available interactive desktop and input_sent=false. Complete costs, payment
 completion, parent source, future parameters, cancellation/undo, rules effects
 and server acceptance remain unknown. No old real implementation defect was
 reproduced; P10 remains NOT_RUN. No remote operations were performed.
+
+## MP42 — opaque Search choices and public result evidence (2026-10-16)
+
+Opt-in semantic v8 adds the actual SearchReq record623/GRE5/request479/state343
+and SearchResp record632 to v7. The source is a uniquely public own Stack
+instance with unknown card identity. Four provided choices use request-scoped
+search_item aliases, distinct from public object references. The 41-item raw
+search list contributes only its count; no hidden card identity or list order
+is exported. Explicit maxFind=1 and flag literals are retained. Minimum count,
+fail-to-find meaning and empty-selection legality remain unknown.
+
+The client submitted position0. The first continuous successor is record634/
+GRE0/state344, previous343. Its unique source-attributed ObjectIdChanged and
+Library→Battlefield Put annotations support two finite facts; four other
+AbilityInstanceCreated annotations are omitted. No hidden original card is
+looked up, no later state fills a gap, and no earlier Activate/PayCosts causal
+chain is inferred. Search remains historical observation/replay, without a new
+DecisionState choice validator or execution authority. The default response map
+and KINDS are unchanged by MP42; Search uses the existing fixed consumption gate
+with an explicit expected response type only in v8.
+
+Independent QA found order-sensitive conflict refusal in this new profile. A
+second initial control was refuted because its synthetic input deleted the old
+identifier; the original script/results remain retained with a correction.
+After removing that deletion and independently confirming both identifiers in
+the public endpoint, the corrected control reproduced a false migration claim.
+Minimal fact gates now withhold both cases, retain submission/endpoint evidence,
+and keep malformed potentially related identifiers as negative evidence instead
+of dropping them through strict positive-identity filtering. The exact original
+source was recovered by reversing the small patch and verified against its
+frozen SHA before independent before/after controls. These are synthetic QA
+corrections to new code, not old real-source defects; P10 stays NOT_RUN.
+
+All 17 Search focused tests pass. Required final full regression passes 565 tests
+in 102.704s on independent Python 3.11.16. Whole old semantic v1–v7 exports and
+replays remain equal, as do State v1–v6 at all 57 accepted request positions.
+The same real input before/after QA produces equal complete v8 documents and
+replay results: 54 matched pairs, 29 exported episodes, 25 unsupported pairs,
+no omissions. The curated Search episode still exactly equals producer index27.
+Normal root execution exported and replayed the entire real input through the
+CLI, including the exact output path where a child environment denied NTFS
+hardlinks. No exporter change or permission escalation was needed by root.
+Windows read-only doctor exits0 with an available desktop and input_sent=false.
+Independent frozen-source, corrected-control, actual-input and privacy review
+passes; final delivery binds that review to the committed candidate identity.
+Original log/index hashes and all real pixel/marker evidence remain unchanged
+and local/ignored. No new match, gameplay input, push, PR or merge was performed.

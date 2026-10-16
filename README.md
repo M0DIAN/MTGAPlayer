@@ -505,3 +505,7 @@ pre-response research path. It checks only explicit single-object,
 nonrepeatable membership against the current visible request; complete payment,
 rules effects and execution remain unverified. V1–v5 and default behavior remain
 unchanged. See [payment evidence and proposal contract](docs/semantic-effect-cost.md).
+
+Semantic export v8 additionally retains observed opaque Search choices and the
+first explicit public result. It adds historical evidence without a new Search
+legality validator. See [Search observation scope](docs/semantic-search.md).
