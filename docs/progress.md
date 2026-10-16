@@ -1,3 +1,20 @@
+## MP46 — cross-episode Stack candidate, not request-source causality (2026-10-16)
+
+Starts at MP45 accepted main `70cc21a907aa35f335277b5a01fd5b8ffe2ed042`.
+The retained v9 PayCosts outcome and v8 Search episode have the same documented
+original-log SHA and an observed shared Stack alias148 in their curated sample
+snapshots. Separately curated artifacts are not authority to prove their shared
+raw context, so the smallest useful implementation is an **opt-in read-only
+v9 replay side report** on one portable document. It requires two positive
+existing per-episode semantic outcomes, matching scope/alias, four public
+Stack endpoints, and an unambiguous pair. It asserts no request origin,
+causality, legality or server acceptance. Only sanitized artifacts are used.
+Tests explicitly label their curated-artifact composition synthetic.
+P10 remains NOT_RUN. See docs/semantic-cross-request.md.
+
+This entry documents the implementation candidate only; no remote final CI
+or merged acceptance is asserted until actual run receipts are checked.
+
 ## MP45 — pre-response distinct predictive mana units (candidate, 2026-10-16)
 
 Starting at accepted main `c2919a0deb6c17980c1434fb216dbc54d46fd51b`, the retained real current Generic2 Activate

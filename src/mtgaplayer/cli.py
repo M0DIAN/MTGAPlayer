@@ -428,6 +428,8 @@ def main(argv=None):
                                default='unclassified_local', help='operator label, not proof of origin')
     sample_replay = sub.add_parser('replay-semantic-samples', help='validate sanitized choices; not raw GRE authentication or effects')
     sample_replay.add_argument('input', type=Path)
+    sample_replay.add_argument('--shared-stack-observation', action='store_true',
+                               help='opt-in v9 same-export visible Stack candidate only; never establishes causality')
     for name in ('replay', 'dry-run'):
         replay_parser = sub.add_parser(name, help='consume explicit normalized JSONL; never sends input')
         replay_parser.add_argument('input', type=Path)
@@ -522,7 +524,8 @@ def main(argv=None):
                 report = {'schema_version': result['schema_version'], 'counts': result['counts'],
                           'unsupported_reasons': result['unsupported_reasons'], 'read_only': True, 'input_sent': False}
             else:
-                report = load_and_replay(args.input)
+                report = load_and_replay(args.input,
+                                         shared_stack_observation=args.shared_stack_observation)
         except (SampleError, OSError, ValueError, TypeError, RecursionError, UnicodeError) as exc:
             print(json.dumps({'error': str(exc) if isinstance(exc, SampleError) else
                               'semantic_sample_io_or_format_error', 'read_only': True, 'input_sent': False}))
