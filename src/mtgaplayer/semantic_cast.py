@@ -243,9 +243,12 @@ def check_trace(trace, before):
     if trace['status']=='not_observed':_need(not trace['states'])
 
 
-def _prediction(sample, position):
-    """Only the observed generic-one proposal, not all payment legality."""
-    chosen=sample['response']['payload']['action']; rows=sample['request']['payload']['actions']
+def check_predictive_payment(rows, chosen, objects, self_seat, position, *, historical=False):
+    """Pure generic-one offered-proposal check; no response or future state.
+
+    Historical replay retains its exact-row agreement check. Decision-time
+    checks ignore flags and leave alternative payment routes unsupported.
+    """
     unknown='insufficient_evidence'; violated='violated_known_constraints'
     if position is None:return unknown, None
     # Missing on either side is unknown. Explicitly empty parameters remain
@@ -253,7 +256,11 @@ def _prediction(sample, position):
     for row in (rows[position],chosen):
         observed=set(row['parameters'])|set(row['observed_empty_parameters'])
         if not {'manaCost','autoTapSolution'}<=observed:return unknown, None
-    if rows[position]!=chosen:return violated, None
+    if historical and rows[position]!=chosen:return violated, None
+    if not historical and any(rows[position]['parameters'].get(key) != chosen['parameters'].get(key) or
+            (key in rows[position]['observed_empty_parameters']) != (key in chosen['observed_empty_parameters'])
+            for key in ('manaCost', 'autoTapSolution')):
+        return unknown, None
     params=chosen['parameters'];cost=params.get('manaCost');tap=params.get('autoTapSolution')
     if cost is None or tap is None:return unknown, None
     taps=tap['autoTapActions']
@@ -273,11 +280,17 @@ def _prediction(sample, position):
     expected={'instanceId':payment['instanceId'],'abilityGrpId':payment['abilityGrpId'],
               'options':[{'mana':[{'color':m['color'],'count':1}]}]}
     if payment['manaPaymentOption'] not in options or expected not in selections:return violated, payment['instanceId']
-    before={o['object_ref']:o for o in sample['before']['objects']}
+    before={o['object_ref']:o for o in objects}
     source=before.get(payment['instanceId'])
-    if source is None or source['zone']!='ZoneType_Battlefield' or source['controller']!=sample['identity']['self_seat']:
+    if source is None or source['zone']!='ZoneType_Battlefield' or source['controller']!=self_seat:
         return unknown, payment['instanceId']
     return 'verified_known_constraints', payment['instanceId']
+
+
+def _prediction(sample, position):
+    return check_predictive_payment(sample['request']['payload']['actions'],
+        sample['response']['payload']['action'], sample['before']['objects'],
+        sample['identity']['self_seat'], position, historical=True)
 
 
 def evaluate(sample, position):

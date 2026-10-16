@@ -545,11 +545,12 @@ class RawFollower:
 
 
 class RawReducer:
-    def __init__(self, observer=None, *, include_state_messages=False):
+    def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
         self._include_state_messages = include_state_messages
+        self._include_request_parameters = include_request_parameters
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -802,6 +803,11 @@ class RawReducer:
                                             'self_seat': self.seat,
                                             'ownership_verified': True},
                                 **_request_semantics(message)}
+                if self._include_request_parameters:
+                    from .request_parameters import project
+                    visible = [{'instance_id': o['id'], 'card_id': o['card_id']}
+                               for o in self._current()['objects']]
+                    self.request['_request_parameters'] = project(message, visible)
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)
@@ -1019,6 +1025,7 @@ class RawReducer:
         request = copy.deepcopy(self.request)
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
+            request.pop('_request_parameters', None)
         if request and isinstance(request.get('action_inventory'), dict):
             inventory = request['action_inventory']
             if include_frontier_rows:

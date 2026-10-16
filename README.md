@@ -329,6 +329,20 @@ SelectN reports existing candidate count and raw maxSel with unknown minimum/com
 
 Run `.\.venv\Scripts\python.exe scripts/measure_decision_advisor.py --samples 200` for bounded scrubbed/synthetic timings: extraction, evidence classification, heuristic preference and the complete current API, with N/p50/p95/p99/max and raw local durations. Stage calls are independent, not additive. Timing fields stay outside deterministic advice. This measures no real source, server freshness or live three-second loop. Default replay/watch, Consumer, DecisionState and the old synthetic policy remain unchanged.
 
+### MP37 pre-response choice validation (read-only)
+
+Explicit `--decision-state-version 5` adds `legal_action_space.request_parameters` through the existing accepted-request path and preserves v4 current P/T, v3 public Stack and v2 turn context. The finite `mtgaplayer.request-parameters.v1` profile preserves reviewed mana literals for the complete active ActionsAvailable list, after every object reference passes the existing visible projection. Any unsupported row or hidden/ambiguous reference withholds the entire evidence field as null. No response or later state participates. Default/raw and State/Event v1–4 remain unchanged; [v5 State](schemas/decision-state.v5.schema.json) and [v5 Event](schemas/decision-event.v5.schema.json) have separate local URNs.
+
+```powershell
+python -m mtgaplayer watch "<explicit Player.log>" --decision-events --decision-state-version 5 --samples 1000 | python -m mtgaplayer consume-events --validate-choice "<one-proposal.json>"
+```
+
+The proposal file is read once, bounded to256 KiB before subscription startup. It contains exactly `request_identity` (the complete State binding), `list_position`, and `proposed_action` (one normalized action from that request's literal evidence); optional `source_snapshot_ref` must also match exactly. No latest-request wildcard, automatic selection or file reload is supported. Invalid/unavailable files fail before consumption with a fixed value-free error.
+
+The additional `choice_validation` diagnostic checks one **offered generic-one predictive payment proposal's consistency**: explicit cost/auto-tap literals, matching source/ability and same-request mana options/selections, plus visible own source context. It reports `verified_known_constraints`, `violated_known_constraints` or `insufficient_evidence` with a fixed scope/reason and current snapshot reference. Flags do not become game rules; an alternative payment route stays unsupported, not illegal. Missing fields are unknown, distinct from explicit empties. Complete Cast legality, all payment options, response encoding, server acceptance, execution and input remain unverified/false even when known checks pass.
+
+`mtgaplayer.choice_validation.validate_proposed_choice(state, proposal)` is pure offline research. `assess_current_choice(consumer, proposal)` uses only the existing current Consumer and checks its lease/reference again after computation. History, consumed/replaced/expired requests, stop, discontinuity and protocol errors never fall back to last_valid. The sidecar must be discarded when its reference changes; later logs corroborate only the actual historical choice and cannot simulate another proposed choice. No strategy, packet sender, second parser/ledger or MTGA input is introduced.
+
 ### MP18 opt-in unified DecisionState v1
 
 `--decision-state` assembles a single read-only snapshot, using the existing GRE reducer and projections. It works alone; the independent `--decision-input`, `--action-frontier`, `--choice-graph` and `--combat-frontier` options retain their existing dependency checks and opt-in output. Examples using committed sanitized fixtures:
