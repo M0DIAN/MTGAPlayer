@@ -107,7 +107,12 @@ class KnownChoiceCandidatesTests(unittest.TestCase):
         for event in history+current:
             self.assertTrue(consumer.accept_event(event))
         r=assess_current_known_candidates(consumer)
-        self.assertEqual(r['returned_candidates'],16)
+        # This subscription uses the explicit *synthetic* control request, not
+        # the retained real State6 fixture containing sixteen offered choices.
+        current_request=consumer.current_view()['decision_state']['legal_action_space']['request_parameters']
+        number=len(current_request['cost_selection']['offered_object_refs'])
+        self.assertEqual(r['returned_candidates'],number)
+        self.assertEqual(r['candidate_total_for_reviewed_constraints'],number)
         ref=r['source_snapshot_ref'];self.assertIsNotNone(ref)
         self.assertTrue(all(row['source_snapshot_ref']==ref for row in r['candidates']))
         self.assert_readonly(r)
