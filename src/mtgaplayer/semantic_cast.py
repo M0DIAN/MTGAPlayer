@@ -87,7 +87,7 @@ class RequestManaRefs:
         return self.refs.ref(domain, scope + self.request if domain == 'mana' else scope, value)
 
 
-def action(row, refs, scope):
+def action(row, refs, scope, *, target_projector=None):
     _need(type(row) is dict, 'request_unsupported')
     kind=row.get('actionType')
     if kind in ('ActionType_Pass','ActionType_FloatMana'):
@@ -106,6 +106,8 @@ def action(row, refs, scope):
         if key not in row:continue
         value=row[key]
         if type(value) is (dict if key=='autoTapSolution' else list) and value==({'autoTapActions':[]} if key=='autoTapSolution' else []):empty.append(key)
+        elif key == 'targets' and target_projector is not None:
+            parameters[key] = target_projector(value, refs, scope)
         else:parameters[key]=_parameter(key,value,refs,scope)
     return {'action_type':kind,
         'identifier_refs':{k:refs.ref('object' if k=='instanceId' else k,scope,row[k]) for k in IDS if k in row},
@@ -119,7 +121,7 @@ class _IdentityRefs:
         return value
 
 
-def check_action(row):
+def check_action(row, *, target_actions=False):
     _keys(row, ('action_type','identifier_refs','flags','observed_empty_parameters','parameters'))
     ids,flags,empty,params=(row[k] for k in ('identifier_refs','flags','observed_empty_parameters','parameters'))
     _need(type(ids) is dict and not set(ids)-set(IDS))
@@ -129,7 +131,11 @@ def check_action(row):
           not set(empty)&set(params))
     raw={'actionType':row['action_type'], **ids, **flags, **copy.deepcopy(params)}
     for key in empty:raw[key]={'autoTapActions':[]} if key=='autoTapSolution' else []
-    _need(action(raw,_IdentityRefs(),())==row)
+    if target_actions:
+        from .semantic_targets import action as target_action
+        _need(target_action(raw, _IdentityRefs(), ()) == row)
+    else:
+        _need(action(raw, _IdentityRefs(), ()) == row)
 
 
 def _detail(annotation):
@@ -341,7 +347,7 @@ def evaluate(sample, position):
     return result
 
 
-def replay(document):
+def replay(document, *, target_actions=False):
     # Reuse the v1 envelope/SelectN/first-successor checks after validating and
     # removing only this opt-in extension. No second state reducer is involved.
     from .semantic_samples import _replay_samples, VERSION as V1
@@ -367,7 +373,7 @@ def replay(document):
             if 'auto_pass_priority' in payload:_need(payload['auto_pass_priority']=='AutoPassPriority_Yes')
             rows=sample['request']['payload']['actions'];chosen=payload['action']
             _need(type(rows) is list and len(rows)<=256)
-            for a in [*rows,chosen]:check_action(a)
+            for a in [*rows,chosen]:check_action(a, target_actions=target_actions)
             matches=[i for i,a in enumerate(rows) if a['action_type']==chosen['action_type'] and
                      a['identifier_refs']==chosen['identifier_refs']]
             position=matches[0] if len(matches)==1 else None
