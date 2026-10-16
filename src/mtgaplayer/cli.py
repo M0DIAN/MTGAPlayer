@@ -420,8 +420,8 @@ def main(argv=None):
     export_parser = sub.add_parser('export-semantic-samples', help='export NEW sanitized offline observation episodes')
     export_parser.add_argument('input', type=Path, help='explicit local Player.log; no directory discovery')
     export_parser.add_argument('--output', type=Path, required=True, help='new JSON file, never overwritten')
-    export_parser.add_argument('--schema-version', type=int, choices=(1, 2, 3, 4, 5), default=1,
-                               help='v2 Cast/mana; v3 combat; v4 single targets; v5 partial Activate/public ability traces')
+    export_parser.add_argument('--schema-version', type=int, choices=(1, 2, 3, 4, 5, 6), default=1,
+                               help='v2 Cast/mana; v3 combat; v4 targets; v5 partial Activate; v6 v4 plus London keep/TurnBased discard')
     export_parser.add_argument('--max-samples', type=int, default=16)
     export_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     export_parser.add_argument('--origin', choices=('unclassified_local', 'retained_scrubbed_real', 'synthetic'),

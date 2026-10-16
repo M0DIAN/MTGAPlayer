@@ -858,3 +858,39 @@ tests in 91.291s, exit 0. Development review hardened new boundary handling; it
 does not demonstrate an original real-match parser defect. Independent frozen
 source/evidence review passes, including actual replay equality, unchanged input
 hashes, temporary-copy cleanup and privacy checks. Task 3 remains pending.
+
+## Phase 2 — observed hand-choice semantics (2026-10-16)
+
+Task 3 adds opt-in semantic-samples v6: the unchanged v4 profile plus the real
+London/AcceptHand and explicit single-card TurnBased/Discard shapes. Existing
+RawFollower/RawReducer and authenticated response gates remain authoritative.
+Hand episodes stop at the first continuous Diff. Mulligan records preservation
+of the visible own-hand reference set, not card-catalog identity, complete hand
+visibility or later draws. Discard requires offered membership, explicit 1/1
+bounds, selected-ID migration, disappearance of the old visible reference,
+Discard Hand-to-Graveyard evidence and known matching visible card identity.
+Missing constraints remain null; 8-to-7 never establishes a hand-limit rule.
+
+The identical 3,237,895-byte real prefix still has 278 framed records and 13
+strict pairs. V6 exports all 13; v4 still exports 11 with the two hand profiles
+unsupported. Independent before/after checks find every v1-v5 complete document
+and replay value unchanged. A curated two-episode fixture retains full producer
+indices 0 and 9 without changing their values or provenance. Its artifact-scoped
+2/2 counts are explicitly distinguished from the original producer's 13/13;
+portable replay does not reauthenticate private source data.
+
+Thirteen new focused tests pass. Final required full regression passes 519 tests
+in 90.899s, exit 0. Read-only Windows doctor and actual real-source v6 CLI export
+and replay pass. Independent code review checks strict reference types, selected
+old-reference removal, unknown card identity, bounded duplicate annotations and
+legacy Targets cross-episode links. Restricted subagent CLI attempts hit the
+existing NTFS hard-link permission boundary; failure records are retained, while
+the root full suite and real CLI validate those paths successfully without a
+product workaround. Original real input remains unchanged.
+
+Phase 2 reuses frozen real evidence; it creates no new match or live-capture
+claim. The changes define observation contracts and fill two observed profile
+gaps. They do not reproduce an original real-source implementation defect, so
+the conditional repair loop P10 remains NOT_RUN. The next useful evidence is a
+short run of the new capture diagnostics, clearer phase/request context in
+markers, and actual redraw/bottom-card choices when they naturally occur.
