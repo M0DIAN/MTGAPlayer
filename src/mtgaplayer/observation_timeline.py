@@ -189,7 +189,10 @@ def _attach_semantic_export(pairs, records, semantic_source, work_directory):
     except (OSError, ValueError):
         return {'status': 'withheld', 'reason': 'existing_semantic_export_rejected_source'}
     supported = [pair for pair in pairs if pair['_semantic_supported']]
-    if (len(supported) != len(document['samples']) or len(pairs) != document['counts']['matched_pairs'] or
+    # The default protocol map also observes PayCosts, while the attached v4
+    # exporter intentionally retains its original request-type/count contract.
+    v4_pair_count = sum(pair['request_type'] != 'GREMessageType_PayCostsReq' for pair in pairs)
+    if (len(supported) != len(document['samples']) or v4_pair_count != document['counts']['matched_pairs'] or
             document['counts']['sample_limit_omissions']):
         return {'status': 'withheld', 'reason': 'semantic_gate_or_supported_order_count_mismatch'}
     for pair, sample, result in zip(supported, document['samples'], replay['samples']):

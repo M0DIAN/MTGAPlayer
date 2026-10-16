@@ -973,3 +973,25 @@ real scene and gameplay permission or user play. Required 527-test regression,
 Windows doctor and incremental independent reviews pass. Only this evidence
 summary changed after the tested source commit. Remote PR/base/head identity,
 Linux/Windows CI and actual-main CI remain integration gates; P10 stays NOT_RUN.
+
+## MP40 — observed nonmana payment selection (2026-10-16)
+
+The frozen third-phase source supplies PayCostsReq record603/GRE1/request473/
+state338 and EffectCostResp record622. Opt-in semantic v7 adds the observed
+empty-paymentActions, single nonrepeatable visible-object selection shape to
+v6; it does not establish complete payment legality or an Activate parent.
+All16 offered objects join the current own battlefield projection. The client
+submitted offered position1. Only the first continuous successor, record623/
+GRE0/state339, is retained, with no payment or rules-effect inference.
+
+The unchanged 5,625,878-byte real source exports53 matched pairs,28 episodes
+and25 unsupported pairs. The curated real episode exactly equals producer
+index26; its container counts only that one episode. Old semantic v1–v6 exports
+and replays remain wholly equal, as do DecisionState v1–v5 at all57 accepted
+request positions. The timeline retains the new protocol pair without shifting
+the old v4 semantic attachments. Existing marker classifications are unchanged.
+Ten new cost and18 timeline tests pass; required full regression passes538 tests
+in89.660s. Independent source, diff, real-evidence and compatibility review finds
+no blocking issue. This is verified new semantic coverage, not a reproduced old
+parser defect or a P10 repair. Source data remains local and ignored. No new
+gameplay, input or remote operation was performed.

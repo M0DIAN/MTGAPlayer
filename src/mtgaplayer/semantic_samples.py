@@ -109,7 +109,14 @@ def _action(row, refs, scope):
         'observed_empty_parameters': [k for k in PARAMS if k in row]}
 
 
-def _request(message, request, refs, scope, version=1, snapshot=None):
+def _request(message, request, refs, scope, version=1, snapshot=None, visible_literals=None):
+    if version == 7:
+        from . import semantic_effect_cost as effect_cost
+        if message.get('type') == effect_cost.REQUEST:
+            value = effect_cost.project_request(message, visible_literals, scope[3], refs, scope)
+            effect_cost.check_request(value, snapshot['objects'], scope[3])
+            return {'kind': effect_cost.KIND, 'payload': value}
+        return _request(message, request, refs, scope, 6, snapshot)
     if version == 6:
         from .semantic_hand import project_request
         projected = project_request(message, refs, scope, snapshot)
@@ -169,6 +176,11 @@ def _request(message, request, refs, scope, version=1, snapshot=None):
 
 
 def _response(payload, request, refs, scope, version=1):
+    if version == 7:
+        from . import semantic_effect_cost as effect_cost
+        if request['type'] == effect_cost.REQUEST:
+            return effect_cost.project_response(payload, request, refs, scope)
+        return _response(payload, request, refs, scope, 6)
     if version == 6:
         return _response(payload, request, refs, scope, 4)
     if version >= 3 and request['type'] in ('GREMessageType_DeclareAttackersReq','GREMessageType_DeclareBlockersReq'):
@@ -221,7 +233,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     Source consistency is metadata/boundary consistency, not a byte fingerprint.
     At most max_samples pairs are retained; omissions are explicit counts.
     """
-    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4, 5, 6) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
+    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4, 5, 6, 7) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
           type(max_history_bytes) is int and 1 <= max_history_bytes <= 1024**3, 'invalid_export_bounds')
     path = Path(path)
     before_stat = path.stat()
@@ -237,8 +249,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     reducer = None
     if schema_version >= 2:
         from . import semantic_cast as cast
-    if schema_version == 6:
+    if schema_version in (6, 7):
         from . import semantic_hand as hand
+    if schema_version == 7:
+        from . import semantic_effect_cost as effect_cost
 
     def end_trace(status, request_ref=None):
         nonlocal tracing
@@ -280,7 +294,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                             prior_facts = [f for s in tracing['trace']['states'] for f in s['facts']]
                             fact_rows, fact_status, omitted = activate_facts(gs, reducer, refs, _scope(reducer),
                                 previous, snap, tracing['response']['payload']['action'], prior_facts)
-                        elif schema_version == 6 and hand.is_hand(tracing['request']):
+                        elif schema_version == 7 and effect_cost.is_effect_cost(tracing['request']):
+                            # No annotation/payment interpretation; endpoint only.
+                            fact_rows, fact_status, omitted = [], 'visible_snapshot_only', None
+                        elif schema_version in (6, 7) and hand.is_hand(tracing['request']):
                             fact_rows, fact_status, omitted = hand.facts(gs, reducer, refs, _scope(reducer),
                                 previous, snap, tracing['request'], tracing['response'], tracing['identity']['self_seat'])
                         elif tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
@@ -303,7 +320,9 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                             'facts': fact_rows, 'facts_status': fact_status, 'omitted_annotations': omitted})
                         if tracing['request']['kind'] in ('declare_attackers','declare_blockers'):
                             end_trace(combat.FIRST)
-                        elif schema_version == 6 and hand.is_hand(tracing['request']):
+                        elif schema_version == 7 and effect_cost.is_effect_cost(tracing['request']):
+                            end_trace(effect_cost.FIRST)
+                        elif schema_version in (6, 7) and hand.is_hand(tracing['request']):
                             end_trace(hand.FIRST)
                     except (SampleError, KeyError, TypeError):
                         end_trace('interrupted')
@@ -341,7 +360,10 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
                                refs.ref('request', scope, request['id']))
             try:
                 snap = _snapshot(reducer, refs, scope)
-                projected = _request(message, request, refs, scope, schema_version, snap)
+                visible_literals = ([{'object_ref': obj['id'], 'zone': obj['zone'],
+                    'owner': obj['owner'], 'controller': obj['controller']}
+                    for obj in reducer.document()['current']['objects']] if schema_version == 7 else None)
+                projected = _request(message, request, refs, scope, schema_version, snap, visible_literals)
             except SampleError as exc:
                 active = {'identity': (request['id'], request['game_state_id']), 'reason': str(exc)}
             else:
@@ -363,9 +385,13 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
         if tracing is not None and (_scope(reducer) != tracing['_scope'] or reducer.error is not None or
                 reducer.room_state == 'MatchGameRoomStateType_MatchCompleted'):
             end_trace('interrupted')
+        # The new default protocol pair must not change old sample counts,
+        # aliases or unsupported/successor labels. KINDS stays legacy-scoped.
+        if before is not None and before['type'] == 'GREMessageType_PayCostsReq' and schema_version != 7:
+            continue
         if not (_paired_response(reducer, before, payload) or
                 schema_version >= 3 and _paired_combat_submit(reducer,before,payload) or
-                schema_version in (4, 6) and _paired_terminal_submit(reducer,before,payload)):
+                schema_version in (4, 6, 7) and _paired_terminal_submit(reducer,before,payload)):
             continue
         counts['matched_pairs'] += 1
         if any(key in entry for key in ('greToClientEvent', 'authenticateResponse',
@@ -382,9 +408,12 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
             rejected[captured['reason']] += 1
             continue
         try:
-            if schema_version == 6 and hand.is_hand(captured['request']):
+            if schema_version == 7 and effect_cost.is_effect_cost(captured['request']):
+                response = effect_cost.project_response(payload, captured['request'], refs, captured['scope'])
+                effect_cost.check_response(response, captured['request'], captured['before']['objects'], captured['scope'][3])
+            elif schema_version in (6, 7) and hand.is_hand(captured['request']):
                 response = hand.project_response(payload, captured['request'], refs, captured['scope'])
-            elif schema_version in (4, 6) and captured['request']['kind'] == 'select_targets':
+            elif schema_version in (4, 6, 7) and captured['request']['kind'] == 'select_targets':
                 from .semantic_targets import response as target_response
                 response = target_response(payload, before, captured['request']['payload'], refs, captured['scope'])
             else:
@@ -419,8 +448,8 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
         from . import semantic_targets as targets
     if schema_version == 5:
         from . import semantic_activate as activate
-    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION if schema_version == 2 else combat.VERSION if schema_version == 3 else targets.VERSION if schema_version == 4 else activate.VERSION if schema_version == 5 else hand.VERSION,
-        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2 if schema_version == 2 else combat.PROJECTION_V3 if schema_version == 3 else targets.projection() if schema_version == 4 else activate.projection() if schema_version == 5 else hand.projection()),
+    result = {'schema_version': VERSION if schema_version == 1 else cast.VERSION if schema_version == 2 else combat.VERSION if schema_version == 3 else targets.VERSION if schema_version == 4 else activate.VERSION if schema_version == 5 else hand.VERSION if schema_version == 6 else effect_cost.VERSION,
+        'projection': copy.deepcopy(PROJECTION if schema_version == 1 else cast.PROJECTION_V2 if schema_version == 2 else combat.PROJECTION_V3 if schema_version == 3 else targets.projection() if schema_version == 4 else activate.projection() if schema_version == 5 else hand.projection() if schema_version == 6 else effect_cost.projection()),
         'source': {'format': 'player-log-gre-v1',
         'mode': 'offline', 'origin': origin, 'origin_is_user_supplied': True,
         'framing_complete': True, 'framed_records': len(records),
@@ -556,6 +585,9 @@ def _check_successor(successor, before):
 
 def _replay_samples(document):
     """Validate/replay exported choices, NOT private GRE authentication/effects."""
+    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v7':
+        from .semantic_effect_cost import replay
+        return replay(document)
     if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v6':
         from .semantic_hand import replay
         return replay(document)
