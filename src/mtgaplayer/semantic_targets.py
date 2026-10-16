@@ -339,6 +339,16 @@ def replay(document):
                     earlier['trace']['next_request_ref'] != sample['identity']['request_ref'] or
                     earlier['trace']['status'] != 'next_request_observed'):
                 continue
+            states = earlier['trace']['states']
+            endpoint = states[-1]['snapshot'] if states else earlier['before']
+            if not states:
+                # With no intervening accepted state, a request-only successor
+                # must still describe the unchanged visible endpoint.
+                _need(earlier['successor']['status'] == 'next_request_observed' and
+                      earlier['successor']['snapshot'] == endpoint)
+            # State reference equality alone cannot reconcile contradictory
+            # object, player or turn observations across an episode boundary.
+            _need(endpoint == sample['before'])
             if earlier['request']['kind'] == 'select_targets':
                 p = earlier['request']['payload']; response = earlier['response']['payload']
                 same = all(req[k] == p[k] for k in ('source_object_ref', 'ability_grp_ref',

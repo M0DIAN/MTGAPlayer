@@ -166,6 +166,18 @@ class SingleTargetChoiceTests(unittest.TestCase):
         self.assertFalse(final['linked_previous_actual_selection'])
         self.assertFalse(final['actual_selected_public_departure_observed'])
 
+    def test_linked_episode_boundary_requires_identical_complete_visible_snapshot(self):
+        self.write(self.rows)
+        artifact=collect_samples(self.path,schema_version=4,max_samples=256)
+        for index in (1,2):  # Cast→targets and target update→final Submit
+            with self.subTest(boundary=index):
+                bad=copy.deepcopy(artifact)
+                sample=bad['samples'][index]
+                source=sample['request']['payload']['source_object_ref']
+                obj=next(o for o in sample['before']['objects'] if o['object_ref']==source)
+                obj['card_id']=999999  # unchanged state_ref, contradictory endpoint
+                with self.assertRaises(SampleError):replay_samples(bad)
+
     def test_unknown_or_nonpublic_targets_reject_whole_profile_without_leak(self):
         for mutate in (lambda slot:slot['targets'][0].update(targetInstanceId=999999),
             lambda slot:slot.update(secret='PRIVATE_SENTINEL'),
