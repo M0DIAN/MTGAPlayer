@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mtgaplayer:decision-state:v6",
+  "title": "MTGAPlayer read-only DecisionState v6",
+  "$comment": "Register v5 and v6 locally by URN; no network resolution. V6 reuses unchanged v5 public contracts and adds the observed single visible-object nonmana payment request profile. Runtime enforces exact enclosing binding, aligned weights and uniquely visible own battlefield membership. No historical response, payment completion, full costs, rules effect or execution authority is established. V5 excludes this new profile.",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "schema_version",
+    "status",
+    "binding",
+    "source",
+    "game",
+    "visible_objects",
+    "card_knowledge",
+    "effect_claims",
+    "legal_action_space",
+    "unresolved",
+    "execution",
+    "read_only"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "mtgaplayer.decision-state.v6"
+    },
+    "status": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/status"
+    },
+    "binding": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/binding"
+    },
+    "source": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/source"
+    },
+    "game": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/game"
+    },
+    "visible_objects": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/visible_objects"
+    },
+    "card_knowledge": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/card_knowledge"
+    },
+    "effect_claims": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/effect_claims"
+    },
+    "legal_action_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_type",
+        "immediate_frontier",
+        "choice_graph",
+        "expanded_plans",
+        "request_parameters"
+      ],
+      "properties": {
+        "request_type": {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/properties/request_type"
+        },
+        "immediate_frontier": {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/properties/immediate_frontier"
+        },
+        "choice_graph": {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/properties/choice_graph"
+        },
+        "expanded_plans": {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/properties/expanded_plans"
+        },
+        "request_parameters": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "urn:mtgaplayer:decision-state:v5#/$defs/requestParameters"
+            },
+            {
+              "$ref": "#/$defs/effectCostParameters"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/allOf/0"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/allOf/1"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/allOf/2"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/allOf/3"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/properties/legal_action_space/allOf/4"
+        },
+        {
+          "if": {
+            "properties": {
+              "request_parameters": {
+                "type": "object",
+                "properties": {
+                  "profile": {
+                    "const": "observed_nonmana_payment_select_single"
+                  }
+                },
+                "required": [
+                  "profile"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_PayCostsReq"
+              },
+              "choice_graph": {
+                "type": "null"
+              },
+              "immediate_frontier": {
+                "properties": {
+                  "kind": {
+                    "type": "null"
+                  },
+                  "availability": {
+                    "const": "not_applicable"
+                  },
+                  "completeness": {
+                    "const": "unknown"
+                  },
+                  "projection": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unresolved": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/unresolved"
+    },
+    "execution": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/execution"
+    },
+    "read_only": {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/properties/read_only"
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/allOf/0"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/allOf/1"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/allOf/2"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v5#/allOf/3"
+    }
+  ],
+  "$defs": {
+    "effectCostParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "profile",
+        "binding",
+        "cost_selection",
+        "historical_response_used"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "mtgaplayer.request-parameters.v3"
+        },
+        "profile": {
+          "const": "observed_nonmana_payment_select_single"
+        },
+        "binding": {
+          "allOf": [
+            {
+              "$ref": "urn:mtgaplayer:decision-state:v5#/$defs/binding"
+            },
+            {
+              "properties": {
+                "request_type": {
+                  "const": "GREMessageType_PayCostsReq"
+                },
+                "request_id": {
+                  "$ref": "urn:mtgaplayer:decision-state:v5#/$defs/id"
+                }
+              }
+            }
+          ]
+        },
+        "cost_selection": {
+          "$ref": "#/$defs/effectCostSelection"
+        },
+        "historical_response_used": {
+          "const": false
+        }
+      }
+    },
+    "effectCostSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "offered_object_refs",
+        "weights",
+        "min_sel",
+        "max_sel",
+        "min_weight",
+        "max_weight",
+        "allow_undo",
+        "source_object_ref",
+        "effect_cost_type",
+        "context",
+        "option_context",
+        "list_type",
+        "id_type",
+        "validation_type",
+        "allow_cancel"
+      ],
+      "properties": {
+        "profile": {
+          "const": "observed_nonmana_payment_select_single"
+        },
+        "offered_object_refs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "weights": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "const": 1
+          }
+        },
+        "min_sel": {
+          "const": 1
+        },
+        "max_sel": {
+          "const": 1
+        },
+        "min_weight": {
+          "const": -2147483648
+        },
+        "max_weight": {
+          "const": 2147483647
+        },
+        "allow_undo": {
+          "const": true
+        },
+        "source_object_ref": {
+          "type": "null"
+        },
+        "effect_cost_type": {
+          "const": "EffectCostType_Select"
+        },
+        "context": {
+          "const": "SelectionContext_NonMana_Payment"
+        },
+        "option_context": {
+          "const": "OptionContext_Payment"
+        },
+        "list_type": {
+          "const": "SelectionListType_Dynamic"
+        },
+        "id_type": {
+          "const": "IdType_InstanceId"
+        },
+        "validation_type": {
+          "const": "SelectionValidationType_NonRepeatable"
+        },
+        "allow_cancel": {
+          "const": "AllowCancel_Abort"
+        }
+      }
+    }
+  }
+}

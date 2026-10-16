@@ -13,6 +13,24 @@ def check_proposal(value):
     from .request_parameters import _action
     _bounded_json(value)
     if (type(value) is dict and type(value.get('request_identity')) is dict and
+            value['request_identity'].get('request_type') == 'GREMessageType_PayCostsReq'):
+        from .decision_consumer import _list
+        _keys(value, ('request_identity', 'proposed_cost_selection'), ('source_snapshot_ref',))
+        _binding(value['request_identity'], complete=True)
+        if value['request_identity']['request_id'] is None:
+            raise ValueError('invalid_choice_proposal')
+        proposed = value['proposed_cost_selection']
+        _keys(proposed, ('selected_object_refs',))
+        _list(proposed['selected_object_refs'], 256)
+        for ref in proposed['selected_object_refs']:
+            _integer(ref, 1)
+        if 'source_snapshot_ref' in value:
+            ref = value['source_snapshot_ref']
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != value['request_identity']:
+                raise ValueError('invalid_choice_proposal')
+        return
+    if (type(value) is dict and type(value.get('request_identity')) is dict and
             value['request_identity'].get('request_type') == 'GREMessageType_SelectTargetsReq'):
         from .semantic_targets import check_final_set
         _keys(value, ('request_identity', 'proposed_final_target_set'), ('source_snapshot_ref',))
@@ -101,6 +119,19 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        from . import semantic_effect_cost as cost
+        if state['binding']['request_type'] == cost.REQUEST:
+            if evidence['profile'] != cost.PROFILE:
+                return unknown('effect_cost_profile_not_observed')
+            from .request_parameters import effect_cost_objects
+            status, reason = cost.check_selection(evidence['cost_selection'],
+                proposal['proposed_cost_selection']['selected_object_refs'],
+                visible=effect_cost_objects(state['visible_objects']), seat=state['binding']['self_seat'])
+            result.update(validation_scope='offered_visible_single_nonmana_selection_consistency',
+                known_constraints=status, reasons=[reason, 'complete_payment_and_rules_effect_unverified'],
+                complete_costs_verified=False, payment_completed_verified=False, rules_effect_verified=False,
+                future_parameters='unknown', source_snapshot_ref=copy.deepcopy(source_snapshot_ref))
+            return result
         from .semantic_activate import PROFILE as ACTIVATE_PROFILE, SCOPE as ACTIVATE_SCOPE, check_payment
         if evidence['profile'] == ACTIVATE_PROFILE:
             result['validation_scope'] = ACTIVATE_SCOPE

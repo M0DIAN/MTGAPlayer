@@ -41,3 +41,41 @@ sacrifice/exile, parent Activate identity, complete costs, cancellation/undo
 reachability, complete legality or server acceptance. Missing results stay
 unknown. The [curated real episode](../tests/fixtures/semantic_effect_cost_real_v7.README.md)
 has artifact-scoped counts and does not reauthenticate the private source log.
+
+## Pre-response research (State/Event v6)
+
+Use `--decision-state-version 6` for the opt-in current PayCosts projection.
+The nested request-parameters v3 profile carries the authenticated enclosing
+binding, the same observed cost selection and historical_response_used=false.
+Its domain comes entirely from the current accepted request and uniquely visible
+own battlefield objects. No response or successor is read to produce it. V5
+continues to expose null request parameters for this request type; v1–v4 also
+retain their original output. Default versions and read-only behavior do not change.
+
+An explicit research proposal uses the current binding and one reference from
+cost_selection.offered_object_refs:
+
+```python
+{"request_identity": current["binding"],
+ "proposed_cost_selection": {"selected_object_refs": [offered_ref]}}
+```
+
+`consume-events --validate-choice proposal.json` uses the existing current-only
+Consumer wrapper and rechecks its lease after validation. History-only,
+consumed, replaced, expired, partial, conflicting and stopped requests provide
+no current assessment and cannot fall back to last_valid.
+
+Empty, repeated, multiple or nonmember selections contradict known constraints.
+Unsupported profiles or missing identity/visibility evidence stay insufficient.
+Passing establishes only offered_visible_single_nonmana_selection_consistency:
+complete costs, payment completion, future parameters, parent source, rules
+effect, cancellation/undo reachability and server acceptance remain unverified.
+The legacy action frontier and choice graph remain null for this profile; no
+ActionsAvailable inventory is invented. The explicit domain lives in the current
+request parameters. A historical selection/result cannot validate another candidate.
+
+The [request-only real state](../tests/fixtures/decision_state_effect_cost_real_v6.README.md)
+was produced with an exact prefix ending before response622. Formal v6 contracts
+reuse local v5 definitions: [State](../schemas/decision-state.v6.schema.json) and
+[Event](../schemas/decision-event.v6.schema.json). Register all three URNs locally;
+no network schema resolution or product dependency is required.

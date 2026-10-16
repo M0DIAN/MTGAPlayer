@@ -11,6 +11,7 @@ from .raw_log import _id
 
 VERSION = 'mtgaplayer.request-parameters.v1'
 PROFILE = 'reviewed_literal_mana_slice'
+EFFECT_COST_VERSION = 'mtgaplayer.request-parameters.v3'
 
 
 class LiteralRefs:
@@ -92,7 +93,19 @@ def _project_existing(message, visible, seat=None):
         return None
 
 
+def effect_cost_objects(visible):
+    """Translate only the existing visible projection, never reducer internals."""
+    return [{'object_ref': obj['instance_id'], 'zone': obj['zone'],
+             'owner': obj.get('owner_seat'), 'controller': obj['controller_seat']} for obj in visible]
+
+
 def project(message, visible, seat=None, source_abilities=None):
+    from . import semantic_effect_cost as cost
+    if message.get('type') == cost.REQUEST:
+        try:
+            return cost.project_request(message, effect_cost_objects(visible), seat, LiteralRefs(), ())
+        except (ValueError, TypeError, KeyError, RecursionError):
+            return None
     result = _project_existing(message, visible, seat)
     if result is not None or source_abilities is None:
         return result
@@ -105,6 +118,15 @@ def project(message, visible, seat=None, source_abilities=None):
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from . import semantic_effect_cost as cost
+    if type(value) is dict and value.get('profile') == cost.PROFILE:
+        if (set(value) != {'schema_version', 'profile', 'binding', 'cost_selection', 'historical_response_used'} or
+                value['schema_version'] != EFFECT_COST_VERSION or value['binding'] != binding or
+                binding['request_type'] != cost.REQUEST or binding['request_id'] is None or
+                value['historical_response_used'] is not False):
+            raise ValueError('invalid_request_parameters')
+        cost.check_request(value['cost_selection'], effect_cost_objects(visible), binding['self_seat'])
         return
     from .semantic_activate import PROFILE as ACTIVATE_PROFILE, REQUEST_VERSION, check_rows
     if type(value) is dict and value.get('profile') == ACTIVATE_PROFILE:
@@ -139,9 +161,18 @@ def check(value, binding, visible):
             raise ValueError('invalid_request_parameters')
 
 
-def assemble(rows, binding, visible):
+def assemble(rows, binding, visible, *, allow_effect_cost=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from . import semantic_effect_cost as cost
+    if type(rows) is dict and rows.get('profile') == cost.PROFILE:
+        if not allow_effect_cost:
+            return None  # Preserve the complete v5 contract.
+        value = {'schema_version': EFFECT_COST_VERSION, 'profile': cost.PROFILE,
+            'binding': copy.deepcopy(binding), 'cost_selection': copy.deepcopy(rows),
+            'historical_response_used': False}
+        check(value, binding, visible)
+        return value
     from .semantic_activate import PROFILE as ACTIVATE_PROFILE, REQUEST_VERSION
     if type(rows) is dict and rows.get('profile') == ACTIVATE_PROFILE:
         value = {'schema_version': REQUEST_VERSION, **copy.deepcopy(rows),
@@ -157,11 +188,18 @@ def assemble(rows, binding, visible):
     return value
 
 
-def check_space(space, binding, visible):
+def check_space(space, binding, visible, *, allow_effect_cost=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    from . import semantic_effect_cost as cost
+    if value['profile'] == cost.PROFILE:
+        if (not allow_effect_cost or space['request_type'] != cost.REQUEST or
+                space['immediate_frontier'] != {'kind': None, 'availability': 'not_applicable',
+                    'completeness': 'unknown', 'projection': None} or space['choice_graph'] is not None):
+            raise ValueError('request_projection_mismatch')
         return
     from .semantic_activate import PROFILE as ACTIVATE_PROFILE
     if value['profile'] not in (PROFILE, ACTIVATE_PROFILE):

@@ -995,3 +995,34 @@ in89.660s. Independent source, diff, real-evidence and compatibility review find
 no blocking issue. This is verified new semantic coverage, not a reproduced old
 parser defect or a P10 repair. Source data remains local and ignored. No new
 gameplay, input or remote operation was performed.
+
+## MP41 — current-request payment choice research (2026-10-16)
+
+Opt-in State/Event v6 exposes the MP40 profile as request-parameters v3. It uses
+only the accepted request and current visible owner/controller observations;
+the reducer adds observed owner_seat to its existing private projector input.
+V5 explicitly withholds this new profile. Existing Cast/Activate/Targets paths,
+default versions, raw supported flags and all execution gates retain their scope.
+The payment domain lives in request_parameters; no legacy action inventory or
+choice graph is invented. Known count/nonrepeatable/membership contradictions
+are violations, while unsupported or unbound evidence remains insufficient.
+
+An exact real prefix ends at record603/GRE1, before response622. All16 request
+options pass only the finite known constraints. The independent historical v7
+episode confirms actual submission at position1; the other15 outcomes remain
+unknown. Local append replay of the same frozen records602→603→604–622 through
+watch/Event6/Consumer verifies current-only assessment and response revocation.
+This is frozen-input replay, not new live capture or server confirmation.
+The curated pre-response State6 fixture exactly matches the producer after
+documented identity aliasing and null source offset. No hidden identity enters it.
+
+Ten cost-choice tests and six turn-context tests pass. An old unsupported-version
+test now uses99 instead of the newly supported6; its refusal assertion remains.
+Required full regression passes548 tests in98.081s. Old semantic1–6 complete
+exports/replays and State1–5 at57 request positions remain wholly equal.
+Independent diff/code/raw-prefix/fixture/lifecycle/schema review passes without
+blocker. Windows read-only doctor exits0 on independent Python3.11.16, reports
+an available interactive desktop and input_sent=false. Complete costs, payment
+completion, parent source, future parameters, cancellation/undo, rules effects
+and server acceptance remain unknown. No old real implementation defect was
+reproduced; P10 remains NOT_RUN. No remote operations were performed.
