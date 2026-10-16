@@ -934,3 +934,42 @@ user game marker. The next controlled run will use this newly committed marker
 version and separately hashed local window-management helper. New battlefield
 and server-wait scenes are not claimed from this menu-only evidence; P10 remains
 NOT_RUN for real-match parsing/association repair.
+
+## Phase 2 integration — controlled live window regression (2026-10-16)
+
+The clean, fixed 0be3b48 collector completed a second controlled Windows run
+without keyboard/mouse or gameplay input. It saved 110 real client PNGs across
+1280x720, 1184x666 and restored 1280x720 sizes. Five attempts correctly refused
+the minimized window before pixel acquisition; one refused changed geometry
+after successful pixel acquisition. Every saved PNG hash matches its index.
+The original window rectangle and client dimensions were verified restored.
+Ten before/after markers describe five window-management operations using the
+existing append_marker API and codex_window_validation source, not human game
+actions or GUI button clicks. Computer Use approval rejected control of the
+Python marker window; the explicit API mechanism leaves that GUI path untested.
+
+An independent image-only review of three actual frames confirms clear home-menu
+content and the recorded size sequence. It does not establish battlefield state,
+server-wait recognition or renderer freshness. The 315 GRE submessages and 13
+protocol pairs are startup history; subsequent polls contain zero new GRE. All
+five window-marker groups remain unsupported by the game-action timeline, with
+no invented association. A running snapshot was analyzed at completed poll 54;
+after the analysis report, the collector was still alive at poll 116. It then
+stopped by stop-file with no log errors and no capture worker left running.
+
+The preceding controlled attempt also retained 14 correct window_minimized
+refusals. Its restoration failure belonged to a new private helper which
+rediscovered the window instead of revalidating its bound PID/HWND. Two
+independent reviews refuted the initial product-misdiagnosis hypothesis. Only
+the private helper was corrected; invalid HWND and changed PID still refuse.
+The default unbound finder filters zero-size clients, a diagnostic limitation
+not exercised by these bound collectors. No product finder change or P10 claim
+is justified by this evidence.
+
+The original frame309 5/6/6 observations, 17 failed-quality records and three
+Pass candidates remain unchanged. New battlefield/server-wait gameplay and
+appended GRE regression remain NOT_RUN/NOT_OBSERVED; they require an appropriate
+real scene and gameplay permission or user play. Required 527-test regression,
+Windows doctor and incremental independent reviews pass. Only this evidence
+summary changed after the tested source commit. Remote PR/base/head identity,
+Linux/Windows CI and actual-main CI remain integration gates; P10 stays NOT_RUN.
