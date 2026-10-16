@@ -834,3 +834,27 @@ tests in 89.662s, exit 0. Independent source/evidence review reports no blocking
 findings, checks original hashes and separately probes stage exceptions. No new
 match, live-capture claim, model training, push or PR is introduced. Tasks 2 and
 3 remain pending implementation.
+
+## Phase 2 — protocol evidence and marker candidates (2026-10-16)
+
+Task 2 adds an offline observation timeline using RawReducer and existing
+authenticated request, response-consumption, choice and v4 semantic gates. It
+separates unique protocol candidates, multiple candidates, temporal-only
+observations and unreliable input. Marker causality is never inferred. Missing
+polls, incomplete marker-window coverage and source-integrity failures cannot
+silently strengthen an association. Original log timestamps are not treated as
+capture clocks or network/decision latency. A bounded private stable copy lets
+the existing follower and semantic exporter inspect identical source bytes.
+
+The same 278 real records retain 13 strict protocol pairs, seven unique candidate
+groups and one group with all three Pass responses (208, 210, 212). Main1,
+BeginCombat and Main2 explain their distinct protocol contexts; no marker phase
+constraint exists, so ambiguity remains. The two Cast traces separately retain
+submission, stack entry and resolution evidence. Missing targets do not prove
+targeted or targetless subtypes. Original input hashes remain unchanged.
+
+Task 2 focused validation passes 17 tests; full required regression passes 506
+tests in 91.291s, exit 0. Development review hardened new boundary handling; it
+does not demonstrate an original real-match parser defect. Independent frozen
+source/evidence review passes, including actual replay equality, unchanged input
+hashes, temporary-copy cleanup and privacy checks. Task 3 remains pending.
