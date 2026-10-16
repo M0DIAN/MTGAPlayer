@@ -1,3 +1,21 @@
+## MP47 — bounded current known-constraint candidates (candidate, 2026-10-16)
+
+Baseline accepted MP46 main `d894afd7433ca08dea73a5dfb6fdf8335fa58451`.
+Current ChoiceValidation already validates individual supplied PayCosts and
+SelectTargets proposals; this task exposes a capped current-only finite
+candidate set using exactly those existing checkers. The real request-only
+PayCosts State6 offers 16 one-object nonmana selections. The real first
+SelectTargetsReq State5 offers four one-target final sets; the later
+Unselect-only request must remain unknown. Opt-in offline and live
+Consumer diagnostic sidecars return only matching proposals, an exact
+observed-constraint count, truncation and snapshot binding. **Not** a universal
+all-legal-actions engine. Full rules, future choices, complete payment,
+actual response encoding, server acceptance, causal links and execution stay
+unverified. P10 is NOT_RUN. See docs/known-choice-candidates.md.
+
+This is candidate scope only; CI and direct review must still run, and
+main delivery remains conditional on exact-head and exact-main gates.
+
 ## MP46 — cross-episode Stack candidate, not request-source causality (2026-10-16)
 
 Starts at MP45 accepted main `70cc21a907aa35f335277b5a01fd5b8ffe2ed042`.

@@ -604,7 +604,8 @@ class _DiagnosticOutput:
 
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
-                   prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None):
+                   prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
+                   known_choice_candidates=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -635,6 +636,10 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         from .choice_validation import assess_current_choice, check_proposal
         check_proposal(choice_proposal)
         choice_proposal = copy.deepcopy(choice_proposal)
+    if type(known_choice_candidates) is not bool:
+        raise ValueError('invalid_known_choice_candidates_option')
+    if known_choice_candidates:
+        from .choice_candidates import assess_current_known_candidates
     consumer = consumer if consumer is not None else DecisionConsumer()
     if type(observed_changes) is not bool:
         raise ValueError('invalid_observed_changes_option')
@@ -708,12 +713,16 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             pending_event = None
         if choice_proposal is not None:
             validation = assess_current_choice(consumer, choice_proposal)
+        if known_choice_candidates:
+            candidates = assess_current_known_candidates(consumer)
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
             sidecars.append(changes)
         if choice_proposal is not None:
             sidecars.append(validation)
+        if known_choice_candidates:
+            sidecars.append(candidates)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -727,6 +736,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 changes = changes_observer.observe()
             if choice_proposal is not None:
                 validation = assess_current_choice(consumer, choice_proposal)
+            if known_choice_candidates:
+                candidates = assess_current_known_candidates(consumer)
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -739,6 +750,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['observed_changes'] = changes
         if choice_proposal is not None:
             value['choice_validation'] = validation
+        if known_choice_candidates:
+            value['known_choice_candidates'] = candidates
         return value
 
     try:

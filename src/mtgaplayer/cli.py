@@ -105,9 +105,12 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
 def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
            choice_graph=False, combat_frontier=False, decision_state=False,
-           rules_index_path=None, advice_policy=None, decision_state_version=1):
+           rules_index_path=None, advice_policy=None, decision_state_version=1,
+           known_choice_candidates=False):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if known_choice_candidates and (format != 'player-log' or decision_state_version < 5):
+        raise ValueError('known_choice_candidates_require_player_log_state_v5_or_v6')
     decision_state = decision_state or decision_state_version != 1
     if advice_policy is not None:
         if format != 'player-log':
@@ -155,6 +158,9 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                               'mode': 'offline', 'input_sent': False, 'executor_connected': False}
         if decision_state:
             _project_decision_state(reducer, document, combat, action_frontier, decision_state_version)
+        if known_choice_candidates:
+            from .choice_candidates import enumerate_known_candidates
+            document['known_choice_candidates'] = enumerate_known_candidates(document['decision_state'])
         if rules_index_path is not None:
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
@@ -454,6 +460,8 @@ def main(argv=None):
                                    help='read-only strict combat references; needs --decision-input')
         replay_parser.add_argument('--decision-state', action='store_true',
                                    help='unified read-only DecisionState v1 (player-log only)')
+        replay_parser.add_argument('--known-choice-candidates', action='store_true',
+                                   help='opt-in MP47 current known choices; requires player-log v5/v6')
         replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6), default=1,
                                    help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T; v5 adds reviewed request literals; v6 adds observed payment selection')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
@@ -484,6 +492,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
+    consumer_parser.add_argument('--known-choice-candidates', action='store_true',
+                                 help='opt-in current-only bounded choice alternatives sidecar')
     consumer_parser.add_argument('--validate-choice', type=Path,
         help='read one explicit request-bound proposal before consumption; no input or strategy')
     consumer_parser.add_argument('--observed-changes', action='store_true',
@@ -592,7 +602,8 @@ def main(argv=None):
         return consume_events(getattr(sys.stdin, 'buffer', sys.stdin), _emit_consumer_diagnostic,
                               consumer, advice_policy=advice_policy,
                               prepared_rules=prepared, rules_error=rules_error,
-                              observed_changes=args.observed_changes, choice_proposal=proposal)
+                              observed_changes=args.observed_changes, choice_proposal=proposal,
+                              known_choice_candidates=args.known_choice_candidates)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
@@ -601,7 +612,8 @@ def main(argv=None):
                             action_frontier=args.action_frontier,
                             choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
                             decision_state=args.decision_state, rules_index_path=args.rules_index,
-                            advice_policy=advice_policy, decision_state_version=args.decision_state_version)
+                            advice_policy=advice_policy, decision_state_version=args.decision_state_version,
+                            known_choice_candidates=args.known_choice_candidates)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1
         except (OSError, ValueError) as exc:
