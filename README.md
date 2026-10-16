@@ -497,3 +497,15 @@ Each field independently requires an exact `{"value": integer}` wrapper within s
 The portable Consumer validates fixed provenance, unique visible instance references, Battlefield scope, scalar bounds and the enclosing snapshot binding. It cannot reauthenticate the private GRE object type; the single producer's visibility/type gate supplies that source guarantee. An invalid external v4 contract revokes the cached snapshot. Missing or unreviewed source wrappers instead retain a valid snapshot with the corresponding stat unknown. Default v1, explicit v2/v3, raw projections, policies and all no-input boundaries retain their prior behavior.
 
 Two reduced real continuous Full/Diff traces prove current changes, inheritance and clearing; exact source cuts and omissions are recorded in [THIRD_PARTY.md](THIRD_PARTY.md). Formal v4 contracts: [DecisionState](schemas/decision-state.v4.schema.json) and [DecisionEvent](schemas/decision-event.v4.schema.json).
+
+### Opt-in observed nonmana payment selection (v6)
+
+State/Event v6 adds the narrow current PayCosts selection profile to the existing
+pre-response research path. It checks only explicit single-object,
+nonrepeatable membership against the current visible request; complete payment,
+rules effects and execution remain unverified. V1–v5 and default behavior remain
+unchanged. See [payment evidence and proposal contract](docs/semantic-effect-cost.md).
+
+Semantic export v8 additionally retains observed opaque Search choices and the
+first explicit public result. It adds historical evidence without a new Search
+legality validator. See [Search observation scope](docs/semantic-search.md).

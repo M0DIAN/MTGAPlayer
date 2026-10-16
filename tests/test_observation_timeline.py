@@ -64,6 +64,32 @@ def state(state_id, previous, phase):
 
 
 class ObservationTimelineTests(unittest.TestCase):
+    def test_paycost_fixed_pair_keeps_legacy_v4_export_join_separate(self):
+        # Invented envelopes over the existing sanitized visible-state fixture;
+        # the separate curated v7 episode is the actual-source regression.
+        from test_combat_frontier import baseline
+        from test_semantic_effect_cost import request, response, successor
+        records, journal = wrapped([baseline(), [request()], [response()], [successor()], []])
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'source.log'
+            source.write_text(''.join(json.dumps(row['entry']) + '\n' for row in records), encoding='utf-8')
+            original = source.read_bytes()
+            report = analyze_timeline(records, [], poll_journal=journal,
+                semantic_source=source, semantic_work_directory=Path(directory))
+            self.assertEqual(source.read_bytes(), original)
+        self.assertEqual(len(report['protocol_pairs']), 1)
+        pair = report['protocol_pairs'][0]
+        self.assertEqual(pair['request_type'], 'GREMessageType_PayCostsReq')
+        self.assertEqual(pair['response_type'], 'ClientMessageType_EffectCostResp')
+        self.assertTrue(pair['raw_request_content_authenticated'])
+        self.assertTrue(pair['request_continuity_verified'])
+        self.assertEqual(pair['confirmation'], 'client_submission_only')
+        self.assertEqual(pair['continuous_successor']['status'], 'continuous_state_observed')
+        self.assertIsNone(pair['semantic_trace'])
+        self.assertEqual(report['semantic_export']['status'], 'verified_existing_export')
+        self.assertEqual(report['semantic_export']['counts']['matched_pairs'], 0)
+        self.assertFalse(pair['marker_action_causality_verified'])
+
     def analyze(self, records, journal, markers=None, **options):
         return analyze_timeline(records, marker() if markers is None else markers,
                                 poll_journal=journal, **options)

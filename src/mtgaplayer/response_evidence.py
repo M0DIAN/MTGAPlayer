@@ -33,6 +33,7 @@ _RESPONSE_BY_REQUEST = {
     "GREMessageType_GroupReq": "ClientMessageType_GroupResp",
     "GREMessageType_SelectTargetsReq": "ClientMessageType_SelectTargetsResp",
     "GREMessageType_DeclareBlockersReq": "ClientMessageType_DeclareBlockersResp",
+    "GREMessageType_PayCostsReq": "ClientMessageType_EffectCostResp",
 }
 _FIELDS = frozenset({
     "type", "respId", "gameStateId", "performActionResp",

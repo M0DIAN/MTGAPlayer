@@ -973,3 +973,103 @@ real scene and gameplay permission or user play. Required 527-test regression,
 Windows doctor and incremental independent reviews pass. Only this evidence
 summary changed after the tested source commit. Remote PR/base/head identity,
 Linux/Windows CI and actual-main CI remain integration gates; P10 stays NOT_RUN.
+
+## MP40 — observed nonmana payment selection (2026-10-16)
+
+The frozen third-phase source supplies PayCostsReq record603/GRE1/request473/
+state338 and EffectCostResp record622. Opt-in semantic v7 adds the observed
+empty-paymentActions, single nonrepeatable visible-object selection shape to
+v6; it does not establish complete payment legality or an Activate parent.
+All16 offered objects join the current own battlefield projection. The client
+submitted offered position1. Only the first continuous successor, record623/
+GRE0/state339, is retained, with no payment or rules-effect inference.
+
+The unchanged 5,625,878-byte real source exports53 matched pairs,28 episodes
+and25 unsupported pairs. The curated real episode exactly equals producer
+index26; its container counts only that one episode. Old semantic v1–v6 exports
+and replays remain wholly equal, as do DecisionState v1–v5 at all57 accepted
+request positions. The timeline retains the new protocol pair without shifting
+the old v4 semantic attachments. Existing marker classifications are unchanged.
+Ten new cost and18 timeline tests pass; required full regression passes538 tests
+in89.660s. Independent source, diff, real-evidence and compatibility review finds
+no blocking issue. This is verified new semantic coverage, not a reproduced old
+parser defect or a P10 repair. Source data remains local and ignored. No new
+gameplay, input or remote operation was performed.
+
+## MP41 — current-request payment choice research (2026-10-16)
+
+Opt-in State/Event v6 exposes the MP40 profile as request-parameters v3. It uses
+only the accepted request and current visible owner/controller observations;
+the reducer adds observed owner_seat to its existing private projector input.
+V5 explicitly withholds this new profile. Existing Cast/Activate/Targets paths,
+default versions, raw supported flags and all execution gates retain their scope.
+The payment domain lives in request_parameters; no legacy action inventory or
+choice graph is invented. Known count/nonrepeatable/membership contradictions
+are violations, while unsupported or unbound evidence remains insufficient.
+
+An exact real prefix ends at record603/GRE1, before response622. All16 request
+options pass only the finite known constraints. The independent historical v7
+episode confirms actual submission at position1; the other15 outcomes remain
+unknown. Local append replay of the same frozen records602→603→604–622 through
+watch/Event6/Consumer verifies current-only assessment and response revocation.
+This is frozen-input replay, not new live capture or server confirmation.
+The curated pre-response State6 fixture exactly matches the producer after
+documented identity aliasing and null source offset. No hidden identity enters it.
+
+Ten cost-choice tests and six turn-context tests pass. An old unsupported-version
+test now uses99 instead of the newly supported6; its refusal assertion remains.
+Required full regression passes548 tests in98.081s. Old semantic1–6 complete
+exports/replays and State1–5 at57 request positions remain wholly equal.
+Independent diff/code/raw-prefix/fixture/lifecycle/schema review passes without
+blocker. Windows read-only doctor exits0 on independent Python3.11.16, reports
+an available interactive desktop and input_sent=false. Complete costs, payment
+completion, parent source, future parameters, cancellation/undo, rules effects
+and server acceptance remain unknown. No old real implementation defect was
+reproduced; P10 remains NOT_RUN. No remote operations were performed.
+
+## MP42 — opaque Search choices and public result evidence (2026-10-16)
+
+Opt-in semantic v8 adds the actual SearchReq record623/GRE5/request479/state343
+and SearchResp record632 to v7. The source is a uniquely public own Stack
+instance with unknown card identity. Four provided choices use request-scoped
+search_item aliases, distinct from public object references. The 41-item raw
+search list contributes only its count; no hidden card identity or list order
+is exported. Explicit maxFind=1 and flag literals are retained. Minimum count,
+fail-to-find meaning and empty-selection legality remain unknown.
+
+The client submitted position0. The first continuous successor is record634/
+GRE0/state344, previous343. Its unique source-attributed ObjectIdChanged and
+Library→Battlefield Put annotations support two finite facts; four other
+AbilityInstanceCreated annotations are omitted. No hidden original card is
+looked up, no later state fills a gap, and no earlier Activate/PayCosts causal
+chain is inferred. Search remains historical observation/replay, without a new
+DecisionState choice validator or execution authority. The default response map
+and KINDS are unchanged by MP42; Search uses the existing fixed consumption gate
+with an explicit expected response type only in v8.
+
+Independent QA found order-sensitive conflict refusal in this new profile. A
+second initial control was refuted because its synthetic input deleted the old
+identifier; the original script/results remain retained with a correction.
+After removing that deletion and independently confirming both identifiers in
+the public endpoint, the corrected control reproduced a false migration claim.
+Minimal fact gates now withhold both cases, retain submission/endpoint evidence,
+and keep malformed potentially related identifiers as negative evidence instead
+of dropping them through strict positive-identity filtering. The exact original
+source was recovered by reversing the small patch and verified against its
+frozen SHA before independent before/after controls. These are synthetic QA
+corrections to new code, not old real-source defects; P10 stays NOT_RUN.
+
+All 17 Search focused tests pass. Required final full regression passes 565 tests
+in 102.704s on independent Python 3.11.16. Whole old semantic v1–v7 exports and
+replays remain equal, as do State v1–v6 at all 57 accepted request positions.
+The same real input before/after QA produces equal complete v8 documents and
+replay results: 54 matched pairs, 29 exported episodes, 25 unsupported pairs,
+no omissions. The curated Search episode still exactly equals producer index27.
+Normal root execution exported and replayed the entire real input through the
+CLI, including the exact output path where a child environment denied NTFS
+hardlinks. No exporter change or permission escalation was needed by root.
+Windows read-only doctor exits0 with an available desktop and input_sent=false.
+Independent frozen-source, corrected-control, actual-input and privacy review
+passes; final delivery binds that review to the committed candidate identity.
+Original log/index hashes and all real pixel/marker evidence remain unchanged
+and local/ignored. No new match, gameplay input, push, PR or merge was performed.

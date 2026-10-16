@@ -810,7 +810,7 @@ class RawReducer:
                 if self._include_request_parameters:
                     from .request_parameters import project
                     visible = [{'instance_id': o['id'], 'card_id': o['card_id'], 'zone': o['zone'],
-                                'controller_seat': o['controller']}
+                                'owner_seat': o['owner'], 'controller_seat': o['controller']}
                                for o in self._current()['objects']]
                     # Current whole-row replacement applies before this read.
                     # The narrow producer evidence never exports the raw list.
