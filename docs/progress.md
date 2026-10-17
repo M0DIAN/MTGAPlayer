@@ -1,3 +1,42 @@
+## MP58 — explicit pre-request untap event witnesses (2026-10-17)
+
+Issue69 authorizes evidence-first development/tests/independent review/push/
+Draft PR without merge. Accepted main71de65f/tree3e844dd and natural main
+CI39025138802 (694 tests each Linux/Windows, no input) were reverified; no
+duplicate MP58 PR exists. Original7,718,945-byte SHA6bab453b…ac07 and exact
+request-only prefix SHAe8a8732c…2635 were checked before product edits. The
+existing reducer accepts281 new-game states, Full1143:m1→request1402:m1 with
+no continuity error and includes1402:m0. MP57 confirms source positions12/14.
+
+Both current sources have paired rawtrue/strict typed1 at1336:m0, then strict
+typed0 at1375:m5 (annotations4/8). Fourteen accepted states from the new anchor
+through1402:m0 retain unique own public identity/zone/membership and have no
+later source replacement or relevant annotation, including affector references.
+Earlier1178/1307 migration direction and Hand→Limbo/new Battlefield endpoints
+are verified separately; no tap proof crosses migrations. Five accepted requests
+intervene. Independent audit-method review found and closed source-position
+attribution and missing-affector checks before product work. This gate proves
+explicit event witnesses; current raw tapped remains null and no default/Full
+semantics or current global readiness is inferred.
+
+Minimal opt-in State/Event10 carries a separate provenance field for cross-
+process transport. One accepted-state observer keeps bounded fingerprints/
+last events/seen IDs and freezes one artifact on the existing verified request.
+Separate sidecar joins the existing MP57 relation and current Consumer gates.
+Fresh explicit0 can anchor an unambiguous same-state replacement with no
+literal; later replacements/identity changes or contradictions lose old proof.
+Independent incremental findings about unlocatable tap endpoints and returned
+relation full typed identities/flags are fixed and covered by focused tests.
+
+Original-byte current and actual dual CLI checks observe2 before1421 then0 in
+that consumed poll, with no old binding/ref revival through1433. Portable
+State10 pre/post projections use scoped aliases and null card IDs/knowledge/
+offsets/timestamps. State9/MP57 full values remain equal before aliasing.
+Final full tests/doctor, exact-head independent review, complete old-contract
+comparison and head/synthetic-merge Linux/Windows CI receipts are recorded on
+the Draft PR. Private bytes/maps stay ignored. No new game/MTGA input, merge,
+P10 repair or latency claim. [Evidence and contract](payment-source-untap.md).
+
 ## MP57 — current offered-target/predictive-payment association (2026-10-17)
 
 Issue67's latest scope revision and owner instruction permit a narrow real
