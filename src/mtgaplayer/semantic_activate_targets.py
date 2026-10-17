@@ -58,6 +58,16 @@ def _target_link_matches(request, selected, ability):
         _same(request['target_idx'], selected['parameters']['targets'][0]['targetIdx']))
 
 
+def _revision_binding_matches(previous, current):
+    return all(_same(previous[key], current[key]) for key in
+        ('source_object_ref', 'ability_grp_ref', 'targeting_ability_grp_ref', 'target_idx', 'targeting_player'))
+
+
+def _selection_revision_matches(reply, current):
+    return (reply['entries'][0]['legal_action'] == targets.SELECT and
+        targets.literal_selected(current) == [reply['entries'][0]['object_ref']])
+
+
 def _without_highlight(row):
     """The recaptured action adds the same presentation-only field as target requests."""
     result = copy.deepcopy(row)
@@ -516,11 +526,9 @@ def replay(document):
                 previous_reply = previous_step['response']
                 _need(previous_step['response_location'] is not None and
                       location(previous_step['response_location'], client=True) < request_position)
-                binding_fields = ('source_object_ref', 'ability_grp_ref', 'targeting_ability_grp_ref', 'target_idx', 'targeting_player')
-                _need(all(_same(previous_step['request'][key], request[key]) for key in binding_fields))
+                _need(_revision_binding_matches(previous_step['request'], request))
                 if previous_reply is not None and previous_reply['operation'] == 'selection_update':
-                    _need(previous_reply['entries'][0]['legal_action'] == targets.SELECT and
-                        targets.literal_selected(request) == [previous_reply['entries'][0]['object_ref']])
+                    _need(_selection_revision_matches(previous_reply, request))
             reply = step['response']
             if reply is None:
                 _need(step['response_location'] is None)
