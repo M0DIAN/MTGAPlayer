@@ -1,0 +1,757 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mtgaplayer:decision-state:v13",
+  "title": "MTGAPlayer read-only DecisionState v13",
+  "$comment": "Add only nullable first-current-child continuation context. Register State5/7/8/9/10/11/12/13 and their local dependencies. All State12 request profiles and existing target contracts remain unchanged; runtime validates identity/visibility/relationship consistency and Consumer validates current ref/lease.",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "schema_version",
+    "status",
+    "binding",
+    "source",
+    "game",
+    "visible_objects",
+    "card_knowledge",
+    "effect_claims",
+    "legal_action_space",
+    "unresolved",
+    "execution",
+    "read_only",
+    "payment_source_tap_provenance",
+    "choice_continuation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "mtgaplayer.decision-state.v13"
+    },
+    "status": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/status"
+    },
+    "binding": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/binding"
+    },
+    "source": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/source"
+    },
+    "game": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/game"
+    },
+    "visible_objects": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/visible_objects"
+    },
+    "card_knowledge": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/card_knowledge"
+    },
+    "effect_claims": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/effect_claims"
+    },
+    "legal_action_space": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/legal_action_space"
+    },
+    "unresolved": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/unresolved"
+    },
+    "execution": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/execution"
+    },
+    "read_only": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/read_only"
+    },
+    "payment_source_tap_provenance": {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/properties/payment_source_tap_provenance"
+    },
+    "choice_continuation": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/choiceContinuation"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/0"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/1"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/2"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/3"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/4"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v12#/allOf/5"
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "state_observed_without_request"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "choice_continuation": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "choice_continuation": {
+            "type": "object"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "state_and_request_observed"
+          },
+          "binding": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_SelectTargetsReq"
+              },
+              "request_id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            }
+          },
+          "payment_source_tap_provenance": {
+            "type": "null"
+          },
+          "legal_action_space": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_SelectTargetsReq"
+              },
+              "request_parameters": {
+                "type": "object",
+                "properties": {
+                  "profile": {
+                    "const": "reviewed_single_slot_public_targets"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "continuationBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_generation",
+        "match",
+        "game",
+        "self_seat",
+        "game_state_id",
+        "request_id",
+        "request_type"
+      ],
+      "properties": {
+        "source_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "match": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "game": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "self_seat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "game_state_id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "request_type": {
+          "enum": [
+            "GREMessageType_ActionsAvailableReq",
+            "GREMessageType_SelectTargetsReq"
+          ]
+        }
+      }
+    },
+    "continuationParentBinding": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/continuationBinding"
+        },
+        {
+          "properties": {
+            "request_type": {
+              "const": "GREMessageType_ActionsAvailableReq"
+            }
+          }
+        }
+      ]
+    },
+    "continuationChildBinding": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/continuationBinding"
+        },
+        {
+          "properties": {
+            "request_type": {
+              "const": "GREMessageType_SelectTargetsReq"
+            }
+          }
+        }
+      ]
+    },
+    "continuationPrompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promptId"
+      ],
+      "properties": {
+        "promptId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "continuationNumberPrompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promptId",
+        "parameters"
+      ],
+      "properties": {
+        "promptId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "parameters": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterName",
+              "type",
+              "numberValue"
+            ],
+            "properties": {
+              "parameterName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "type": {
+                "const": "ParameterType_Number"
+              },
+              "numberValue": {
+                "type": "integer",
+                "minimum": -2147483648,
+                "maximum": 2147483647
+              }
+            }
+          }
+        }
+      }
+    },
+    "continuationTargetEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetInstanceId",
+        "legalAction"
+      ],
+      "properties": {
+        "targetInstanceId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "legalAction": {
+          "const": "SelectAction_Select"
+        },
+        "highlight": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "continuationTargets": {
+      "allOf": [
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/$defs/singleSlotTargets"
+        },
+        {
+          "properties": {
+            "source_object_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "ability_grp_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "targeting_ability_grp_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "target_idx": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "properties": {
+                  "object_ref": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "legal_action": {
+                    "const": "SelectAction_Select"
+                  }
+                }
+              }
+            },
+            "min_targets": {
+              "const": 1
+            },
+            "max_targets": {
+              "const": 1
+            },
+            "selected_count": {
+              "type": "null"
+            }
+          }
+        }
+      ]
+    },
+    "continuationChildObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraints",
+        "envelope_prompt",
+        "slot_prompt",
+        "target_entries",
+        "field_presence"
+      ],
+      "properties": {
+        "constraints": {
+          "$ref": "#/$defs/continuationTargets"
+        },
+        "envelope_prompt": {
+          "$ref": "#/$defs/continuationPrompt"
+        },
+        "slot_prompt": {
+          "$ref": "#/$defs/continuationNumberPrompt"
+        },
+        "target_entries": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/continuationTargetEntry"
+          }
+        },
+        "field_presence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minTargets",
+            "maxTargets",
+            "selectedTargets",
+            "allowUndo"
+          ],
+          "properties": {
+            "minTargets": {
+              "const": true
+            },
+            "maxTargets": {
+              "const": true
+            },
+            "selectedTargets": {
+              "const": false
+            },
+            "allowUndo": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "field_presence": {
+                "properties": {
+                  "minTargets": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "min_targets": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "min_targets": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "field_presence": {
+                "properties": {
+                  "maxTargets": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "max_targets": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "max_targets": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "field_presence": {
+                "properties": {
+                  "selectedTargets": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "selected_count": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "selected_count": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "field_presence": {
+                "properties": {
+                  "allowUndo": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "allow_undo": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "allow_undo": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "continuationParent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "list_position",
+        "active_action_count",
+        "identifier_refs",
+        "flags",
+        "target_idx",
+        "source_zone_ref",
+        "prompt",
+        "response_type",
+        "auto_pass_priority",
+        "current"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/continuationParentBinding"
+        },
+        "list_position": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "active_action_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "identifier_refs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instanceId",
+            "grpId",
+            "facetId",
+            "abilityGrpId",
+            "uniqueAbilityId"
+          ],
+          "properties": {
+            "instanceId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "grpId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "facetId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "abilityGrpId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "uniqueAbilityId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "flags": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "shouldStop"
+          ],
+          "properties": {
+            "shouldStop": {
+              "type": "boolean"
+            }
+          }
+        },
+        "target_idx": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source_zone_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "prompt": {
+          "$ref": "#/$defs/continuationPrompt"
+        },
+        "response_type": {
+          "const": "ClientMessageType_PerformActionResp"
+        },
+        "auto_pass_priority": {
+          "const": "AutoPassPriority_Yes"
+        },
+        "current": {
+          "const": false
+        }
+      }
+    },
+    "continuationStackAbility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_ref",
+        "parent_object_ref",
+        "ability_grp_ref",
+        "zone_ref",
+        "created_state_id",
+        "controller_seat"
+      ],
+      "properties": {
+        "object_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "parent_object_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "ability_grp_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "zone_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "created_state_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "controller_seat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    "choiceContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "binding",
+        "parent",
+        "stack_ability",
+        "child_observation"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "mtgaplayer.choice-continuation.v1"
+        },
+        "binding": {
+          "$ref": "#/$defs/continuationChildBinding"
+        },
+        "parent": {
+          "$ref": "#/$defs/continuationParent"
+        },
+        "stack_ability": {
+          "$ref": "#/$defs/continuationStackAbility"
+        },
+        "child_observation": {
+          "$ref": "#/$defs/continuationChildObservation"
+        }
+      },
+      "$comment": "Runtime enforces equal outer/child bindings; same generation/match/game/seat and increasing parent state; distinct request IDs; position < active_action_count; source/group/slot and current public Stack/visibility joins; exact target-entry/constraint equality. Producer alone authenticates raw digest, exact response uniqueness, accepted creation annotations and message order. No complete legality or input authority."
+    }
+  }
+}

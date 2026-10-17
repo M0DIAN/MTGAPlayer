@@ -1,0 +1,291 @@
+{
+  "scope": "owner_local_frozen_original_and_first_child_prefix_then_separate_lifecycle_audit",
+  "reviewer_limit": "Independent reviewers inspect public code, portable fixture and whitelisted safe receipts/methods; withheld original bytes were authenticated by root only.",
+  "gate_a_before_product_patch": {
+    "source_bytes": 7718945,
+    "source_sha256": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+    "parent_prefix_bytes": 7664967,
+    "parent_prefix_sha256": "e8a8732c67e8bd4a9c019ec042aae7d067efc54b7797576b8ce53b4d1ffd2635",
+    "parent_snapshot_bytes": 155956,
+    "parent_snapshot_sha256": "797171b6896f88d164667d12b0b1bf34ef7570bfbfbf8c5934aa953a0edf9459",
+    "parent_snapshot_frozen_before_successor_parsing": true,
+    "child_prefix_bytes": 7682758,
+    "child_prefix_sha256": "f532ba434c3d82fb748ef91f3764cc1419d9a3f78595ed73aaee7020f399f239",
+    "auth_record": 1136,
+    "room_record": 1141,
+    "full_location": [
+      1143,
+      1
+    ],
+    "parent_request_location": [
+      1402,
+      1
+    ],
+    "accepted_states_before_parent": 281,
+    "accepted_states_through_child": 282,
+    "continuity_errors": 0,
+    "framing_errors": 0,
+    "parent_current_cast_probes": 6,
+    "parent_current_activate_relations": 1,
+    "actual_response_record": 1421,
+    "full_row_and_identity_unique_position": 6,
+    "exact_response_pair_verified": true,
+    "parent_consumed_in_response_poll": true,
+    "unique_new_public_stack_ability_created_fact": true,
+    "ability_facts_status": "reviewed_activate_subset",
+    "ability_parent_and_group_match_chosen_row": true,
+    "ability_unique_public_stack_membership": true,
+    "child_location": [
+      1422,
+      1
+    ],
+    "child_own_binding_and_digest_verified": true,
+    "child_source_matches_ability": true,
+    "top_level_ability_group_matches_parent": true,
+    "targeting_group_same_as_top_level_group": true,
+    "targeting_group_treated_independently": true,
+    "complete_raw_child_fields_typed_and_preserved_privately": true,
+    "parent_and_child_target_idx_agree": true,
+    "exactly_one_parent_response_in_examined_successor_prefix": true,
+    "slot_prompt_number_typed_int32_uninterpreted": true,
+    "slot_prompt_number_not_target_count_evidence": true,
+    "response_fields_complete_and_auto_pass_typed": true,
+    "parent_public_source_pair_and_catalog_match": true,
+    "baseline_check_final_set_verified_request_local_membership_count": true,
+    "child_field_shapes": {
+      "type": "str",
+      "systemSeatIds": [
+        "int"
+      ],
+      "msgId": "int",
+      "gameStateId": "int",
+      "prompt": {
+        "promptId": "int"
+      },
+      "selectTargetsReq": {
+        "targets": [
+          {
+            "targetIdx": "int",
+            "targets": [
+              {
+                "targetInstanceId": "int",
+                "legalAction": "str",
+                "highlight": "str"
+              }
+            ],
+            "minTargets": "int",
+            "maxTargets": "int",
+            "prompt": {
+              "promptId": "int",
+              "parameters": [
+                {
+                  "parameterName": "str",
+                  "type": "str",
+                  "numberValue": "int"
+                }
+              ]
+            },
+            "targetingAbilityGrpId": "int",
+            "targetingPlayer": "int"
+          }
+        ],
+        "sourceId": "int",
+        "abilityGrpId": "int"
+      },
+      "allowCancel": "str",
+      "allowUndo": "bool"
+    },
+    "target_bounds_presence": {
+      "minTargets": true,
+      "maxTargets": true,
+      "selectedTargets": false
+    },
+    "target_bounds_values": {
+      "minTargets": 1,
+      "maxTargets": 1,
+      "selectedTargets": null
+    },
+    "target_member_count": 1,
+    "select_member_count": 1,
+    "unselect_member_count": 0,
+    "all_target_members_public_battlefield": true,
+    "current_v5_target_validator_baseline_reused": true,
+    "historical_v10_child_prefix_exported": 1,
+    "historical_child_response_absent": true,
+    "last_record_examined": 1422,
+    "future_1424_plus_read_for_current_proof": false,
+    "parent_snapshot_unchanged": true,
+    "source_unchanged": true,
+    "producer_head": "fcd1e512f94ad3ca4c897e265172a00a09ad7af9",
+    "producer_tree": "4f8ac4dd03c75f0cbb461fb3dcac7d6d701ff10a",
+    "helper_sha256": "0d376c24be37bb1dc152ed1bbb4d6edf9732c045c03d23e8ad26a59ddb05f285",
+    "product_changes": false,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "separate_future_lifecycle_only": {
+    "source_sha256": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+    "gate_a_parent_snapshot_unchanged": true,
+    "gate_a_child_prefix_sha256": "f532ba434c3d82fb748ef91f3764cc1419d9a3f78595ed73aaee7020f399f239",
+    "framed_records": 1433,
+    "framing_errors": 0,
+    "separate_lifecycle_only": true,
+    "future_bounds_used_for_first_child": false,
+    "checks": [
+      {
+        "record": 1424,
+        "first_child_consumed": true,
+        "current_request_absent": true
+      },
+      {
+        "record": 1425,
+        "separate_new_request": true,
+        "min": 1,
+        "max": 1,
+        "selected": 1,
+        "unselect_members": 1
+      },
+      {
+        "record": 1426,
+        "revised_child_terminal_submit_consumed": true,
+        "current_request_absent": true
+      }
+    ],
+    "old_parent_and_first_child_never_revive": true,
+    "source_unchanged": true,
+    "prefix_ends": {
+      "1422": {
+        "bytes": 7682758,
+        "sha256": "f532ba434c3d82fb748ef91f3764cc1419d9a3f78595ed73aaee7020f399f239"
+      },
+      "1423": {
+        "bytes": 7683292,
+        "sha256": "0bbe7ed9ebc2d931f6793a60270f275f010ec25c18194d619385450ddf9d85b2"
+      },
+      "1424": {
+        "bytes": 7684011,
+        "sha256": "ff359598bf5f020cc9f91840cf74524f66a89d4375887d5fb8048d20db546e53"
+      },
+      "1425": {
+        "bytes": 7689086,
+        "sha256": "a0d1fe1d97662714bc6aa60cb77a9418769881962595fae302d0069e5299b44c"
+      },
+      "1426": {
+        "bytes": 7689521,
+        "sha256": "0b4c11af30e5f3a5c959dcf158ad8a82a53b02c7f62f87a01c4b0c328b80b1c6"
+      },
+      "1427": {
+        "bytes": 7702128,
+        "sha256": "96539120ad4d3c314bd67e8defa070295afc3454ca35a68405a66eeeae04f2a2"
+      },
+      "1428": {
+        "bytes": 7716339,
+        "sha256": "f8b56dd66f2159863460ade4488ca7a45abbac7113aae18f2de31487b466ae88"
+      },
+      "1433": {
+        "bytes": 7718943,
+        "sha256": "ba951033a2970c92c6d64f31d9dc70cbdd755a2490da6442e0b90a8e15fc4bb4"
+      }
+    },
+    "input_sent": false,
+    "P10": "NOT_RUN",
+    "helper_sha256": "acaffe626e9aa2c9a431543d4c505b615fab61f92f8e39448a44a7aa3bf86348"
+  },
+  "new_current_pipeline": {
+    "source_bytes": 7718945,
+    "source_sha256": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+    "first_child_prefix_bytes": 7682758,
+    "first_child_prefix_sha256": "f532ba434c3d82fb748ef91f3764cc1419d9a3f78595ed73aaee7020f399f239",
+    "owner_original_unchanged": true,
+    "parent_frozen_before_future_semantic_read": true,
+    "first_child_before_response1424_only": true,
+    "raw_reducer_count_per_path": 1,
+    "consumer_count_per_path": 1,
+    "real_watch_parent_6_1_to_0_0_same_poll": true,
+    "first_child_own_binding_ref_lease": true,
+    "first_child_1424_invalidated": true,
+    "revised1425_fresh_request_context_unknown": true,
+    "submit1426_invalidated": true,
+    "future1427_1428_lifecycle_only": true,
+    "old_parent_child_refs_never_revived": true,
+    "actual_watch_to_consume_events_positive_and_revocation": true,
+    "stream_adapter_exit_code": 0,
+    "fixture_lf_bytes": 444810,
+    "fixture_lf_sha256": "122a5382b936e404309d158e6098b32ab3bb04cfc1727cb294666846c89ed109",
+    "alias_namespaces": [
+      "object",
+      "card",
+      "ability",
+      "unique",
+      "facet",
+      "request",
+      "state",
+      "zone",
+      "slot",
+      "mana",
+      "prompt",
+      "prompt_number",
+      "targeting_group"
+    ],
+    "raw_source_reauthenticated_by_independent_reviewer": false,
+    "input_sent": false,
+    "P10": "NOT_RUN",
+    "helper_sha256": "9ef00bbf44bbdd73b55a08296200b6c5eb0ecf039e46787927603ed9e492959e",
+    "accepted_base": "2b60878986b822121ce0389da15a5dd3c9fe4fe5",
+    "product_source_sha256": {
+      "src\\mtgaplayer\\action_frontier.py": "8ea41213887ee77b257779aaa8e5c3756b47b21eabfa6ceaa75ab97c3154a729",
+      "src\\mtgaplayer\\action_gaps.py": "e8a3a5d6e3b8868a87e4f3a89964c05934eb1de66520e0e9a5532852a4dd89cf",
+      "src\\mtgaplayer\\action_target_menus.py": "af5eb371d09a182a1ecd5f62af784754925a2f9499abfdbae3f9c4b7921c6838",
+      "src\\mtgaplayer\\activate_target_payment.py": "dea561e5be88f062dd7ed7af221398ffa659ccd9756a2c14d83056e9a9d39321",
+      "src\\mtgaplayer\\benchmark.py": "f69f1c95b379f1178e2ab70b695fc90d3b9520e019d21a3a473582c2b38d1f09",
+      "src\\mtgaplayer\\card_catalog.py": "112dc75261ff2cf251ff16b2c3b9cd8bc95babb4392e75a08bf022438e8424d0",
+      "src\\mtgaplayer\\cast_activate_associations.py": "8846df6584b82e55754169c6753b6903d9447e77ed2be97bb4643b36dc1b4dc9",
+      "src\\mtgaplayer\\cast_target_members.py": "c27f950078306a9cffd0fea75ad774d826da2417817c467e135174f2ff9c1b7a",
+      "src\\mtgaplayer\\choice_candidates.py": "a17994af38aadd00471fc92e91086b0fef5e919aad7ee24a52a7971f7368f641",
+      "src\\mtgaplayer\\choice_continuation.py": "8d717b847339ff5094e173644908142a863cfa5eb0a6707e2410b78aa61e72ef",
+      "src\\mtgaplayer\\choice_graph.py": "97d2f7295fd353b5c0afe62bd45cf88ed8204d6ac7fd32ed05331ac27b6d74bc",
+      "src\\mtgaplayer\\choice_history.py": "b3dd8be1ee98c9255c41517d9b0d77c0c234d2de92517a51cc7eb4d3d02c5403",
+      "src\\mtgaplayer\\choice_validation.py": "938e464ef56fb0f9a47f83bad049488d7f030255d17a23877767871340272f9e",
+      "src\\mtgaplayer\\cli.py": "cb749b86a77727ac632ffde28c2b3e147891a55287e009aefc0589c7c8b779ab",
+      "src\\mtgaplayer\\combat_frontier.py": "b9f61066ca91de2a6277ec8f458d76f1b9bd0db4ec0222e522030ed518f8cee2",
+      "src\\mtgaplayer\\decision_advisor.py": "d989a53d8730a3f92c4ff3d72fd29e029ad2ff3f6db00b26abf252b2e899e93b",
+      "src\\mtgaplayer\\decision_consumer.py": "7743ccb19991b071e7be3076b1f2e75c7fc150e50694c694a2f47a8708e4bdeb",
+      "src\\mtgaplayer\\decision_input.py": "a17667d4e98488988ed33067a7608ca9be54ea2b318074b9b51b685e0a2504c1",
+      "src\\mtgaplayer\\decision_publisher.py": "1443902941b9f95f627a9880628c2fac40ba42476cf9efeaca8b1db152b449f2",
+      "src\\mtgaplayer\\decision_state.py": "f1002378d2d8959569759e9fae9c7f08dd9accf4b9e2555b1819e8be8d385807",
+      "src\\mtgaplayer\\files.py": "d63f295b6d5458f82fbf5f34d7cd9d1bf49eb4f5558baec2d1e5e9804c66b6cd",
+      "src\\mtgaplayer\\harness.py": "7b125aaca9dcbde79a1c6d404a2b3fdd59a62954b38d61503054019997cf6090",
+      "src\\mtgaplayer\\live_performance.py": "105677d4b2923e849c2f2eb8d53250123ac6583a045d9502b95397c9f776cc55",
+      "src\\mtgaplayer\\markers.py": "dc2eca309b6a5b38f95dd71d5cffef2629b433162c9e1b31fae48b4a664cd5e0",
+      "src\\mtgaplayer\\native.py": "7eae56033f6dc0e2a040818c425042a90793de506bca52943af2e1d4e77137d4",
+      "src\\mtgaplayer\\observation_timeline.py": "a90657b83a77e25b54b537c707314a59afa5d8ce2bc3649ad8436e3998c417ea",
+      "src\\mtgaplayer\\observed_changes.py": "4160b95dd81feef7b4b3614ea13dfde212a8ce0f4c62e28a50a53bd116596be0",
+      "src\\mtgaplayer\\payment_source_tap.py": "d42634006d8c051ff0dbb0e59c9cba33de0d67fd3329343ac9bc29362c65d203",
+      "src\\mtgaplayer\\player.py": "a4fafe662a2da96aaa270ecb6ede885f7366f492826eabcef2fd906da608f45e",
+      "src\\mtgaplayer\\policy.py": "15813d0b582492b98b2b73355c71925f4f406465da4645df92bbb113cd70ed4c",
+      "src\\mtgaplayer\\raw_log.py": "6a9a64949e95af8d91587c741ce1c04440edda048cdbce2fa8a7f90151fde78f",
+      "src\\mtgaplayer\\request_parameters.py": "67d0363fa4bdad5dc35a20332a2d36255b3825fe4a5e2a7d23e1e80dcfc3fd90",
+      "src\\mtgaplayer\\response_evidence.py": "aefcb3d939abf59993c1bf5d03238ea0f0d37993d0ee42c0f4de372e55885e53",
+      "src\\mtgaplayer\\rules_index.py": "01a5cd74e31a64909a219f46412286e2d30b5b8343f0634eca58aa6088b8f887",
+      "src\\mtgaplayer\\rule_context.py": "39bc83230ed9480d9ad0a2c271fdc43821375ced4708f61a4d04af14712c789c",
+      "src\\mtgaplayer\\semantic_activate.py": "15cff92bfd0d3cdbfc2d65f7bdd1c66773ada4ada4abfb2009fbd2483eecfce3",
+      "src\\mtgaplayer\\semantic_activate_targets.py": "f6ff2e59d30b6df7b650e9a221f04012f373ae9338787a24d8adc7e97ddf7846",
+      "src\\mtgaplayer\\semantic_cast.py": "45382943dfa9a1877f6eae1c74b4c10616a1490f85af827bb690019bc0d45015",
+      "src\\mtgaplayer\\semantic_combat.py": "d87e4bee39b0253ebc072374f2f47786ee98ad8f1e7812d3980ef3dd3879e680",
+      "src\\mtgaplayer\\semantic_cross_request.py": "30438fe987266688d0b037031106ebb70b9d7763c920c6881f1f663e50781445",
+      "src\\mtgaplayer\\semantic_effect_cost.py": "c63c5b896981fd8c28565088716222569d747957e5e923be5a1524cf53cde0e8",
+      "src\\mtgaplayer\\semantic_effect_cost_result.py": "083c0f9abdf18c697d5b6e903f811c4764e0e202a56db5301accaa3bd02658a3",
+      "src\\mtgaplayer\\semantic_evidence.py": "6fecf4b25c5275d91992411254c325543cc2c7c8cdbf4612e3844e29f8a2d996",
+      "src\\mtgaplayer\\semantic_hand.py": "5681b850a94f978645fb2d2ef7622c0ec57bd39a48ae53cafc2a94d1fcde388f",
+      "src\\mtgaplayer\\semantic_samples.py": "10440c0493633646d98b297c188c2517d01a88c90f9aab965c414c755643778c",
+      "src\\mtgaplayer\\semantic_search.py": "d96ff4661b243b24c2556ccb3535679722c8a1af1228edc294faf3fb426a43a6",
+      "src\\mtgaplayer\\semantic_targets.py": "661a6292396015732dbc9efcc53bfb372c74b88c7ba8909dd21a81dfd81a86db",
+      "src\\mtgaplayer\\state.py": "0bd4efa4e2a9ecdffbb405dd685d8e22f3485ba067c5f8d276fa249c97490065",
+      "src\\mtgaplayer\\stream.py": "a611ddcaa54f135c23528983ee22ffd51a489026dfb90a5be38d0806d5edaaaf",
+      "src\\mtgaplayer\\visual.py": "9e66e2e3350bb59a43fa044d1b56139bc65a7e131ffdf7d98ca4350d6fa81d63",
+      "src\\mtgaplayer\\visual_observation.py": "fab07656999fd1b5b55dcbb889995bc29ef9d4e4fd23a041f9c28a1c8647ed68",
+      "src\\mtgaplayer\\__init__.py": "876f118fd9ae490143c0b886893a3ae1816db2aa84f4517fb60c0d76b1912985",
+      "src\\mtgaplayer\\__main__.py": "482b8693e2fe6dbd732e3d7961e03827d3efa187bad11d29da188be580ebbeea"
+    }
+  }
+}

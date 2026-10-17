@@ -1623,3 +1623,43 @@ baseline tree is identical to accepted main2732c2a. This comparison does not
 reauthenticate private bytes or prove live gameplay. Exact-candidate independent
 review and hosted head/merge CI are delivery gates for the Draft PR. No merge or
 game input is authorized; input_sent=false, LIVE_MTGA/P10 NOT_RUN.
+
+## MP62 — separately current Equip target continuation (2026-10-18)
+
+The original-byte gate passed before product edits. The exact parent-only
+snapshot was frozen before successor semantic parsing; the child proof stops
+at1422:m1. Auth1136, room1141 and genuine Full1143:m1 lead continuously through
+281 accepted states to parent1402:m1. Actual response1421 uniquely selects full
+Activate row6 and consumes it; the next accepted Diff introduces one new public
+own-controlled Stack Ability, then a separately authenticated own target request.
+Its explicit1/1 bounds and unique Select member reuse existing v5 validation.
+No1424+ response/result supplies first-child eligibility or quantity evidence.
+
+Opt-in State/Event13 adds only nullable first-child continuation context. A
+bounded observer instruments the existing single reducer and shares historical
+v10 row/link helpers, response pairing, creation facts and old target checks.
+The parent stays consumed; child binding/ref/lease is separate. The real append
+watch/Publisher/Consumer and emitted JSONL stream adapter verify parent6/1→0/0
+at1421, fresh child at1422, revocation1424, independent revised request1425 and
+terminal revocation1426. Later1427/1428 cannot resurrect old references. Prompt,
+highlight and optional-field presence are retained; Number remains uninterpreted.
+Other target profiles keep old validation with continuation unknown.
+
+Nineteen new focused tests distinguish eight real portable snapshots from
+synthetic bootstrap/transport/mutations. Independent review reproduced and closed
+offered-menu-as-selected, broadcast, cancel/undo and stopped-source cases. Plain
+UI telemetry supplies no evidence; mixed records revoke. All-object preexistence,
+exact annotation/source-zone, duplicate choices, state gaps, Full/reset,
+recipient/ref/lease/expiry/race and non-revival controls are covered. Independent
+reviewers inspect public artifacts and whitelisted safe methods/receipts; only
+root authenticated the withheld original bytes and ran owner-local helpers.
+
+Formal development-only validation passes8 real State13 snapshots,32 synthetic
+Event13 objects and10 discriminating invalid-state controls in a26-resource
+registry. Independent baseline/candidate Python processes compare201,432 complete
+old values: all equal, source stable. This includes State/Event1–12, candidates2–6,
+request profiles1–8, old target proposals, Advisor, semantic1–10, default CLI and
+Consumer behavior. Windows doctor is read-only, exits0, input_sent=false.
+Python3.11.16 full unittest passes761 tests in110.145s. Exact-candidate independent
+review is a delivery gate recorded with the Draft PR, alongside hosted head/merge Linux and Windows
+tested SHA/tree. No merge, new game, MTGA input or latency claim; P10 NOT_RUN.
