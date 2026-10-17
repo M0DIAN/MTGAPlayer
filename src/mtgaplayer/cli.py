@@ -64,6 +64,17 @@ def _observe_combat(reducer):
     return observer
 
 
+def _observe_tap(reducer):
+    from .payment_source_tap import TapObserver
+    tap = TapObserver(reducer)
+    previous = reducer.observer
+    def observe(event, details):
+        tap.observe(event, details)
+        if previous is not None: previous(event, details)
+    reducer.observer = observe
+    return tap
+
+
 def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     """Stage children from this document only; never poll or advance the reducer."""
     from .decision_input import build_decision_input
@@ -94,6 +105,7 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     request = document['current'].get('request')
     if isinstance(request, dict):
         request.pop('_continuity_verified', None)
+        request.pop('_payment_source_tap_provenance', None)
     if not retain_rows:
         request = document['current'].get('request')
         inventory = request.get('action_inventory') if isinstance(request, dict) else None
@@ -107,12 +119,15 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            choice_graph=False, combat_frontier=False, decision_state=False,
            rules_index_path=None, advice_policy=None, decision_state_version=1,
            known_choice_candidates=False, observed_action_target_menus=False,
-           known_choice_candidates_version=2, activate_target_payment_relation=False):
+           known_choice_candidates_version=2, activate_target_payment_relation=False, payment_source_untap_witness=False):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
     if type(activate_target_payment_relation) is not bool or activate_target_payment_relation and (
             format != 'player-log' or decision_state_version < 9):
         raise ValueError('target_payment_relation_requires_player_log_state9')
+    if type(payment_source_untap_witness) is not bool or payment_source_untap_witness and (
+            format != 'player-log' or decision_state_version < 10):
+        raise ValueError('payment_source_untap_witness_requires_player_log_state10')
     from .choice_candidates import check_version
     check_version(known_choice_candidates_version)
     if known_choice_candidates_version != 2 and not known_choice_candidates:
@@ -148,15 +163,19 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5,
                                                         include_targeted_activate=decision_state_version >= 7,
                                                         include_current_discard=decision_state_version >= 8,
-                                                        include_target_payment_relation=decision_state_version >= 9)
+                                                        include_target_payment_relation=decision_state_version >= 9,
+                                                        include_state_messages=decision_state_version >= 10)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
+        tap = _observe_tap(reducer) if decision_state_version >= 10 else None
         if observed_action_target_menus:
             from .action_target_menus import TargetMenuObserver
             menu_observer = TargetMenuObserver()
         reset, records = follower.poll()
         if reset:
             reducer.reset(follower.generation)
+            if tap is not None: tap.reset()
         for record in records:
+            if tap is not None: tap.prepare(record)
             reducer.apply(record)
             if observed_action_target_menus:
                 menu_observer.observe(reducer,record)
@@ -186,6 +205,9 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         if activate_target_payment_relation:
             from .activate_target_payment import evaluate_relation
             document['activate_target_payment_relation'] = evaluate_relation(document['decision_state'])
+        if payment_source_untap_witness:
+            from .payment_source_tap import evaluate_witness
+            document['payment_source_untap_witness'] = evaluate_witness(document['decision_state'])
         if rules_index_path is not None:
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
@@ -252,8 +274,10 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5,
                                                                      include_targeted_activate=decision_state_version >= 7,
                                                                      include_current_discard=decision_state_version >= 8,
-                                                                     include_target_payment_relation=decision_state_version >= 9)
+                                                                     include_target_payment_relation=decision_state_version >= 9,
+                                                                     include_state_messages=decision_state_version >= 10)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
+    tap = _observe_tap(reducer) if decision_state_version >= 10 else None
     if observed_action_target_menus:
         from .action_target_menus import TargetMenuObserver
         menu_observer = TargetMenuObserver()
@@ -269,6 +293,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         def observe(event, details):
             # Copy scalar facts immediately; never retain raw messages or the
             # mutable reducer request. This is a per-poll summary, not a ledger.
+            if tap is not None:
+                tap.observe(event, details)
             if combat is not None:
                 combat.observe(reducer, event, details)
             if event == 'state_accepted' and details['kind'] != 'full_retransmit':
@@ -297,11 +323,13 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
             after_read = clock()
         if reset:
             reducer.reset(follower.generation)
+            if tap is not None: tap.reset()
             if _poll_observer is not None:
                 history_pending = True
         phase = 'history' if index == 0 or reset or history_pending else 'append'
         newly_accepted = set()
         for record in records:
+            if tap is not None: tap.prepare(record)
             reducer.apply(record)
             if observed_action_target_menus:
                 menu_observer.observe(reducer,record)
@@ -503,10 +531,12 @@ def main(argv=None):
                                    help='opt-in known proposals; requires player-log State5+; default candidate v2')
         replay_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3, 4), default=2,
                                    help='v3 target proposals; v4 current one-of-eight Discard proposals only')
+        replay_parser.add_argument('--payment-source-untap-witness', action='store_true',
+                                   help='explicit pre-request event witnesses only; requires State10')
         replay_parser.add_argument('--activate-target-payment-relation', action='store_true',
                                    help='diagnostics-only target/predictive-payment association; requires State9')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9), default=1,
-                                   help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member; v8 current eight-offer Discard; v9 target/payment association')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), default=1,
+                                   help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member; v8 current eight-offer Discard; v9 target/payment association; v10 untap event provenance')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
@@ -526,8 +556,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9), default=1,
-                              help='State/Event version; default1; explicit2/3/4/5/6/7/8/9 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), default=1,
+                              help='State/Event version; default1; explicit2/3/4/5/6/7/8/9/10 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
@@ -537,6 +567,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
+    consumer_parser.add_argument('--payment-source-untap-witness', action='store_true',
+                                 help='current-only two-source untap event evidence, never payability')
     consumer_parser.add_argument('--activate-target-payment-relation', action='store_true',
                                  help='current-only diagnostics, never a payable action or candidate')
     consumer_parser.add_argument('--known-choice-candidates', action='store_true',
@@ -656,7 +688,8 @@ def main(argv=None):
                               observed_changes=args.observed_changes, choice_proposal=proposal,
                               known_choice_candidates=args.known_choice_candidates,
                               known_choice_candidates_version=args.known_choice_candidates_version,
-                              activate_target_payment_relation=args.activate_target_payment_relation)
+                              activate_target_payment_relation=args.activate_target_payment_relation,
+                              payment_source_untap_witness=args.payment_source_untap_witness)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
@@ -669,6 +702,7 @@ def main(argv=None):
                             known_choice_candidates=args.known_choice_candidates,
                             known_choice_candidates_version=args.known_choice_candidates_version,
                             activate_target_payment_relation=args.activate_target_payment_relation,
+                            payment_source_untap_witness=args.payment_source_untap_witness,
                             observed_action_target_menus=args.observed_action_target_menus)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1

@@ -10,7 +10,7 @@ SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
 SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
                    3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4',
                    5: 'mtgaplayer.decision-state.v5', 6: 'mtgaplayer.decision-state.v6',
-                   7: 'mtgaplayer.decision-state.v7', 8: 'mtgaplayer.decision-state.v8', 9: 'mtgaplayer.decision-state.v9'}
+                   7: 'mtgaplayer.decision-state.v7', 8: 'mtgaplayer.decision-state.v8', 9: 'mtgaplayer.decision-state.v9', 10: 'mtgaplayer.decision-state.v10'}
 EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
                    'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
@@ -345,4 +345,12 @@ def build_decision_state(document, *, version=1):
                         allow_target_payment_relation=version >= 9)
         except (ValueError, TypeError, KeyError, RecursionError):
             return None
+    if version >= 10:
+        from .payment_source_tap import FIELD, PRIVATE, check as check_tap
+        value = request.get(PRIVATE) if request is not None else None
+        try:
+            check_tap(value, binding, result['legal_action_space']['request_parameters'], visible)
+        except (ValueError, TypeError, KeyError, IndexError, RecursionError):
+            value = None
+        result[FIELD] = copy.deepcopy(value)
     return copy.deepcopy(result)

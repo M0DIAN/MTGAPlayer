@@ -1,5 +1,10 @@
 # MTGAPlayer
 
+Explicit State/Event10 adds two-source pre-request untap event provenance via
+`--payment-source-untap-witness` on State10 replay or `consume-events`. Current
+tap literals and the MP57 association remain unchanged; payability and execution
+stay unverified. See [the event-evidence contract](docs/payment-source-untap.md).
+
 Explicit State/Event9 supports a diagnostics-only same-request target and
 predictive-payment association. Use `--activate-target-payment-relation` with
 State9 replay or on `consume-events`. A positive leaves payment-source readiness

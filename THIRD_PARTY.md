@@ -1,5 +1,17 @@
 # Source inspection and reuse
 
+## MP58 explicit pre-request untap event witnesses (2026-10-17)
+
+Reuses the existing accepted-state/request observer, one RawFollower/RawReducer,
+typed detail reader, own public visibility/source pairs, MP57 relation and
+Consumer current/ref/lease gates. The frozen original and request-only prefix
+were reauthenticated before product edits, now including1402:m0, source-local
+event order and migration direction. A bounded opt-in last-witness cache feeds
+one State/Event10 field and separate diagnostic. No global tap interpretation,
+new parser/board/request ledger, upstream runtime, game/card resource or product
+dependency is added. Missing isTapped never means false; old default/State1–9
+and MP57 values stay unchanged. [Evidence and omissions](docs/payment-source-untap.md).
+
 ## MP57 current target/predictive-payment association (2026-10-17)
 
 Reuses the authenticated RawReducer request/digest/consumed ledger, current
