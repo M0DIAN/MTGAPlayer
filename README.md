@@ -605,3 +605,13 @@ payment association. It preserves the complete observed prompt and typed target
 annotations. Results remain read-only; a member probe supplies no target quantity,
 payability, response encoding or input permission. Existing defaults and earlier
 contract versions retain their behavior. See [the evidence and limits](docs/current-cast-activate-associations.md).
+
+## MP62 opt-in current continuation
+
+`mtgaplayer replay <Player.log> --format player-log --decision-state-version 13 --current-choice-continuation`
+reports the observed consumed Equip parent and its independently current first
+SelectTargets child. For a current leased view use
+`mtgaplayer watch <Player.log> --decision-events --decision-state-version 13 | mtgaplayer consume-events --current-choice-continuation`.
+The parent remains consumed; submitting the child clears its context. Existing
+target membership/count validation is reused. Full legality, payability and all
+execution flags remain false. See [the evidence and limits](docs/current-choice-continuation.md).

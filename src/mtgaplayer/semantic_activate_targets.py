@@ -39,6 +39,25 @@ def _positive(value):
     return _id(value) and value > 0
 
 
+def _exact_selected_position(actions, selected):
+    """One complete offered row AND one complete identity, before normalization."""
+    _need(type(actions) is list and 1 <= len(actions) <= 256 and
+          all(type(row) is dict for row in actions), 'request_unsupported')
+    _need(type(selected) is dict and all(_id(selected.get(key)) for key in IDS), 'response_unsupported')
+    identities = [i for i, row in enumerate(actions) if row.get('actionType') == 'ActionType_Activate' and
+        all(_id(row.get(key)) and _same(row[key], selected[key]) for key in IDS)]
+    full = [i for i, row in enumerate(actions) if _same(row, selected)]
+    _need(len(full) == len(identities) == 1 and full == identities, 'response_unsupported')
+    return full[0]
+
+
+def _target_link_matches(request, selected, ability):
+    """Shared observed source/group/slot join; not unique-ID or rules causation."""
+    return (ability is not None and request['source_object_ref'] == ability and
+        request['ability_grp_ref'] == selected['identifier_refs']['abilityGrpId'] and
+        _same(request['target_idx'], selected['parameters']['targets'][0]['targetIdx']))
+
+
 def _without_highlight(row):
     """The recaptured action adds the same presentation-only field as target requests."""
     result = copy.deepcopy(row)
@@ -228,18 +247,13 @@ class _Collector:
         try:
             actions = saved['raw'].get('actionsAvailableReq', {}).get('actions')
             selected = payload['performActionResp']['actions'][0]
-            _need(type(actions) is list and 1 <= len(actions) <= 256 and all(type(row) is dict for row in actions), 'request_unsupported')
-            _need(all(_id(selected.get(key)) for key in IDS), 'response_unsupported')
-            identities = [i for i, row in enumerate(actions) if row.get('actionType') == 'ActionType_Activate' and
-                all(_id(row.get(key)) and _same(row[key], selected[key]) for key in IDS)]
-            full = [i for i, row in enumerate(actions) if _same(row, selected)]
-            _need(len(full) == len(identities) == 1 and full == identities, 'response_unsupported')
+            selected_position = _exact_selected_position(actions, selected)
             scope, snapshot = saved['scope'], saved['snapshot']
             source = self.reducer.objects.get(selected['instanceId'], {})
             _need(activate.ability_observation(selected, source.get('uniqueAbilities')) == 'verified_observed_pair' and
                   _id(source.get('grpId')) and _same(source['grpId'], selected['grpId']), 'request_unsupported')
             action_refs = RequestManaRefs(self.refs, before)
-            offered = targets.action(_without_highlight(actions[full[0]]), action_refs, scope)
+            offered = targets.action(_without_highlight(actions[selected_position]), action_refs, scope)
             projected_payload = copy.deepcopy(payload)
             projected_payload['performActionResp']['actions'][0] = _without_highlight(selected)
             response = _response(projected_payload, before, self.refs, scope, 4)
@@ -250,12 +264,12 @@ class _Collector:
                 kind = row.get('actionType')
                 label = kind if type(kind) is str and kind in _OBSERVED_ACTION_TYPES else '_unrecognized_action_type'
                 rows.append({**_frontier_row(position, label, row),
-                             'selected_literal': offered if position == full[0] else None})
+                             'selected_literal': offered if position == selected_position else None})
             identity = {'match_ref': self.refs.ref('match', (), scope[1]), 'game': scope[2],
                 'self_seat': scope[3], 'request_ref': self.refs.ref('request', scope, before['id'])}
             sample = {'identity': identity, 'generation_ref': self.refs.ref('generation', (), self.reducer.generation),
                 'before': snapshot, 'request': {'kind': 'actions_available', 'payload': {
-                    'profile': PROFILE, 'rows': rows, 'selected_position': full[0]}},
+                    'profile': PROFILE, 'rows': rows, 'selected_position': selected_position}},
                 'response': response,
                 'source_observation': {'object_ref': offered['identifier_refs']['instanceId'],
                     'card_grp_ref': offered['identifier_refs']['grpId'],
@@ -496,9 +510,7 @@ def replay(document):
             _need(step['binding']['request_ref'] not in seen_requests)
             seen_requests.add(step['binding']['request_ref'])
             request = step['request']; targets.check_request(request, snapshot['objects'], sample['identity']['self_seat'])
-            relation = (ability is not None and request['source_object_ref'] == ability and
-                        request['ability_grp_ref'] == chosen['identifier_refs']['abilityGrpId'] and
-                        _same(request['target_idx'], chosen['parameters']['targets'][0]['targetIdx']))
+            relation = _target_link_matches(request, chosen, ability)
             linked &= relation
             if previous_step is not None:
                 previous_reply = previous_step['response']
