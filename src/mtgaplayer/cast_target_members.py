@@ -272,7 +272,9 @@ def enumerate_members(state, *, source_snapshot_ref=None, limit=64):
                     return unknown('choice_validator_contract_mismatch')
                 if ref is not None:
                     _reference(verdict['source_snapshot_ref'], ref['session_id'], ref['sequence'], snapshot=True)
-                if not _equal(verdict['payment_witness'], route(value, pos, state['visible_objects'])[2]):
+                current_route = route(value, pos, state['visible_objects'])
+                if (verdict['known_constraints'] != current_route[0] or verdict['reasons'] != [current_route[1]] or
+                        not _equal(verdict['payment_witness'], current_route[2])):
                     return unknown('choice_validator_contract_mismatch')
                 category = {GOOD: 'verified', UNKNOWN: 'unknown', BAD: 'contradicted'}.get(verdict['known_constraints'])
                 if category is None: return unknown('choice_validator_contract_mismatch')

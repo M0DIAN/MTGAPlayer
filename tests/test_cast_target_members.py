@@ -279,6 +279,12 @@ class CastTargetMemberTests(unittest.TestCase):
             return result
         with patch('mtgaplayer.choice_validation.validate_proposed_choice', side_effect=drift_ref):
             self.assertEqual(self.report(state, source_snapshot_ref=ref)['returned_candidates'], 0)
+        _, other_color = self.build(lambda r, a: a[1]['manaCost'][0].update(color=['ManaColor_Generic']))
+        self.assertEqual(self.report(other_color)['returned_candidates'], 4)
+        def promote_unknown(*args, **kwargs):
+            result = original(*args, **kwargs); result['known_constraints'] = GOOD; return result
+        with patch('mtgaplayer.choice_validation.validate_proposed_choice', side_effect=promote_unknown):
+            self.assertEqual(self.report(other_color)['returned_candidates'], 0)
 
 
 if __name__ == '__main__': unittest.main()
