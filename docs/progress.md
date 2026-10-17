@@ -1,4 +1,31 @@
-## MP52 — targeted Activate evidence audit and capture contract (2026-10-17)
+## MP52 — owner-local targeted Activate recapture (2026-10-17)
+
+The owner manually used 钢铁侠战甲's Equip2 in a new game. The immutable
+7,718,945-byte source, SHA256 `6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07`,
+frames into 1,433 records without error/partial framing. New-game authentication,
+room and real Full are retained; actual records1136–1433 replay with zero
+continuity errors. The previous game's post-Undo missing predecessor is excluded,
+never bridged. Producer remains `27b2f3ff091ab3de9f534ce9a7e745aa8c5a4cca`.
+
+Actual request1402/response1421 has one exact full-row and complete-identity
+match. The current own public BF source/ability pair, explicitly created Stack
+Ability, target request1422, Select1424, updated selected request1425, Submit1426,
+PlayerSubmittedTargets1427 and same-Ability resolution/deletion1428 are separately
+bound. AttachmentCreated1428 literally relates the same Activate source to the
+final submitted public BF target, observed as an own-controlled Creature during
+the post-submit trace. Old-host transition, direction semantics
+and effect causation remain unknown. Independent source/safe-output review passed;
+the reviewer did not authenticate private raw bytes.
+
+[Capture evidence](targeted-activate-capture.md) and its JSON receipt preserve
+original ordinal/hash mapping and limits. Existing v9 export fails on the whole
+two-game source; the actual new-game record range exports/replays 10/28 pairs but
+omits the Activate parent, so it is not a complete portable chain. Raw originals
+and derivatives remain ignored/local. This documentation update completes the
+requested recapture; a reviewed public fixture and opt-in product linkage remain
+pending. No default behavior/schema/test changes or native input; P10 NOT_RUN.
+
+## MP52 — initial targeted Activate evidence audit and capture contract (2026-10-17)
 
 Issue57's accepted baseline and freshly fetched main are both
 `26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`. Audit of all ten retained raw
