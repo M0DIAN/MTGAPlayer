@@ -14,7 +14,7 @@ MAX_TARGET_PROBES = 256
 
 
 def check_version(version):
-    if type(version) is not int or version not in (2, 3, 4, 5):
+    if type(version) is not int or version not in (2, 3, 4, 5, 6):
         raise ValueError('invalid_known_candidate_version')
 
 
@@ -47,6 +47,9 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
     if version == 5:
         from .cast_target_members import enumerate_members
         return enumerate_members(state, source_snapshot_ref=source_snapshot_ref, limit=limit)
+    if version == 6:
+        from .cast_activate_associations import enumerate_associations
+        return enumerate_associations(state, source_snapshot_ref=source_snapshot_ref, limit=limit)
     try:
         _bounded_json(state)
         _state(state, state['binding'])
@@ -200,7 +203,8 @@ def assess_current_known_candidates(consumer, *, limit=MAX_CANDIDATES, version=2
     """Owner-thread lease/binding check, with no last_valid fallback."""
     check_version(version)
     from .cast_target_members import unknown as cast_unknown
-    unknown = {2: _unknown, 3: _proposal_unknown, 4: _discard_unknown, 5: cast_unknown}[version]
+    from .cast_activate_associations import unknown as families_unknown
+    unknown = {2: _unknown, 3: _proposal_unknown, 4: _discard_unknown, 5: cast_unknown, 6: families_unknown}[version]
     if type(limit) is not int or not 1 <= limit <= MAX_CANDIDATES:
         raise ValueError('invalid_known_candidate_limit')
     def evaluate(state, *, source_snapshot_ref):

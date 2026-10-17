@@ -189,3 +189,25 @@ Compared pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`,
 Fixture103 retains source3291/message1/state100's complete eight-row active inventory. Position3 is the actual Cast, and fixture104 retains its exact response3316. Action target arrays preserve candidate references, not selected targets or future count bounds. Fixture105/106 retain source3318's Diff101←100 and current target request: one slot, explicit min=max1, four public Battlefield candidates and no selectedTargets field. Fixture107 is3333's one-target selection update. Fixture108/109 retain3334's Diff102←101 and new target request, explicitly selectedTargets1 with only that object's Unselect entry. Fixture110 is3335's header-only final SubmitTargetsReq; fixture111–113 retain3337's first three ordered state messages103–105. Source3337/message3 is another Ability's target request and is excluded. These exact request contexts, rather than the last increment or a historical union, define the current evidence.
 
 Only continuity/visibility/membership structure, public life/turn, the chosen visible spell's Card catalog ID, required tapping fields, full active action literals, target request/response fields and the fixed terminal header remain. Object/zone/request/mana/ability/annotation identifiers receive consistent namespace aliases; top-level and targeting ability identifiers use separate opaque namespaces. The complete inventory's unchosen Activate contains one additional abilityGrpId cost reference, retained as opaque without cost-rule interpretation. Necessary opaque hidden zone/object skeleton references remain, but all hidden card identities, unrelated visible card metadata, names, credentials, account/match identifiers, timestamps, transaction/chat/UI metadata, prompts, highlights, inactive actions, persistent annotations and unrelated action/state fields are removed. The only annotations retained are the chosen spell's public Hand→Stack ObjectIdChanged/CastSpell relation, its PlayerSubmittedTargets annotation, and its ResolutionStart/Complete markers. The selected target's old-public→new-hidden ObjectIdChanged/Return relation and unrelated Draw annotations are intentionally omitted; portable replay reports public departure only and leaves Return causation unknown. This is a reduced source excerpt, not raw-source equivalence or portable authentication. Mutation controls are explicitly synthetic and do not establish additional real mechanisms.
+
+## MP61 installed-client prompt and offered-association inspection (2026-10-17)
+
+Read-only research references pin
+[`ettrue124/ArcaneForge@45f27866c5dfd5891fc101c00e611a36254d2f49`](https://github.com/ettrue124/ArcaneForge/tree/45f27866c5dfd5891fc101c00e611a36254d2f49).
+Its older 20261010 routing catalog differs from the checked installation in all
+three Core/Shared/GRE hashes; the newer
+[`action-inventory/actions.json`](https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/actions.json)
+declares matching full hashes, while adjacent adapter metadata remains older.
+Public source locations and metadata do not replace the owner-local installed
+method/IL inspection. No third-party decompiled text, binary, card/game resource,
+asset, algorithm port or runtime dependency is copied into this repository.
+
+The root reviewer alone authenticated the frozen original/prefix and installed
+DLL bytes. Independent review covered explicitly whitelisted recovered source
+text, audit methods and safe receipts, not those withheld bytes. The complete
+1134 predicate, asset PromptId branches, real UI filtering and mana-option clone
+paths limit the conclusion to the exact current offered Cast1/3 data associations.
+New State/Event12/params8/candidate6 retains the real prompt and typed string
+target highlights alongside the same request's 17 active rows and MP57 Activate6
+association; it does not claim old-profile acceptance or UI/payment/input authority.
+[Evidence, full hashes, routing and reuse boundaries](docs/current-cast-activate-associations.md).

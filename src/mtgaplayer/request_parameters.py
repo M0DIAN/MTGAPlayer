@@ -102,7 +102,14 @@ def effect_cost_objects(visible):
 
 def project(message, visible, seat=None, source_abilities=None, *, targeted_activate=False,
             public_battlefield_refs=None, current_discard=False, current_hand_refs=None, target_payment_relation=False,
-            cast_target_members=False, cast_source_refs=None, mana_source_refs=None):
+            cast_target_members=False, cast_source_refs=None, mana_source_refs=None, cast_activate_associations=False):
+    if cast_activate_associations:
+        from .cast_activate_associations import project as families_project
+        try:
+            return families_project(message, visible, seat, public_battlefield_refs or [],
+                cast_source_refs or [], mana_source_refs or [], source_abilities or {})
+        except (ValueError, TypeError, KeyError, RecursionError):
+            pass
     if cast_target_members:
         from .cast_target_members import project as cast_project
         try:
@@ -152,6 +159,10 @@ def project(message, visible, seat=None, source_abilities=None, *, targeted_acti
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from .cast_activate_associations import PROFILE as FAMILIES_PROFILE, check as check_families
+    if type(value) is dict and value.get('profile') == FAMILIES_PROFILE:
+        check_families(value, binding, visible)
         return
     from .cast_target_members import PROFILE as CAST_PROFILE, check as check_cast
     if type(value) is dict and value.get('profile') == CAST_PROFILE:
@@ -219,9 +230,13 @@ def check(value, binding, visible):
 
 
 def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
-             allow_target_payment_relation=False, allow_cast_target_members=False):
+             allow_target_payment_relation=False, allow_cast_target_members=False, allow_cast_activate_associations=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from .cast_activate_associations import PROFILE as FAMILIES_PROFILE, assemble as assemble_families
+    if type(rows) is dict and rows.get('profile') == FAMILIES_PROFILE:
+        if not allow_cast_activate_associations: return None
+        return assemble_families(rows, binding, visible)
     from .cast_target_members import PROFILE as CAST_PROFILE, REQUEST_VERSION as CAST_VERSION
     if type(rows) is dict and rows.get('profile') == CAST_PROFILE:
         if not allow_cast_target_members: return None
@@ -276,11 +291,16 @@ def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_
 
 
 def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
-                allow_target_payment_relation=False, allow_cast_target_members=False):
+                allow_target_payment_relation=False, allow_cast_target_members=False, allow_cast_activate_associations=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    from .cast_activate_associations import PROFILE as FAMILIES_PROFILE, check_space as check_families_space
+    if value['profile'] == FAMILIES_PROFILE:
+        if not allow_cast_activate_associations: raise ValueError('unsupported_cast_activate_associations')
+        check_families_space(space, binding, visible)
         return
     from .cast_target_members import PROFILE as CAST_PROFILE, check_space as check_cast_space
     if value['profile'] == CAST_PROFILE:

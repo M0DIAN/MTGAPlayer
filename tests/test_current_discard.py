@@ -61,7 +61,7 @@ class CurrentDiscardTests(unittest.TestCase):
         self.assertTrue(r['truncated']);self.assertFalse(r['exhaustive_for_reviewed_constraints'])
         for limit in (0,65,True):
             with self.assertRaises(ValueError):self.discover(limit=limit)
-        for version in (1,6,True,4.0,'4'):
+        for version in (1,7,True,4.0,'4'):
             with self.assertRaises(ValueError):enumerate_known_candidates(self.state,version=version)
 
     def test_manual_nonmember_zero_duplicate_and_count_are_not_valid_discards(self):

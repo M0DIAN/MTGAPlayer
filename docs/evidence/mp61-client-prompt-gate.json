@@ -1,0 +1,83 @@
+{
+  "schema_version": "mtgaplayer.mp61-client-prompt-gate-receipt.v1",
+  "scope": "finite_original_offered_cast_1_3_data_associations_only",
+  "phase": "pre_implementation_read_only_gate",
+  "installed_live_build": "0.1.14517.1329972",
+  "assemblies": [
+    {
+      "name": "Core.dll",
+      "bytes": 12856320,
+      "sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "assembly_version": "0.0.0.0",
+      "mvid": "ee80c82e-c3e1-4b1f-a368-411a84d10f78",
+      "matches_20261010_catalog": false,
+      "matches_pinned_20261016_actions_manifest": true
+    },
+    {
+      "name": "SharedClientCore.dll",
+      "bytes": 1569792,
+      "sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "assembly_version": "0.0.0.0",
+      "mvid": "c162c20f-ba79-438b-abd6-058f915926a3",
+      "matches_20261010_catalog": false,
+      "matches_pinned_20261016_actions_manifest": true
+    },
+    {
+      "name": "Wizards.MDN.GreProtobuf.dll",
+      "bytes": 1431040,
+      "sha256": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+      "assembly_version": "64.0.278.0",
+      "mvid": "3acc2830-eab7-4327-be16-8969a71eb3aa",
+      "matches_20261010_catalog": false,
+      "matches_pinned_20261016_actions_manifest": true
+    }
+  ],
+  "public_reference_commit": "45f27866c5dfd5891fc101c00e611a36254d2f49",
+  "routing_predicates": {
+    "frozen_original_sha256": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+    "request_prefix_sha256": "e8a8732c67e8bd4a9c019ec042aae7d067efc54b7797576b8ce53b4d1ffd2635",
+    "prompt_complete_shape_uint32_nonzero_parameters_absent": true,
+    "prompt_equals_installed_cannot_take_action_constant": false,
+    "cannot_take_action_route_excluded_by_active_count": true,
+    "opening_hand_action_route_excluded": true,
+    "resolution_cast_route_excluded_by_active_activate": true,
+    "at_least_hand_and_battlefield_action_zones": true,
+    "hand_not_remapped_by_include_nhc": true,
+    "battlefield_not_remapped_by_include_nhc": true,
+    "all_actions_in_hand_route_excluded": true,
+    "single_zone_browser_route_excluded": true,
+    "multi_zone_browser_route_excluded_by_battlefield": true,
+    "translation_route_if_no_loop_or_roundtrip": "default_actions_available",
+    "same_complete_prompt_observations": 15,
+    "source_unchanged": true,
+    "future_response_used": false,
+    "input_sent": false,
+    "product_changed": false,
+    "cast_positions": [
+      1,
+      3
+    ],
+    "complex_cast_position_2_unsupported": true,
+    "observed_cost_is_non_blue_single_unit": true
+  },
+  "recovery_manifest_sha256": "b04ae93c584893f7425ace86aec5055de8596f38db996c5e5389e79bf43cd9ad",
+  "successful_recovered_types": 62,
+  "failed_incorrect_namespace_excluded": true,
+  "independent_review": "recovered_text_IL_metadata_and_limited_receipts_only",
+  "independent_original_or_binary_byte_authentication": false,
+  "owner_original_and_binary_hash_authentication": true,
+  "public_and_installed_text_audit_sha256": "f12ff73dfa467f4ece73070ee7584b23de6f56a5b6b12ae203ac67731bd4b428",
+  "installed_text_receipt_sha256": "b01bbb1eefa5b8229afbc7f4f00cda8b96e959e8378669ca87a6f60ee8b4d125",
+  "claim": "Observed parameters-absent prompt does not rewrite the reviewed offered cost/member/predictive-mana associations in the inspected installed processing paths.",
+  "not_proven": [
+    "all_prompts_display_only",
+    "UI_or_Loop_behavior_equivalence",
+    "complete_payability",
+    "target_quantity_or_full_legal_domain",
+    "response_encoding",
+    "server_acceptance",
+    "native_input"
+  ],
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

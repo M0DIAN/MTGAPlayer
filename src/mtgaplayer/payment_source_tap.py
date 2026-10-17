@@ -201,6 +201,8 @@ class TapObserver:
             return
         self.frozen = None
         params = request.get('_request_parameters')
+        from .cast_activate_associations import activate_family
+        params = activate_family(params)
         if (type(params) is not dict or params.get('profile') != PROFILE or
                 len(params['target_actions']) != 1 or self.through is None): return
         target = params['target_actions'][0]
@@ -233,6 +235,8 @@ def check(value, binding, params, visible):
     """Portable producer claims; cannot reauthenticate withheld raw events."""
     from .decision_consumer import _binding, _integer
     if value is None: return
+    from .cast_activate_associations import activate_family
+    params = activate_family(params)
     _keys(value, ('schema_version','binding','action_position','request_location','checked_through','sources','historical_response_used'))
     _need(value['schema_version'] == PROVENANCE and value['historical_response_used'] is False)
     _binding(value['binding'], complete=True); _need(value['binding'] == binding and binding['request_id'] is not None)
@@ -284,7 +288,7 @@ def evaluate_witness(state, *, source_snapshot_ref=None):
         if source_snapshot_ref is not None:
             _reference(source_snapshot_ref, source_snapshot_ref['session_id'], source_snapshot_ref['sequence'], snapshot=True)
             _need(source_snapshot_ref['binding'] == state['binding'])
-        if state['schema_version'] != 'mtgaplayer.decision-state.v10' or state[FIELD] is None:
+        if state['schema_version'] not in ('mtgaplayer.decision-state.v10', 'mtgaplayer.decision-state.v12') or state[FIELD] is None:
             return unknown('current_tap_provenance_not_observed')
         relation = evaluate_relation(state, source_snapshot_ref=source_snapshot_ref)
         _bounded_json(relation); _binding(relation['request_binding'], complete=True)
@@ -307,7 +311,9 @@ def evaluate_witness(state, *, source_snapshot_ref=None):
             return unknown('same_current_joint_association_not_verified', source_snapshot_ref)
         evidence = state[FIELD]; row = relation['relations'][0]
         _need(type(relation['relations']) is list and len(relation['relations']) == 1)
-        target = state['legal_action_space']['request_parameters']['target_actions'][0]['action']
+        from .cast_activate_associations import activate_family
+        params = activate_family(state['legal_action_space']['request_parameters'])
+        target = params['target_actions'][0]['action']
         _need(json.dumps(row['action_identifier_refs'], sort_keys=True) == json.dumps(target['identifier_refs'], sort_keys=True) and
               json.dumps(row['action_flags'], sort_keys=True) == json.dumps(target['flags'], sort_keys=True))
         _need(type(row['list_position']) is int and row['list_position'] == evidence['action_position'] and
@@ -320,7 +326,7 @@ def evaluate_witness(state, *, source_snapshot_ref=None):
              'object_ref': target_params['targets'][0]['targetInstanceId']}, sort_keys=True))
         for witness, source in zip(row['mana_row_witnesses'], evidence['sources']):
             _need(json.dumps(witness['identifier_refs'], sort_keys=True) == json.dumps(source['identifier_refs'], sort_keys=True))
-            mana = next(r['action'] for r in state['legal_action_space']['request_parameters']['mana_actions']
+            mana = next(r['action'] for r in params['mana_actions']
                         if r['list_position'] == source['mana_action_position'])
             _need(json.dumps(witness['flags'], sort_keys=True) == json.dumps(mana['flags'], sort_keys=True))
         result = unknown('one_or_both_source_chains_unknown', source_snapshot_ref)
