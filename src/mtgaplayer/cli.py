@@ -106,9 +106,14 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            decision_input=False, action_gaps=False, action_frontier=False,
            choice_graph=False, combat_frontier=False, decision_state=False,
            rules_index_path=None, advice_policy=None, decision_state_version=1,
-           known_choice_candidates=False, observed_action_target_menus=False):
+           known_choice_candidates=False, observed_action_target_menus=False,
+           known_choice_candidates_version=2):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    from .choice_candidates import check_version
+    check_version(known_choice_candidates_version)
+    if known_choice_candidates_version != 2 and not known_choice_candidates:
+        raise ValueError('candidate_version_requires_known_choice_candidates')
     if observed_action_target_menus and format != 'player-log':
         raise ValueError('action_target_menus_require_player_log')
     if known_choice_candidates and (format != 'player-log' or decision_state_version < 5):
@@ -171,7 +176,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
             _project_decision_state(reducer, document, combat, action_frontier, decision_state_version)
         if known_choice_candidates:
             from .choice_candidates import enumerate_known_candidates
-            document['known_choice_candidates'] = enumerate_known_candidates(document['decision_state'])
+            document['known_choice_candidates'] = enumerate_known_candidates(document['decision_state'],
+                version=known_choice_candidates_version)
         if rules_index_path is not None:
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
@@ -484,7 +490,9 @@ def main(argv=None):
         replay_parser.add_argument('--observed-action-target-menus', action='store_true',
                                    help='read-only current Activate public target menu evidence')
         replay_parser.add_argument('--known-choice-candidates', action='store_true',
-                                   help='opt-in current known choices; requires player-log v5+; target member profile needs an explicit proposal')
+                                   help='opt-in known proposals; requires player-log State5+; default candidate v2')
+        replay_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3), default=2,
+                                   help='v3 discovers reviewed target member/current selected literal proposals only')
         replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1,
                                    help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
@@ -519,6 +527,8 @@ def main(argv=None):
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
     consumer_parser.add_argument('--known-choice-candidates', action='store_true',
                                  help='opt-in current-only bounded choice alternatives sidecar')
+    consumer_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3), default=2,
+                                 help='v3 reviewed target proposal discovery; requires --known-choice-candidates')
     consumer_parser.add_argument('--validate-choice', type=Path,
         help='read one explicit request-bound proposal before consumption; no input or strategy')
     consumer_parser.add_argument('--observed-changes', action='store_true',
@@ -606,6 +616,8 @@ def main(argv=None):
             result, code = {'error': str(exc), 'input_sent': False}, 1
     elif args.command == 'consume-events':
         from .decision_consumer import DecisionConsumer, consume_events
+        if args.known_choice_candidates_version != 2 and not args.known_choice_candidates:
+            parser.error('candidate version requires --known-choice-candidates')
         limits = (args.max_event_silence_ms, args.max_observation_age_ms)
         if any(not math.isfinite(v) or not 0 < v <= 86_400_000 or round(v * 1_000_000) < 1 for v in limits):
             parser.error('consumer leases must be >0..86400000ms (at least 1ns)')
@@ -628,7 +640,8 @@ def main(argv=None):
                               consumer, advice_policy=advice_policy,
                               prepared_rules=prepared, rules_error=rules_error,
                               observed_changes=args.observed_changes, choice_proposal=proposal,
-                              known_choice_candidates=args.known_choice_candidates)
+                              known_choice_candidates=args.known_choice_candidates,
+                              known_choice_candidates_version=args.known_choice_candidates_version)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
@@ -639,6 +652,7 @@ def main(argv=None):
                             decision_state=args.decision_state, rules_index_path=args.rules_index,
                             advice_policy=advice_policy, decision_state_version=args.decision_state_version,
                             known_choice_candidates=args.known_choice_candidates,
+                            known_choice_candidates_version=args.known_choice_candidates_version,
                             observed_action_target_menus=args.observed_action_target_menus)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1

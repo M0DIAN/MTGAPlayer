@@ -607,7 +607,7 @@ class _DiagnosticOutput:
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
                    prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
-                   known_choice_candidates=False):
+                   known_choice_candidates=False, known_choice_candidates_version=2):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -640,6 +640,10 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         choice_proposal = copy.deepcopy(choice_proposal)
     if type(known_choice_candidates) is not bool:
         raise ValueError('invalid_known_choice_candidates_option')
+    from .choice_candidates import check_version
+    check_version(known_choice_candidates_version)
+    if known_choice_candidates_version != 2 and not known_choice_candidates:
+        raise ValueError('candidate_version_requires_known_choice_candidates')
     if known_choice_candidates:
         from .choice_candidates import assess_current_known_candidates
     consumer = consumer if consumer is not None else DecisionConsumer()
@@ -716,7 +720,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         if choice_proposal is not None:
             validation = assess_current_choice(consumer, choice_proposal)
         if known_choice_candidates:
-            candidates = assess_current_known_candidates(consumer)
+            candidates = assess_current_known_candidates(consumer, version=known_choice_candidates_version)
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
@@ -739,7 +743,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             if choice_proposal is not None:
                 validation = assess_current_choice(consumer, choice_proposal)
             if known_choice_candidates:
-                candidates = assess_current_known_candidates(consumer)
+                candidates = assess_current_known_candidates(consumer, version=known_choice_candidates_version)
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',

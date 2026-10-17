@@ -1,5 +1,15 @@
 # Source inspection and reuse
 
+## MP55 reviewed current target proposal discovery (2026-10-17)
+
+Reuses existing ChoiceCandidates, ChoiceValidation, current Consumer identity/
+lease gates, action-target menus and `semantic_targets.literal_selected`. The
+two unchanged MP53/MP54 State fixtures are the portable positives; owner-local
+original-byte prefix/current/CLI checks remain separate. No new real fixture,
+upstream code, mana matcher, card/game resource, dependency or input is added.
+Pinned mtgacoach research supplies no authority for these finite target checks.
+See [contract and evidence limits](docs/reviewed-target-proposals.md).
+
 ## MP54 current selected target literal (2026-10-17)
 
 Reuses existing `semantic_targets.check_request`/`literal_selected`, public Stack
