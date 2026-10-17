@@ -3,8 +3,8 @@
 On 2026-10-17 (Asia/Tokyo), the owner manually used **钢铁侠战甲 / Equip 2**.
 This new capture supplies the real interaction missing from the
 [initial retained-fixture audit](targeted-activate-evidence.md). It is a
-read-only evidence delivery; production linkage is not implemented by this
-documentation change. Card naming comes from the owner and supplied card image,
+read-only evidence delivery, followed by the opt-in v10 linkage described below.
+Card naming comes from the owner and supplied card image,
 not an external card database or recovered hidden identity.
 
 ## Source and continuity
@@ -66,11 +66,19 @@ therefore cannot replace the raw parent evidence or be described as a complete
 portable Activate chain. This export boundary does not invalidate the separately
 authenticated original episode. No fields were edited to make it pass.
 
+The follow-up implementation now adds explicit semantic schema10 and the
+[sanitized portable fixture](../tests/fixtures/semantic_activate_targets_real_v10.README.md).
+It exports this actual parent and target/result chain without requiring opaque
+unchosen rows to pass the old whole-inventory projector. The sampled chosen
+target entry also carries a presentation-only string highlight, which v9 rejects;
+v10 omits its value only after exact raw row matching. No source field was edited
+to force an older export to pass.
+
 Raw originals, authentication/account values, hidden identities, prompts,
 screenshots and private derivatives remain local and ignored. No public raw
-fixture or production semantic change is included yet. The next engineering
-step is an allowlisted, scoped portable fixture and a minimal opt-in linkage
-with controls discriminating its actual rule. The existing Cast linker cannot
-be relabelled as Activate: its Card resolution check does not authenticate an
-Ability with a null card ID. Default behavior and schema versions are unchanged.
+fixture is published. The new opt-in v10 linkage has controls for scope,
+request revocation, source/ability, target-slot/set, missing result and public
+endpoint contradictions. The existing Cast linker is not relabelled as Activate:
+its Card resolution check does not authenticate an Ability with a null card ID.
+Default behavior and older schema versions are unchanged.
 Input was never sent; **P10 remains NOT_RUN**.

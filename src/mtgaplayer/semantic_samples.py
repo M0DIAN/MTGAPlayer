@@ -242,7 +242,7 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
     Source consistency is metadata/boundary consistency, not a byte fingerprint.
     At most max_samples pairs are retained; omissions are explicit counts.
     """
-    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4, 5, 6, 7, 8, 9) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
+    _need(type(schema_version) is int and schema_version in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10) and origin in ORIGINS and type(max_samples) is int and 1 <= max_samples <= 256 and
           type(max_history_bytes) is int and 1 <= max_history_bytes <= 1024**3, 'invalid_export_bounds')
     path = Path(path)
     before_stat = path.stat()
@@ -253,6 +253,13 @@ def collect_samples(path, *, origin='unclassified_local', max_samples=16,
           follower.identity == ((before_stat.st_dev, before_stat.st_ino) if before_stat.st_ino else
                                 (before_stat.st_ctime_ns,)), 'source_changed')
     _need(follower.framer.errors == 0 and not follower.framer.partial, 'source_framing_incomplete')
+    if schema_version == 10:
+        from .semantic_activate_targets import collect_records
+        result = collect_records(records, follower.generation, origin, max_samples)
+        _need(_metadata(before_stat) == _metadata(path.stat()), 'source_changed')
+        _need(len(json.dumps(result, allow_nan=False).encode('utf-8')) <= MAX_BYTES,
+              'semantic_sample_output_limit')
+        return result
     refs, samples, counts, rejected = _Refs(), [], Counter(), Counter()
     active, pending, tracing = None, None, None
     reducer = None
@@ -628,6 +635,9 @@ def _check_successor(successor, before):
 
 def _replay_samples(document):
     """Validate/replay exported choices, NOT private GRE authentication/effects."""
+    if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v10':
+        from .semantic_activate_targets import replay
+        return replay(document)
     if type(document) is dict and document.get('schema_version') == 'mtgaplayer.semantic-samples.v9':
         from .semantic_effect_cost_result import replay
         return replay(document)

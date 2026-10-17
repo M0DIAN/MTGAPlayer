@@ -1,4 +1,46 @@
-## MP52 — owner-local targeted Activate recapture (2026-10-17)
+## MP52 — actual targeted Activate portable slice (2026-10-17)
+
+Owner instruction authorizes implementing the captured Equip chain, updating
+draft PR58 and leaving it unmerged. Freshly fetched main remains
+`26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`; capture-only head is
+`376cdaa5ed3880494fb4e9d3fa706c42cda87d17`. Explicit semantic schema10 reuses
+the existing bounded follower, one reducer, current raw-request/digest and
+consumed response gates, target validators and Activate public facts/trace
+checker. Default schema1, versions1–9, Cast linkage and live decision/input paths
+remain unchanged.
+
+The actual position6 among17 rows uniquely matches its raw full row and identity
+before projection. Its target entry adds a string highlight, which explains why
+the older selected-row projector rejects it; v10 omits only that presentation
+value. Unchosen positions retain fixed opaque metadata. The scoped public source
+pair, explicit new Stack Ability parent/group, actual Select, updated selected
+Unselect set, final Submit, public submission, same-Ability resolution/deletion
+and AttachmentCreated endpoints are separately checked. Accepted-state/request
+revocation and raw/client event ordering reject historical response borrowing.
+Next ActionsAvailable is a priority checkpoint, not an episode boundary.
+Independent falsification found lifecycle and source-location counterexamples;
+v10 now requires ordered unique creation/start/completion/deletion facts, final
+submission and a later public submission message before resolution, supported
+relevant annotation rows, and result co-observation in the same accepted message.
+Client/GRE collisions, state/request collisions, out-of-source/episode locations
+and unsupported hybrid GRE state/request messages cannot certify this profile.
+
+The real v10 fixture is the fresh standard export: one matched/exported episode,
+zero unsupported/omitted. Its canonical LF hash is
+`8a457a832a75023cee3c6c04fa320d108d7e718dd4c09294ee399eab38d3d964`.
+Owner-local regeneration agrees and the frozen original hash is unchanged.
+Only strict public BF/Stack endpoints and aliases remain; every card_id is null,
+and raw accounts, names, prompts, hidden objects, highlight values and alias maps
+are not published. Focused controls cover scope/digest/supersession/gaps,
+ambiguous identity/source pair, target slots/counts/duplicates, missing bounds or
+result, unanswered follow-up, nonpublic/wrong attachment endpoints, and an
+unchosen action attempting to borrow the actual suffix. Mutations are negative
+synthetic controls, not new real positives. All18 focused cases pass. Required full tests, doctor, exact-head
+review and CI receipts are reported on PR58. Complete costs/legality, encoding,
+unique-ability continuation, causation and acceptance remain unverified; no input
+was sent and P10 remains NOT_RUN.
+
+## MP52 — owner-local targeted Activate recapture (historical, 2026-10-17)
 
 The owner manually used 钢铁侠战甲's Equip2 in a new game. The immutable
 7,718,945-byte source, SHA256 `6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07`,

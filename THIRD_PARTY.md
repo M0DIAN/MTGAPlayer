@@ -91,6 +91,27 @@ Each fixture consistently aliases object, zone and request references and replac
 Committed fixture SHA256: blockers `27635b0b9a635afd0c6c263373baafd0f549bb5ab5f7a291e9a0bd772bd57ab5`; unselect `c03af5784ad3fc634f8dfa7edc986faefe88ac1de78ab23cba0ba87bfb9fc2d2`. The real selected blocker rows have maxAttackers1 but no remaining candidate domain. Their selected public outcomes are observed; membership/completeness remains insufficient. `[{}]` combat manaCost is deliberately uninterpreted. This evidence does not complete the original arbitrary-combination legality acceptance.
 
 
+## MP52 real targeted Activate portable slice (2026-10-17)
+
+The owner-authorized Equip2 recapture is projected into
+`tests/fixtures/semantic_activate_targets_real_v10.json`; its adjacent README pins
+original hash/locations, canonical LF fingerprint and exact omissions. This is
+one actual same-session targeted Activate → Select/update/Submit → explicit
+public parent/group, submission, Ability resolution/deletion and attachment
+endpoint observation. No synthetic positive chain or cross-file alias link is
+substituted. Authentication/room/Full remain in the private source; the portable
+artifact never manufactures a Full or redistributes raw identity envelopes.
+
+Only strict public BF/Stack endpoints, scoped aliases, reviewed actual action
+parameters and finite literal facts are exported. Card catalog IDs are all null;
+names, private objects/identifiers, prompts, highlight values, account data,
+timestamps, screenshots, inactive actions and unrelated annotation values remain
+omitted. The optional string action-target highlight is removed only after exact
+raw full-row/identity matching. Portable replay checks internal relationships,
+not the removed source's authenticity or complete payment/legality/acceptance.
+No upstream code, external card database, game asset, new dependency or native
+input is introduced. Negative test mutations are explicitly synthetic.
+
 ## MP38 pre-response single-target choice (2026-10-16)
 
 Compared pinned `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86`, `gamestate_decisions.py:270–294`, `decisions.py:677–735` and `Plugin.Actions.cs:1527–1645`. These provide field and per-slot-update/final-submit clues. Their missing min/max/selected defaults, inferred legality, bridge/injection and UI execution are not imported. The finite target projection/checker is independently implemented; no upstream code or dependency is copied.

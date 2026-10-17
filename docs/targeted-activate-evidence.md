@@ -1,6 +1,6 @@
 # MP52: targeted Activate evidence gap and minimum capture
 
-Issue [#57](https://github.com/M0DIAN/MTGAPlayer/issues/57), outcome **B**.
+Issue [#57](https://github.com/M0DIAN/MTGAPlayer/issues/57), initial audit outcome **B**.
 This section records the initial tracked-fixture audit. A subsequent
 [owner-local Equip recapture](targeted-activate-capture.md) supplies a genuine
 continuous targeted Activate episode; its raw evidence and portable-export
@@ -10,7 +10,7 @@ unchanged and does not include that private recapture.
 Audited main: `26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`, matching the issue's
 accepted baseline. The retained evidence does **not establish an actual
 target-bearing Activate followed by its target request, selection and result**.
-No production linkage or synthetic positive chain is introduced.
+The initial audit introduced no production linkage or synthetic positive chain.
 
 The audit covers all ten tracked `tests/fixtures/*.jsonl` files (1,152 records),
 the curated semantic exports, their provenance, and the existing reducer and
@@ -235,7 +235,8 @@ assert not any(manifest['authority'].values())
 print('MP52 initial retained-fixture checks passed; those fixtures do not establish a targeted Activate chain')
 ```
 
-The genuine owner-local capture is now retained; a reviewed portable fixture
-and minimal linkage remain the next engineering step. Complete
+The genuine owner-local capture now supplies the opt-in v10
+[portable fixture and finite linkage](../tests/fixtures/semantic_activate_targets_real_v10.README.md).
+The initial tracked-fixture findings above remain historical. Complete
 legality, response encoding, server acceptance, execution and real-action
 latency remain unverified; input is false and **P10 remains NOT_RUN**.

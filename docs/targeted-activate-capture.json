@@ -84,9 +84,16 @@
     "undocumented_attachment_direction_or_effect_causation",
     "continuation_unique_ability_identity_from_parent_group_only",
     "ability_resolution_from_cast_card_id_check",
-    "complete_portable_targeted_activate_fixture",
-    "production_targeted_activate_linkage"
+    "complete_legal_action_universe_or_full_costs"
   ],
+  "followup_implementation": {
+    "semantic_schema_version": "mtgaplayer.semantic-samples.v10",
+    "portable_fixture": "tests/fixtures/semantic_activate_targets_real_v10.json",
+    "fixture_lf_sha256": "8a457a832a75023cee3c6c04fa320d108d7e718dd4c09294ee399eab38d3d964",
+    "opt_in_read_only_actual_chain_linkage": true,
+    "default_and_older_schema_versions_unchanged": true,
+    "private_raw_source_authentication_by_portable_replay": false
+  },
   "authority": {
     "actual_continuous_targeted_activate_episode_observed": true,
     "explicit_public_attachment_endpoints_observed": true,
