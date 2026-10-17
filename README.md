@@ -615,3 +615,14 @@ SelectTargets child. For a current leased view use
 The parent remains consumed; submitting the child clears its context. Existing
 target membership/count validation is reused. Full legality, payability and all
 execution flags remain false. See [the evidence and limits](docs/current-choice-continuation.md).
+
+## MP63 opt-in current target revision
+
+`mtgaplayer replay <Player.log> --format player-log --decision-state-version 14 --current-target-revision`
+links one actual first-child Select update to its separately current revised
+target request. Use
+`mtgaplayer watch <Player.log> --decision-events --decision-state-version 14 | mtgaplayer consume-events --current-target-revision`
+for the child-bound leased view. The revised request uses its own observed1/1/1
+Unselect literal and existing validation. A final header-only Submit revokes it;
+full Select domain, legality, payability and execution remain unverified.
+See [the evidence and contract](docs/current-target-revision.md).

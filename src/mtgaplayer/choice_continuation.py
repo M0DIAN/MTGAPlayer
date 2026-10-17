@@ -51,7 +51,7 @@ def _prompt(value, *, number=False):
             -(2**31) <= parameter['numberValue'] < 2**31)
 
 
-def _observe_child(message, visible, seat):
+def _observe_target_fields(message, visible, seat):
     """Validate every witnessed field before using the existing target projector."""
     _need(type(message) is dict and not set(message) - {'type', 'msgId', 'gameStateId', 'systemSeatIds',
         'prompt', 'selectTargetsReq', 'allowCancel', 'allowUndo'} and message['type'] == 'GREMessageType_SelectTargetsReq')
@@ -78,6 +78,12 @@ def _observe_child(message, visible, seat):
         'target_entries': copy.deepcopy(slot['targets']),
         'field_presence': {key: key in slot for key in ('minTargets', 'maxTargets', 'selectedTargets')}}
     observed['field_presence']['allowUndo'] = 'allowUndo' in message
+    return observed
+
+
+def _observe_child(message, visible, seat):
+    observed = _observe_target_fields(message, visible, seat)
+    slot = message['selectTargetsReq']['targets'][0]
     # This new context covers the witnessed first child only. Other menus keep
     # the existing target validator, without treating all offers as a selection.
     constraints = observed['constraints']
@@ -109,20 +115,29 @@ def _raw_child(observation, binding):
 
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
-    def __init__(self, reducer):
+    def __init__(self, reducer, *, include_revision=False):
         self.reducer = reducer
+        self.revision = None
+        if include_revision:
+            from .target_revision import RevisionStage
+            self.revision = RevisionStage(reducer)
         self.reset()
 
     def reset(self):
+        self._reset_first()
+        if self.revision is not None: self.revision.reset()
+
+    def _reset_first(self):
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
         self.cached = self.prepared = self.pending = self.active = None
         self.age = 0
 
     def _clear(self):
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
-        self.reset()
+        self._reset_first()
 
     def prepare(self, record):
+        if self.revision is not None: self.revision.prepare(record, self.active)
         from .decision_consumer import _bounded_json
         self.prepared = None
         if self.pending is not None:
@@ -186,12 +201,17 @@ class StageObserver:
             self.pending = prepared; self.cached = None; self.age = 0
         elif prepared is not None:
             self._clear()
+        if self.revision is not None: self.revision.after_apply()
 
     @staticmethod
     def _source_signature(source):
         return {k: source.get(k) for k in ('instanceId', 'grpId', 'type', 'zoneId', 'visibility', 'ownerSeatId', 'controllerSeatId')}
 
     def observe(self, event, details):
+        self._observe_first(event, details)
+        if self.revision is not None: self.revision.observe(event, details, self.active)
+
+    def _observe_first(self, event, details):
         r = self.reducer
         if event in ('continuity_error', 'unsupported_broadcast_request'): self._clear(); return
         if event == 'request_ended':
@@ -312,7 +332,7 @@ def evaluate_continuation(state, *, source_snapshot_ref=None):
         if source_snapshot_ref is not None:
             _reference(source_snapshot_ref, source_snapshot_ref['session_id'], source_snapshot_ref['sequence'], snapshot=True)
             _need(history._same(source_snapshot_ref['binding'], state['binding']))
-        if state['schema_version'] != 'mtgaplayer.decision-state.v13' or state[FIELD] is None:
+        if state['schema_version'] not in ('mtgaplayer.decision-state.v13', 'mtgaplayer.decision-state.v14') or state[FIELD] is None:
             return unknown('first_current_child_continuation_not_observed', source_snapshot_ref)
         value = state[FIELD]; constraints = value['child_observation']['constraints']; entries = constraints['entries']
         # This is the old request-local checker, not a new legal-target solver.
