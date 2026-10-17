@@ -1,3 +1,29 @@
+## MP54 — current already-selected target set (2026-10-17)
+
+Issue61 authorizes bounded development/tests/independent review/push/draft PR,
+without merge. Fresh accepted main is d977be3/treebabfe9f0. The original-byte
+prefix through1425/message1 projects the current min=max=selected_count=1 and
+single public Unselect on existing State5–7;283 accepted states in the same new
+game have zero continuity errors. Existing source is a public Stack Ability;
+target is public BF. No extra State/Event/semantic schema is needed.
+
+One explicit proposal shape calls a shared pure current-selected checker after
+check_request/literal_selected. It binds current scope/source/groups/slot/player
+and exact literal, with strict types and public joins. Old final-set checks and
+candidate enumeration remain unchanged;1422's Select domain is independent and
+1425 Unselect still cannot enumerate a new domain. No quantities are backfilled
+into1402. Full legality/payment, quantity-rule completeness and input stay false.
+
+Actual-byte same-file watch→Consumer versions5/6/7 and two product CLIs verify
+1425 before1426, then consume actual headerSubmit1426 and revoke the old proposal.
+Public1427–1428 and the remaining suffix cannot revive it. The portable pre/post
+fixture regenerates exactly; v10 runs afterwards. Separate processes compare
+complete State/Event1–7, old verdicts/candidates, semantics1–10 and defaults.
+Required final tests/doctor, exact-head independent review and identical-tree
+head/synthetic-merge CI receipts are reported on the draft PR. Original data stays
+ignored; no MTGA input, main merge/CI, latency or P10 repair is claimed.
+[Evidence and limits](current-selected-target-set.md).
+
 ## MP53 — current targeted Activate member (2026-10-17)
 
 Issue59 authorizes scoped implementation, fixes, independent review, push and a

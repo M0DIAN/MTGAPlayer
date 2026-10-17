@@ -133,6 +133,23 @@ State/Event1–6, semantics1–10, menu v2 and defaults remain unchanged. See th
 [real request fixture](tests/fixtures/decision_state_activate_target_member_real_v7.README.md)
 and [original-byte before/after verification](docs/current-activate-target-member.md).
 
+MP54 uses the existing State/Event5–7 target profile for an explicit
+`proposed_current_selected_target_set` check before final Submit. It requires
+the same current request's min/max/selected count all1, its whole single Unselect
+list, a public Stack Ability source and public BF member. The proposal contains
+`request_identity` and `proposed_current_selected_target_set` with
+`source_object_ref`, `ability_grp_ref`, `targeting_ability_grp_ref`, `target_idx`,
+`targeting_player` and `object_refs`; optional `source_snapshot_ref` must agree.
+Use the existing `consume-events --validate-choice <proposal.json>` on an
+explicit State/Event5–7 subscription. `verified_known_constraints` means exact
+current selected-literal consistency, with quantity-rule/domain completeness,
+full legality/payment/encoding/acceptance/input unverified. The existing Consumer
+revokes the old proposal on Submit, replacement, partial/gap, expiry or stop.
+Old `proposed_final_target_set`, Select-domain enumeration, schemas and defaults
+are unchanged; Unselect does not become a new selectable domain. See the
+[real pre-Submit fixture](tests/fixtures/current_selected_target_set_real_v5.README.md)
+and [evidence method](docs/current-selected-target-set.md).
+
 The default reducer consumes the exact current `SubmitTargetsReq → SelectTargetsReq` terminal pair. `SelectTargetsResp` consumes only its own old request; a later request must be accepted under its new identity. Stale, mixed, wrong-type, replaced or extra-body target terminal messages cannot consume a current request.
 
 `replay --format player-log` reads a specified Player.log and reports a structurally continuous, player-visible snapshot. `watch` polls an explicit file for a finite number of samples (1–1000) at a bounded interval and emits JSON lines. Its first sample processes history; later samples process only appended bytes. `--max-history-bytes` bounds startup or replacement replay (default 64 MiB). Replacement/truncation resets identity and waits for a new authenticated room and Full. Empty polls do not change `source_state_timestamp`; the final sample marks `stopped`. Raw source results always have `actionable: false`, `input_sent: false`, and `executor_connected: false`. A structurally valid offline snapshot is historical evidence, not a live action opportunity. In finite `watch`, `source.candidate_event` is non-null only when a matching GRE request appears among this poll's newly framed append records and remains complete, supported and own-seat-verified; initial history, unrelated appends (including completion of an unrelated partial tail), idle polls and retransmissions cannot emit it. The event repeats the verified request identity/count only (full evidence remains in `current.request`) and always carries `read_only: true`. Even this append-only observation is not a legal action or a proof of current screen/input readiness; `current.actionable`, `input_sent` and `executor_connected` remain false.

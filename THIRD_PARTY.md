@@ -1,5 +1,17 @@
 # Source inspection and reuse
 
+## MP54 current selected target literal (2026-10-17)
+
+Reuses existing `semantic_targets.check_request`/`literal_selected`, public Stack
+validation, ChoiceValidation and the current Consumer. The owner-local original
+MP52 prefix1425, before Submit1426, is the positive evidence; its
+[sanitized existing-State5 projection](tests/fixtures/current_selected_target_set_real_v5.README.md)
+pins original source/prefix hashes, ordinals and aliases. Historical v10 only
+corroborates afterwards. No upstream code, mtgacoach dependency, card catalog,
+game asset or runtime package is copied. Old final-set/Select-domain semantics
+remain unchanged; complete legality/quantity rules and response/input authority
+are unverified.
+
 ## MP53 current targeted Activate reuse (2026-10-17)
 
 Reuses this repository's accepted RawFollower/RawReducer, request digest/seat/
