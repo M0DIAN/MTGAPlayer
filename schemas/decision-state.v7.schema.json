@@ -574,7 +574,7 @@
                 },
                 "request_id": {
                   "type": "integer",
-                  "minimum": 1,
+                  "minimum": 0,
                   "maximum": 9007199254740991
                 }
               }

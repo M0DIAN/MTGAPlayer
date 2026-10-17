@@ -44,7 +44,7 @@ removed raw source, a raw protocol fixture or a fabricated Full/response.
 Canonical LF: 227,280 bytes, SHA256
 `c2b9294c683799abebfa6956006ca9146c9c035ee371cb2b2ccab4737ab8a5c4`.
 Windows checkout line endings may differ. Owner-local regeneration compares the
-entire parsed fixture; synthetic mutations in tests are negative controls.
+entire parsed fixture; synthetic structural controls are not additional captures.
 Known membership/slot contradictions are scoped to this explicit observed menu,
 never global MTG illegality. Complete costs, target quantity/domain/selection
 legality, response encoding, server acceptance, execution readiness and latency

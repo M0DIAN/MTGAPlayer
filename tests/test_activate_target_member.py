@@ -319,5 +319,15 @@ class ActivateTargetMemberTests(unittest.TestCase):
         self.assertFalse(schema['$defs']['currentTargetMenu']['additionalProperties'])
         for key in ('before_response','after_response','after_result'):_state(self.real[key],self.real[key]['binding'])
 
+    def test_bound_zero_request_id_matches_existing_producer_and_new_schema(self):
+        rows=copy.deepcopy(self.rows[:5])
+        rows[4]['greToClientEvent']['greToClientMessages'][0]['msgId']=0
+        state=self.raw(rows)['decision_state']
+        self.assertEqual(state['binding']['request_id'],0)
+        self.assertEqual(self.result(state,self.for_row(state))['known_constraints'],'verified_known_constraints')
+        schema=json.loads((ROOT/'schemas/decision-state.v7.schema.json').read_text())
+        request_id=schema['$defs']['currentTargetParameters']['properties']['binding']['allOf'][1]['properties']['request_id']
+        self.assertEqual(request_id['minimum'],0)
+
 
 if __name__=='__main__':unittest.main()
