@@ -548,7 +548,7 @@ class RawFollower:
 
 class RawReducer:
     def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
-                 include_targeted_activate=False, include_current_discard=False):
+                 include_targeted_activate=False, include_current_discard=False, include_target_payment_relation=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
@@ -556,6 +556,7 @@ class RawReducer:
         self._include_request_parameters = include_request_parameters
         self._include_targeted_activate = include_targeted_activate
         self._include_current_discard = include_current_discard
+        self._include_target_payment_relation = include_target_payment_relation
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -824,6 +825,7 @@ class RawReducer:
                     from .action_target_menus import public_battlefield_refs
                     self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities,
                         targeted_activate=self._include_targeted_activate, current_discard=self._include_current_discard,
+                        target_payment_relation=self._include_target_payment_relation,
                         current_hand_refs=self._reviewed_current_hand_refs() if self._include_current_discard else None,
                         public_battlefield_refs=(public_battlefield_refs(self)
                                                 if self._include_targeted_activate else None))

@@ -199,6 +199,13 @@ def assess_current_known_candidates(consumer, *, limit=MAX_CANDIDATES, version=2
     unknown = {2: _unknown, 3: _proposal_unknown, 4: _discard_unknown}[version]
     if type(limit) is not int or not 1 <= limit <= MAX_CANDIDATES:
         raise ValueError('invalid_known_candidate_limit')
+    def evaluate(state, *, source_snapshot_ref):
+        return enumerate_known_candidates(state, source_snapshot_ref=source_snapshot_ref, limit=limit, version=version)
+    return _assess_current_report(consumer, evaluate, unknown)
+
+
+def _assess_current_report(consumer, evaluate, unknown):
+    """Shared owner-thread current/ref/lease gate for read-only reports."""
     if not isinstance(consumer, DecisionConsumer):
         return unknown('requires_current_consumer')
     try:
@@ -216,7 +223,7 @@ def assess_current_known_candidates(consumer, *, limit=MAX_CANDIDATES, version=2
                 state['source']['phase'] != 'append' or
                 state['source']['stopped'] is not False):
             return unknown('current_snapshot_binding_invalid')
-        result = enumerate_known_candidates(state, source_snapshot_ref=ref, limit=limit, version=version)
+        result = evaluate(state, source_snapshot_ref=ref)
         after = consumer.current_view()
         if (after['consumer_status'] != 'OBSERVING' or
                 after['current_snapshot_ref'] != ref or

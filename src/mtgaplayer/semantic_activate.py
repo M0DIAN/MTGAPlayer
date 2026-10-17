@@ -182,6 +182,23 @@ def check_payment(rows, chosen, visible, seat, position):
                                  'insufficient_evidence': unknown}[row['ability_binding']]
     if checks['ability_identity'] == bad:
         return bad, 'current_source_ability_group_contradicted', checks
+    status, reason, checks = check_generic_two_route(rows, offered, chosen, visible, seat, checks)
+    if status != good:
+        return status, reason, checks
+    if checks['ability_identity'] != good:
+        return unknown, 'current_source_unique_ability_pair_not_observed', checks
+    return good, 'offered_activate_slice_consistent', checks
+
+
+def check_generic_two_route(rows, offered, chosen, visible, seat, checks):
+    """Pure offered cost/route relation, with target validation owned by caller.
+
+    Inputs must already have strict literal/identity/visibility validation.
+    Does not remove or interpret targets, assess tappedness or certify payment.
+    The old no-target entry point keeps its original source/ability gate.
+    """
+    unknown, bad, good = 'insufficient_evidence', 'violated_known_constraints', 'verified_known_constraints'
+    objects = {o['instance_id']: o for o in visible}; ids = chosen['identifier_refs']
     for a in (offered, chosen):
         if not {'manaCost', 'autoTapSolution'} <= set(a['parameters']) | set(a['observed_empty_parameters']):
             return unknown, 'required_mana_parameters_not_observed', checks
@@ -232,9 +249,7 @@ def check_payment(rows, chosen, visible, seat, position):
     if len(set(unit_refs)) != len(unit_refs):
         return unknown, 'distinct_mana_units_not_observed', checks
     checks['predictive_payment'] = good
-    if checks['ability_identity'] != good:
-        return unknown, 'current_source_unique_ability_pair_not_observed', checks
-    return good, 'offered_activate_slice_consistent', checks
+    return good, 'offered_generic_two_route_consistent', checks
 
 
 def alias_rows(rows, refs, scope):

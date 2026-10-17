@@ -130,7 +130,7 @@ def _state(value, binding):
     game = value['game']
     _keys(game, ('room_state', 'game_stage', 'source_state_timestamp', 'turn', 'players',
         'hidden_counts', 'mana', 'effective_combat_stats', 'rules') +
-        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]) else ()))
+        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]) else ()))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
     turn = game['turn']
@@ -152,7 +152,7 @@ def _state(value, binding):
     _require(type(game['hidden_counts']) is dict)
     for count in game['hidden_counts'].values():
         _integer(count)
-    current_stats = value['schema_version'] in (SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8])
+    current_stats = value['schema_version'] in (SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9])
     _require(all(game[k] is None for k in ('mana', 'rules')) and
              (current_stats or game['effective_combat_stats'] is None) and
              value['effect_claims'] is None)
@@ -169,7 +169,7 @@ def _state(value, binding):
                  (current_stats or obj['effective_power'] is None and obj['effective_toughness'] is None))
     if current_stats:
         _effective_stats(game['effective_combat_stats'], value['visible_objects'])
-    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]):
+    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]):
         _stack(game['stack'], value['visible_objects'])
     cards = value['card_knowledge']
     if cards is not None:
@@ -197,13 +197,14 @@ def _state(value, binding):
     _require(all(type(v) is str for v in value['unresolved']))
     space = value['legal_action_space']
     _keys(space, ('request_type', 'immediate_frontier', 'choice_graph', 'expanded_plans') +
-          (('request_parameters',) if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]) else ()))
-    if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]):
+          (('request_parameters',) if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]) else ()))
+    if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]):
         from .request_parameters import check_space
         check_space(space, binding, value['visible_objects'],
-                    allow_effect_cost=value['schema_version'] in (SCHEMA_VERSIONS[6],SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]),
-                    allow_targeted_activate=value['schema_version'] in (SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]),
-                    allow_current_discard=value['schema_version']==SCHEMA_VERSIONS[8])
+                    allow_effect_cost=value['schema_version'] in (SCHEMA_VERSIONS[6],SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]),
+                    allow_targeted_activate=value['schema_version'] in (SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]),
+                    allow_current_discard=value['schema_version'] in (SCHEMA_VERSIONS[8], SCHEMA_VERSIONS[9]),
+                    allow_target_payment_relation=value['schema_version']==SCHEMA_VERSIONS[9])
     _require(space['request_type'] == binding['request_type'])
     _keys(space['expanded_plans'], ('completeness', 'plans'))
     _require(space['expanded_plans'] == {'completeness': 'unknown', 'plans': None})
@@ -608,7 +609,8 @@ class _DiagnosticOutput:
 def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity=64,
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
                    prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
-                   known_choice_candidates=False, known_choice_candidates_version=2):
+                   known_choice_candidates=False, known_choice_candidates_version=2,
+                   activate_target_payment_relation=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -647,6 +649,10 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         raise ValueError('candidate_version_requires_known_choice_candidates')
     if known_choice_candidates:
         from .choice_candidates import assess_current_known_candidates
+    if type(activate_target_payment_relation) is not bool:
+        raise ValueError('invalid_target_payment_relation_option')
+    if activate_target_payment_relation:
+        from .activate_target_payment import assess_current_relation
     consumer = consumer if consumer is not None else DecisionConsumer()
     if type(observed_changes) is not bool:
         raise ValueError('invalid_observed_changes_option')
@@ -722,6 +728,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             validation = assess_current_choice(consumer, choice_proposal)
         if known_choice_candidates:
             candidates = assess_current_known_candidates(consumer, version=known_choice_candidates_version)
+        if activate_target_payment_relation:
+            association = assess_current_relation(consumer)
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
@@ -730,6 +738,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             sidecars.append(validation)
         if known_choice_candidates:
             sidecars.append(candidates)
+        if activate_target_payment_relation:
+            sidecars.append(association)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -745,6 +755,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 validation = assess_current_choice(consumer, choice_proposal)
             if known_choice_candidates:
                 candidates = assess_current_known_candidates(consumer, version=known_choice_candidates_version)
+            if activate_target_payment_relation:
+                association = assess_current_relation(consumer)
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -759,6 +771,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['choice_validation'] = validation
         if known_choice_candidates:
             value['known_choice_candidates'] = candidates
+        if activate_target_payment_relation:
+            value['activate_target_payment_relation'] = association
         return value
 
     try:
