@@ -1,0 +1,67 @@
+{
+  "schema_version": "mtgaplayer.mp52-evidence-inventory.v1",
+  "baseline_sha": "26a571b26a4ff6880867cdf63f1f9758e3fd1e5e",
+  "issue": "https://github.com/M0DIAN/MTGAPlayer/issues/57",
+  "delivery": "B_evidence_gap_and_capture_contract",
+  "scope": "tracked_scrubbed_fixtures_and_curated_exports_only",
+  "private_originals_reread": false,
+  "fingerprint_convention": "file_bytes_with_CRLF_replaced_by_LF",
+  "total_raw_records": 1152,
+  "raw_fixtures": {
+    "player_log_activate_generic_two.jsonl": {"records": 10, "lf_bytes": 40006, "lf_sha256": "1f424ea299ce88655ccac0402d07a2adbf540525fb07c6cd61ae4987bcf99426"},
+    "player_log_cast_generic_one.jsonl": {"records": 16, "lf_bytes": 18268, "lf_sha256": "2e494721fb9cac5dea98e3365577b5da0219b86a56cd34359f2f1bc3e6e50d89"},
+    "player_log_combat_blockers.jsonl": {"records": 44, "lf_bytes": 27577, "lf_sha256": "27635b0b9a635afd0c6c263373baafd0f549bb5ab5f7a291e9a0bd772bd57ab5"},
+    "player_log_combat_unselect.jsonl": {"records": 327, "lf_bytes": 190058, "lf_sha256": "c03af5784ad3fc634f8dfa7edc986faefe88ac1de78ab23cba0ba87bfb9fc2d2"},
+    "player_log_minimal.jsonl": {"records": 7, "lf_bytes": 7528, "lf_sha256": "7fbb568c3cccb31affb1999612b8a7b1898fcad0289112c0077159b66d0e3303"},
+    "player_log_observed_pt_clearing.jsonl": {"records": 257, "lf_bytes": 128764, "lf_sha256": "01a925723763d4d52d83381e71e89e3fc6f45de49976996750a0e8fdd1e8160d"},
+    "player_log_observed_pt_early.jsonl": {"records": 247, "lf_bytes": 136476, "lf_sha256": "0184e396d3901b7abc27d895ddf4aeef52a7cbdcbd333c6336c99d048a991bbf"},
+    "player_log_selectn.jsonl": {"records": 130, "lf_bytes": 109945, "lf_sha256": "426c13155fc0f514167d981728af27d54b6aff50188dbe55236657884dc1f143"},
+    "player_log_selectn_response.jsonl": {"records": 1, "lf_bytes": 116, "lf_sha256": "91f851c66b8a06b58efc2220fce27475f5272e6bebdde19e10406b08bb1adbc8"},
+    "player_log_single_target.jsonl": {"records": 113, "lf_bytes": 68174, "lf_sha256": "723b6c4ba89a02874044afb1006ad7cf1507997cbc55436b6dc5ee75067a5b81"}
+  },
+  "established": {
+    "activate_offered_target_positions": [2, 4, 5, 6, 7, 8],
+    "activate_offered_public_target_counts": [6, 10, 6, 6, 6, 6],
+    "activate_current_source_ability_pair_matches": 6,
+    "activate_actual_selected_position": 3,
+    "activate_actual_selected_row_has_targets": false,
+    "activate_select_targets_request_count": 0,
+    "activate_v5_exported_pairs": 1,
+    "activate_continuous_successor_states": 3,
+    "target_fixture_actual_origin": "ActionType_Cast",
+    "target_fixture_v4_exported_pairs": 3,
+    "raw_perform_action_response_count": 13,
+    "raw_perform_action_responses_with_bodies": 3,
+    "raw_select_targets_request_count": 6,
+    "raw_select_targets_requests_with_bodies": 2,
+    "curated_v9_paycosts_request_source": null,
+    "curated_v8_v9_common_original_hash_is_provenance_only": true
+  },
+  "unsupported": [
+    "authentic_actual_targeted_activate_to_followup_choice_chain",
+    "cross_file_alias_equality_as_causal_authority",
+    "target_cardinality_from_activate_offered_menu",
+    "complete_mana_payment_or_additional_costs",
+    "activate_unique_ability_continuation_from_parent_group_only",
+    "ability_resolution_from_cast_card_id_check",
+    "new_counterfactual_choice_borrowing_actual_response_result"
+  ],
+  "next_required_real_data": [
+    "one_immutable_same_session_raw_segment_with_auth_room_full_and_contiguous_diffs",
+    "actual_target_bearing_activate_row_and_exact_current_own_consumed_response",
+    "all_intervening_requests_and_actual_responses",
+    "followup_source_ability_target_slot_bounds_and_actual_selection_submit",
+    "explicit_public_parent_group_submission_result_relations_and_visible_endpoints",
+    "private_local_hash_size_original_record_mapping_and_scoped_scrubbing_provenance"
+  ],
+  "authority": {
+    "targeted_activate_chain_established": false,
+    "complete_legality_verified": false,
+    "response_encoding_verified": false,
+    "server_acceptance_verified": false,
+    "execution_ready": false,
+    "input_sent": false,
+    "real_action_latency_qualified": false
+  },
+  "P10": "NOT_RUN"
+}

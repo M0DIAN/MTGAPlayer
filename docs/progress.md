@@ -1,3 +1,95 @@
+## MP52 — actual targeted Activate portable slice (2026-10-17)
+
+Owner instruction authorizes implementing the captured Equip chain, updating
+draft PR58 and leaving it unmerged. Freshly fetched main remains
+`26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`; capture-only head is
+`376cdaa5ed3880494fb4e9d3fa706c42cda87d17`. Explicit semantic schema10 reuses
+the existing bounded follower, one reducer, current raw-request/digest and
+consumed response gates, target validators and Activate public facts/trace
+checker. Default schema1, versions1–9, Cast linkage and live decision/input paths
+remain unchanged.
+
+The actual position6 among17 rows uniquely matches its raw full row and identity
+before projection. Its target entry adds a string highlight, which explains why
+the older selected-row projector rejects it; v10 omits only that presentation
+value. Unchosen positions retain fixed opaque metadata. The scoped public source
+pair, explicit new Stack Ability parent/group, actual Select, updated selected
+Unselect set, final Submit, public submission, same-Ability resolution/deletion
+and AttachmentCreated endpoints are separately checked. Accepted-state/request
+revocation and raw/client event ordering reject historical response borrowing.
+Next ActionsAvailable is a priority checkpoint, not an episode boundary.
+Independent falsification found lifecycle and source-location counterexamples;
+v10 now requires ordered unique creation/start/completion/deletion facts, final
+submission and a later public submission message before resolution, supported
+relevant annotation rows, and result co-observation in the same accepted message.
+Client/GRE collisions, state/request collisions, out-of-source/episode locations
+and unsupported hybrid GRE state/request messages cannot certify this profile.
+
+The real v10 fixture is the fresh standard export: one matched/exported episode,
+zero unsupported/omitted. Its canonical LF hash is
+`8a457a832a75023cee3c6c04fa320d108d7e718dd4c09294ee399eab38d3d964`.
+Owner-local regeneration agrees and the frozen original hash is unchanged.
+Only strict public BF/Stack endpoints and aliases remain; every card_id is null,
+and raw accounts, names, prompts, hidden objects, highlight values and alias maps
+are not published. Focused controls cover scope/digest/supersession/gaps,
+ambiguous identity/source pair, target slots/counts/duplicates, missing bounds or
+result, unanswered follow-up, nonpublic/wrong attachment endpoints, and an
+unchosen action attempting to borrow the actual suffix. Mutations are negative
+synthetic controls, not new real positives. All18 focused cases pass. Required full tests, doctor, exact-head
+review and CI receipts are reported on PR58. Complete costs/legality, encoding,
+unique-ability continuation, causation and acceptance remain unverified; no input
+was sent and P10 remains NOT_RUN.
+
+## MP52 — owner-local targeted Activate recapture (historical, 2026-10-17)
+
+The owner manually used 钢铁侠战甲's Equip2 in a new game. The immutable
+7,718,945-byte source, SHA256 `6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07`,
+frames into 1,433 records without error/partial framing. New-game authentication,
+room and real Full are retained; actual records1136–1433 replay with zero
+continuity errors. The previous game's post-Undo missing predecessor is excluded,
+never bridged. Producer remains `27b2f3ff091ab3de9f534ce9a7e745aa8c5a4cca`.
+
+Actual request1402/response1421 has one exact full-row and complete-identity
+match. The current own public BF source/ability pair, explicitly created Stack
+Ability, target request1422, Select1424, updated selected request1425, Submit1426,
+PlayerSubmittedTargets1427 and same-Ability resolution/deletion1428 are separately
+bound. AttachmentCreated1428 literally relates the same Activate source to the
+final submitted public BF target, observed as an own-controlled Creature during
+the post-submit trace. Old-host transition, direction semantics
+and effect causation remain unknown. Independent source/safe-output review passed;
+the reviewer did not authenticate private raw bytes.
+
+[Capture evidence](targeted-activate-capture.md) and its JSON receipt preserve
+original ordinal/hash mapping and limits. Existing v9 export fails on the whole
+two-game source; the actual new-game record range exports/replays 10/28 pairs but
+omits the Activate parent, so it is not a complete portable chain. Raw originals
+and derivatives remain ignored/local. This documentation update completes the
+requested recapture; a reviewed public fixture and opt-in product linkage remain
+pending. No default behavior/schema/test changes or native input; P10 NOT_RUN.
+
+## MP52 — initial targeted Activate evidence audit and capture contract (2026-10-17)
+
+Issue57's accepted baseline and freshly fetched main are both
+`26a571b26a4ff6880867cdf63f1f9758e3fd1e5e`. Audit of all ten retained raw
+fixtures (1,152 records), curated v8/v9 exports, provenance and existing
+semantic checks supports delivery **B**: the actual Generic2 response
+selects no-target Activate position3; its six target-bearing offered rows
+are unchosen, and the retained actual SelectTargets chain originates in
+Cast. Ten other PerformAction responses are header-only. The two curated
+cost/Search exports cannot supply a missing Activate parent or prove
+cross-file causality. Private originals were not reread.
+
+[Evidence report](targeted-activate-evidence.md) records exact fixture/source
+locations, the finite v5/v9 and Cast/Ability validation differences, and a
+minimum same-session owner-local raw capture contract. Its adjacent JSON
+pins every raw fixture's canonical LF hash/count and separates established,
+unsupported and next-required facts; an embedded reproducer reuses existing
+framing/reducer/menu/sample APIs. No product behavior, schemas, fixtures or
+tests are changed; no synthetic targeted positive chain is manufactured.
+Complete legality, acceptance, input and latency authority remain false;
+P10 remains NOT_RUN. Required local checks, separate candidate review and
+exact-head/PR Linux/Windows CI receipts belong to the final delivery.
+
 ## MP51 — bind current targeted Activate menus to observed source abilities (candidate, 2026-10-17)
 
 Accepted baseline MP50 main `ab1d69dfa8699f09610775ba5f5acb2d52692c8c`.
