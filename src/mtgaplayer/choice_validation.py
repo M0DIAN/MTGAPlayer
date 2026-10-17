@@ -203,10 +203,12 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
                 historical_response_used=False)
             return result
         from .action_target_menus import CURRENT_PROFILE,CURRENT_SCOPE,check_member
-        if evidence['profile']==CURRENT_PROFILE:
+        from .activate_target_payment import PROFILE as JOINT_PROFILE, target_evidence
+        if evidence['profile'] in (CURRENT_PROFILE, JOINT_PROFILE):
             if 'proposed_activate_target_member' not in proposal:
                 return unknown('target_member_proposal_required')
-            status,reason,checks=check_member(evidence,proposal['proposed_activate_target_member'],
+            status,reason,checks=check_member(target_evidence(evidence) if evidence['profile']==JOINT_PROFILE else evidence,
+                proposal['proposed_activate_target_member'],
                 proposal['list_position'],state['visible_objects'],state['binding']['self_seat'])
             result.update(validation_scope=CURRENT_SCOPE,known_constraints=status,reasons=[reason],
                 known_checks=checks,source_snapshot_ref=copy.deepcopy(source_snapshot_ref),

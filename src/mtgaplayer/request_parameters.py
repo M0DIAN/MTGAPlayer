@@ -101,7 +101,13 @@ def effect_cost_objects(visible):
 
 
 def project(message, visible, seat=None, source_abilities=None, *, targeted_activate=False,
-            public_battlefield_refs=None, current_discard=False, current_hand_refs=None):
+            public_battlefield_refs=None, current_discard=False, current_hand_refs=None, target_payment_relation=False):
+    if target_payment_relation:
+        from .activate_target_payment import project as joint_project
+        try:
+            return joint_project(message, visible, seat, source_abilities or {}, public_battlefield_refs or [])
+        except (ValueError, TypeError, KeyError, RecursionError):
+            pass
     if current_discard and message.get('type') == 'GREMessageType_SelectNReq':
         from .semantic_hand import project_request, check_current_discard
         try:
@@ -138,6 +144,10 @@ def project(message, visible, seat=None, source_abilities=None, *, targeted_acti
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from .activate_target_payment import PROFILE as JOINT_PROFILE, check as check_joint
+    if type(value) is dict and value.get('profile') == JOINT_PROFILE:
+        check_joint(value, binding, visible)
         return
     from .semantic_hand import CURRENT_PROFILE as DISCARD_PROFILE, check_current_discard
     if type(value) is dict and value.get('profile') == DISCARD_PROFILE:
@@ -196,9 +206,17 @@ def check(value, binding, visible):
             raise ValueError('invalid_request_parameters')
 
 
-def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False):
+def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
+             allow_target_payment_relation=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from .activate_target_payment import PROFILE as JOINT_PROFILE, REQUEST_VERSION as JOINT_VERSION
+    if type(rows) is dict and rows.get('profile') == JOINT_PROFILE:
+        if not allow_target_payment_relation: return None
+        value = {'schema_version': JOINT_VERSION, **copy.deepcopy(rows), 'binding': copy.deepcopy(binding),
+            'historical_response_used': False}
+        check(value, binding, visible)
+        return value
     from .semantic_hand import DISCARD, CURRENT_PROFILE as DISCARD_PROFILE
     if type(rows) is dict and rows.get('kind') == 'select_n' and rows.get('payload', {}).get('profile') == DISCARD:
         if not allow_current_discard:
@@ -238,11 +256,33 @@ def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_
     return value
 
 
-def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False):
+def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
+                allow_target_payment_relation=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    from .activate_target_payment import PROFILE as JOINT_PROFILE, target_evidence
+    if value['profile'] == JOINT_PROFILE:
+        if not allow_target_payment_relation: raise ValueError('unsupported_target_payment_relation_profile')
+        check_space({**space, 'request_parameters': target_evidence(value)}, binding, visible,
+            allow_effect_cost=allow_effect_cost, allow_targeted_activate=True, allow_current_discard=allow_current_discard)
+        # This opt-in profile joins complete row identities and observed flags.
+        # JSON equality preserves Boolean/integer distinctions and old contracts.
+        import json
+        from .raw_log import _RAW_ID_FIELDS, _RAW_FLAG_FIELDS
+        nodes = {n['action_key']['list_position']: n for n in space['choice_graph']['action_nodes']}
+        for record in value['target_actions'] + value['mana_actions']:
+            action = record['action']; identity = nodes[record['list_position']]['action_identity']
+            expected = {
+                'raw_identifiers': {public: action['identifier_refs'][raw] for raw, public in _RAW_ID_FIELDS
+                                    if raw in action['identifier_refs']},
+                'raw_flags_observed_not_discriminators': {public: action['flags'][raw] for raw, public in _RAW_FLAG_FIELDS
+                                                         if raw in action['flags']}}
+            for key, observed in expected.items():
+                if json.dumps(identity[key], sort_keys=True) != json.dumps(observed, sort_keys=True):
+                    raise ValueError('request_projection_mismatch')
         return
     from .semantic_hand import CURRENT_PROFILE as DISCARD_PROFILE
     if value['profile'] == DISCARD_PROFILE:

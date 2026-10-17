@@ -1,3 +1,42 @@
+## MP57 — current offered-target/predictive-payment association (2026-10-17)
+
+Issue67's latest scope revision and owner instruction permit a narrow real
+association when physical readiness is unknown. Fresh main4ca4f9c/tree df60bab7
+and natural main CI39011355895 were verified. Before coding, the frozen
+7,718,945-byte original SHA6bab453b…ac07 and request-only prefix SHAe8a8732c…2635
+were rechecked. Auth1136/room1141/Full1143msg1→request1402msg1 reconstructs with no
+new-game continuity errors. Same-current position6/17, own public target,
+source ability pair, Generic2, two distinct predictive Blue units and unique
+current offered mana witnesses12/14 all verify without response1421+.
+
+Both current tapped literals remain null. Each source has an ordered explicit
+untap observation at1375, stable public identity/zone and no later explicit tap
+through1401 in a separate accepted-pre-request research audit. It excludes1402
+and validates no client/default interpretation, so it supplies no current1402
+readiness certificate. Product tap projection stays unchanged; missing Diff
+fields never imply false. This no longer blocks the narrower evidence gate.
+
+Minimal State/Event9 + params6 retain all17 positions and add reviewed literals;
+one diagnostic reuses existing target-member and extracted Generic2 route checks,
+unique matching mana rows, exact options/selections and typed full graph/row
+identifiers/flags. Positive means only offered-target/predictive association.
+Readiness, payability, full legality/payment/effect/encoding/acceptance/input
+remain unverified. Candidate2–4, Advisor and old defaults gain no payable action.
+Incremental independent review found and closed optional validator-deny and
+graph flag/type mismatch defects; falsification tests retain both regressions.
+
+Original-byte current/dual CLI checks return1 before1421, then0 in the consumed
+poll; later1422–1433 never revive the old binding/ref. Portable pre/post State9
+uses separate scoped aliases/all card IDsnull. Public tests cover coherent
+unit reuse, duplicate options/selections, ambiguous matching mana rows, source/
+target/publicness/identity/cost/group controls, validator drift and current
+lifecycle/lease gates. Formal State9/Event9 schemas are checked separately with
+an isolated development-only validator. Exact final tests/doctor, independent
+HEAD/tree review, compatibility and head/synthetic-merge Linux/Windows CI
+receipts are reported on the Draft PR; private bytes/maps/diagnostics stay
+ignored. No MTGA input/new match, P10 repair, latency claim or merge.
+[Evidence and contract](current-target-payment.md).
+
 ## MP56 — current one-of-eight Discard proposals (2026-10-17)
 
 Issue65 authorizes evidence-first development/tests/independent review/push/Draft

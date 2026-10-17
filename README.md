@@ -1,5 +1,11 @@
 # MTGAPlayer
 
+Explicit State/Event9 supports a diagnostics-only same-request target and
+predictive-payment association. Use `--activate-target-payment-relation` with
+State9 replay or on `consume-events`. A positive leaves payment-source readiness
+unknown and payability/legality/input unverified; it adds no known choice
+candidate. See [the contract and frozen evidence](docs/current-target-payment.md).
+
 Independent Python 3.11 CLI with normalized JSONL state, finite synthetic tactics, a read-only MTGA Player.log GRE projection, and a Windows native interactive test harness. Runtime uses only the standard library. **Raw GRE never reaches the policy or native executor. MTGA automatic object localization and MTGA input are not enabled.**
 
 MP56 adds explicit State/Event8 and known-candidates v4 for the evidenced current

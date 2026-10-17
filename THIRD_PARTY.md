@@ -1,5 +1,18 @@
 # Source inspection and reuse
 
+## MP57 current target/predictive-payment association (2026-10-17)
+
+Reuses the authenticated RawReducer request/digest/consumed ledger, current
+public target menus/source ability observations, target-member validator,
+Generic2 route checks and Consumer binding/lease/output rechecks. Only one
+explicit State/Event9 and params6 profile plus a diagnostic sidecar are added;
+no candidate version or tap-state interpreter. The frozen MP52 original and
+request-only prefix hashes were reverified before development. A separate
+accepted-pre-request research tap audit remains distinct from current readiness.
+No upstream code/runtime, card/game resource, dependency, new capture or input
+is imported. Old fixtures/contracts remain unchanged.
+[Source, omissions and authority limits](docs/current-target-payment.md).
+
 ## MP56 current one-of-eight Discard (2026-10-17)
 
 Reuses `semantic_hand.project_request/check_request/check_response`, the existing
