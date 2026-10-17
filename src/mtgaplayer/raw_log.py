@@ -548,7 +548,8 @@ class RawFollower:
 
 class RawReducer:
     def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
-                 include_targeted_activate=False, include_current_discard=False, include_target_payment_relation=False):
+                 include_targeted_activate=False, include_current_discard=False, include_target_payment_relation=False,
+                 include_cast_target_members=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
@@ -557,6 +558,7 @@ class RawReducer:
         self._include_targeted_activate = include_targeted_activate
         self._include_current_discard = include_current_discard
         self._include_target_payment_relation = include_target_payment_relation
+        self._include_cast_target_members = include_cast_target_members
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -826,9 +828,12 @@ class RawReducer:
                     self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities,
                         targeted_activate=self._include_targeted_activate, current_discard=self._include_current_discard,
                         target_payment_relation=self._include_target_payment_relation,
+                        cast_target_members=self._include_cast_target_members,
+                        cast_source_refs=self._cast_source_refs() if self._include_cast_target_members else None,
+                        mana_source_refs=self._mana_source_refs() if self._include_cast_target_members else None,
                         current_hand_refs=self._reviewed_current_hand_refs() if self._include_current_discard else None,
                         public_battlefield_refs=(public_battlefield_refs(self)
-                                                if self._include_targeted_activate else None))
+                                                if self._include_targeted_activate or self._include_cast_target_members else None))
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)
@@ -1075,6 +1080,27 @@ class RawReducer:
                 'submission': copy.deepcopy(self.submitted), 'mana': None, 'layout': None,
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}
+
+    def _cast_source_refs(self):
+        """Narrow extra producer proofs for the explicit Cast profile only."""
+        result = []
+        for ref in self._reviewed_current_hand_refs():
+            obj = self.objects[ref]; zone = self.zones[obj['zoneId']]
+            viewers = zone.get('viewers')
+            if (obj.get('visibility') in ('Visibility_Public', 'Visibility_Private') and
+                    type(obj.get('controllerSeatId')) is int and obj['controllerSeatId'] == self.seat and
+                    (zone.get('visibility') == 'Visibility_Public' or
+                     zone.get('visibility') == 'Visibility_Private' and type(viewers) is list and
+                     any(type(s) is int and s == self.seat for s in viewers))):
+                result.append(ref)
+        return result
+
+    def _mana_source_refs(self):
+        from .action_target_menus import public_battlefield_refs
+        return [ref for ref in public_battlefield_refs(self) if
+                self.objects[ref].get('type') == 'GameObjectType_Card' and
+                type(self.objects[ref].get('ownerSeatId')) is int and self.objects[ref]['ownerSeatId'] == self.seat and
+                type(self.objects[ref].get('controllerSeatId')) is int and self.objects[ref]['controllerSeatId'] == self.seat]
 
     def _reviewed_current_hand_refs(self):
         """Private producer proof; never expose other-player/hidden identities."""

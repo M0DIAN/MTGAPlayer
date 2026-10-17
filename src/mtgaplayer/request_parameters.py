@@ -101,7 +101,15 @@ def effect_cost_objects(visible):
 
 
 def project(message, visible, seat=None, source_abilities=None, *, targeted_activate=False,
-            public_battlefield_refs=None, current_discard=False, current_hand_refs=None, target_payment_relation=False):
+            public_battlefield_refs=None, current_discard=False, current_hand_refs=None, target_payment_relation=False,
+            cast_target_members=False, cast_source_refs=None, mana_source_refs=None):
+    if cast_target_members:
+        from .cast_target_members import project as cast_project
+        try:
+            return cast_project(message, visible, seat, public_battlefield_refs or [],
+                                cast_source_refs or [], mana_source_refs or [])
+        except (ValueError, TypeError, KeyError, RecursionError):
+            pass
     if target_payment_relation:
         from .activate_target_payment import project as joint_project
         try:
@@ -144,6 +152,10 @@ def project(message, visible, seat=None, source_abilities=None, *, targeted_acti
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from .cast_target_members import PROFILE as CAST_PROFILE, check as check_cast
+    if type(value) is dict and value.get('profile') == CAST_PROFILE:
+        check_cast(value, binding, visible)
         return
     from .activate_target_payment import PROFILE as JOINT_PROFILE, check as check_joint
     if type(value) is dict and value.get('profile') == JOINT_PROFILE:
@@ -207,9 +219,16 @@ def check(value, binding, visible):
 
 
 def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
-             allow_target_payment_relation=False):
+             allow_target_payment_relation=False, allow_cast_target_members=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from .cast_target_members import PROFILE as CAST_PROFILE, REQUEST_VERSION as CAST_VERSION
+    if type(rows) is dict and rows.get('profile') == CAST_PROFILE:
+        if not allow_cast_target_members: return None
+        value = {'schema_version': CAST_VERSION, **copy.deepcopy(rows), 'binding': copy.deepcopy(binding),
+                 'historical_response_used': False}
+        check(value, binding, visible)
+        return value
     from .activate_target_payment import PROFILE as JOINT_PROFILE, REQUEST_VERSION as JOINT_VERSION
     if type(rows) is dict and rows.get('profile') == JOINT_PROFILE:
         if not allow_target_payment_relation: return None
@@ -257,11 +276,16 @@ def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_
 
 
 def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False,
-                allow_target_payment_relation=False):
+                allow_target_payment_relation=False, allow_cast_target_members=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    from .cast_target_members import PROFILE as CAST_PROFILE, check_space as check_cast_space
+    if value['profile'] == CAST_PROFILE:
+        if not allow_cast_target_members: raise ValueError('unsupported_cast_target_member_profile')
+        check_cast_space(space, binding, visible)
         return
     from .activate_target_payment import PROFILE as JOINT_PROFILE, target_evidence
     if value['profile'] == JOINT_PROFILE:
