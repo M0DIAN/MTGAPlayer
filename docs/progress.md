@@ -1,3 +1,34 @@
+## MP56 — current one-of-eight Discard proposals (2026-10-17)
+
+Issue65 authorizes evidence-first development/tests/independent review/push/Draft
+PR without merge. Fresh main5bf27ee/treea8683bb and natural CI39008209545 were
+verified. Before coding the exact frozen3237895-byte original SHA9f33dc04…10f0ecb
+was found. Auth72/room77/Full79msg1→request213msg4/state273 reconstructs with zero
+continuity errors; exact current digest/seat and all eight visible own-Hand
+offers/1/1 verify. Actual224 selects position4 and consumes;225's first accepted
+Diff follows273. Historical evidence corroborates only that selected card.
+
+Minimal explicit State/Event8 + params5 + candidate4 reuse the same request
+checks, one reducer/ledger and current Consumer. Whole eight-offer projection
+requires strict physical Card/own Hand/zone/unique membership/self visibility.
+Pure single-selection proposals reuse existing membership/count/nonrepeatable
+logic. No new parser/solver or old generic minimum backfill; defaults, State/
+Event1–7, semantic1–10, candidatev2/v3, manual validators and Advisor stay equal.
+Independent schema and validator-contract drift findings were fixed with request
+ID0 alignment, strict optional deny fields and returned-reference type checks.
+
+Original-byte current and two product CLI processes discover8 before224 then0
+in the consumed poll;225/suffix never revive old proposals. Portable pre/post/
+post-successor-record State8 has scoped aliases/all card IDsnull. Record225 has
+five ordered Diffs; its last current endpoint is distinct from its first Diff.
+Separate processes
+compare complete legacy values at95 request endpoints per State version,
+Event/semantic versions, v2/v3/manual/Advisor/Consumer defaults and replay/watch.
+Final tests/doctor, exact-head independent review and head/synthetic-merge CI
+receipts are reported on the Draft PR. Private bytes/maps/diagnostics stay
+ignored; no MTGA input/new match, latency claim, P10 repair or main merge.
+[Evidence and contract](current-discard.md).
+
 ## MP55 — reviewed current target proposal discovery (2026-10-17)
 
 Issue63 authorizes scoped implementation, fixes, independent review, push and

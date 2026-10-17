@@ -10,7 +10,7 @@ SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
 SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
                    3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4',
                    5: 'mtgaplayer.decision-state.v5', 6: 'mtgaplayer.decision-state.v6',
-                   7: 'mtgaplayer.decision-state.v7'}
+                   7: 'mtgaplayer.decision-state.v7', 8: 'mtgaplayer.decision-state.v8'}
 EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
                    'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
@@ -323,9 +323,16 @@ def build_decision_state(document, *, version=1):
         try:
             result['legal_action_space']['request_parameters'] = assemble(
                 request.get('_request_parameters') if request is not None else None, binding, visible,
-                allow_effect_cost=version >= 6, allow_targeted_activate=version >= 7)
+                allow_effect_cost=version >= 6, allow_targeted_activate=version >= 7, allow_current_discard=version >= 8)
             from .semantic_effect_cost import PROFILE as COST_PROFILE
             parameters = result['legal_action_space']['request_parameters']
+            from .semantic_hand import CURRENT_PROFILE as DISCARD_PROFILE
+            if parameters is not None and parameters['profile'] == DISCARD_PROFILE:
+                result['legal_action_space']['immediate_frontier'] = {'kind': 'select_n',
+                    'availability': 'not_applicable', 'completeness': 'unknown', 'projection': None}
+                result['unresolved'] = sorted(set(result['unresolved']) -
+                    {'select_n_minimum_unknown', 'decision_input_projection_unavailable'} |
+                    {'discard_unfiltered_domain_unknown', 'discard_strategy_unverified'})
             if parameters is not None and parameters['profile'] == COST_PROFILE:
                 result['legal_action_space']['immediate_frontier']['availability'] = 'not_applicable'
                 result['unresolved'] = sorted(set(result['unresolved']) - {'request_type_unsupported'} |
@@ -333,7 +340,7 @@ def build_decision_state(document, *, version=1):
                      'payment_parent_source_unknown', 'cancellation_undo_reachability_unknown',
                      'future_payment_parameters_unknown'})
             check_space(result['legal_action_space'], binding, visible, allow_effect_cost=version >= 6,
-                        allow_targeted_activate=version >= 7)
+                        allow_targeted_activate=version >= 7, allow_current_discard=version >= 8)
         except (ValueError, TypeError, KeyError, RecursionError):
             return None
     return copy.deepcopy(result)

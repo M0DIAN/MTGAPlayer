@@ -12,6 +12,24 @@ def check_proposal(value):
     from .decision_consumer import _bounded_json, _binding, _integer, _keys, _reference
     from .request_parameters import _action
     _bounded_json(value)
+    if type(value) is dict and 'proposed_discard_selection' in value:
+        from .decision_consumer import _list
+        _keys(value, ('request_identity', 'proposed_discard_selection'), ('source_snapshot_ref',))
+        _binding(value['request_identity'], complete=True)
+        if (value['request_identity']['request_id'] is None or
+                value['request_identity']['request_type'] != 'GREMessageType_SelectNReq'):
+            raise ValueError('invalid_choice_proposal')
+        selected = value['proposed_discard_selection']
+        _keys(selected, ('selected_object_refs',))
+        _list(selected['selected_object_refs'], 256)
+        for ref in selected['selected_object_refs']:
+            _integer(ref, 1)
+        if 'source_snapshot_ref' in value:
+            ref = value['source_snapshot_ref']
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != value['request_identity']:
+                raise ValueError('invalid_choice_proposal')
+        return
     if type(value) is dict and 'proposed_current_selected_target_set' in value:
         from .semantic_targets import check_current_selected_proposal
         _keys(value, ('request_identity', 'proposed_current_selected_target_set'), ('source_snapshot_ref',))
@@ -150,6 +168,19 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        if 'proposed_discard_selection' in proposal:
+            from .semantic_hand import CURRENT_PROFILE, CURRENT_SCOPE, check_current_discard_selection
+            if evidence['profile'] != CURRENT_PROFILE:
+                return unknown('current_discard_profile_not_observed')
+            status, reason = check_current_discard_selection(evidence['discard_request'],
+                proposal['proposed_discard_selection']['selected_object_refs'], state['visible_objects'],
+                state['binding']['self_seat'])
+            result.update(validation_scope=CURRENT_SCOPE, known_constraints=status, reasons=[reason],
+                source_snapshot_ref=copy.deepcopy(source_snapshot_ref),
+                complete_costs_verified=False, complete_payment_verified=False, mana_payment_verified=False,
+                unfiltered_domain_complete_verified=False, quantity_rules_complete_verified=False,
+                historical_response_used=False, rules_effect_verified=False)
+            return result
         if 'proposed_current_selected_target_set' in proposal:
             from .semantic_targets import PROFILE, CURRENT_SELECTED_SCOPE, check_current_selected_set
             from .decision_consumer import _binding

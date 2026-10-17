@@ -130,7 +130,7 @@ def _state(value, binding):
     game = value['game']
     _keys(game, ('room_state', 'game_stage', 'source_state_timestamp', 'turn', 'players',
         'hidden_counts', 'mana', 'effective_combat_stats', 'rules') +
-        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7]) else ()))
+        (('stack',) if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]) else ()))
     for key in ('room_state', 'game_stage', 'source_state_timestamp'):
         _require(game[key] is None or type(game[key]) is str)
     turn = game['turn']
@@ -152,7 +152,7 @@ def _state(value, binding):
     _require(type(game['hidden_counts']) is dict)
     for count in game['hidden_counts'].values():
         _integer(count)
-    current_stats = value['schema_version'] in (SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7])
+    current_stats = value['schema_version'] in (SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8])
     _require(all(game[k] is None for k in ('mana', 'rules')) and
              (current_stats or game['effective_combat_stats'] is None) and
              value['effect_claims'] is None)
@@ -169,7 +169,7 @@ def _state(value, binding):
                  (current_stats or obj['effective_power'] is None and obj['effective_toughness'] is None))
     if current_stats:
         _effective_stats(game['effective_combat_stats'], value['visible_objects'])
-    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7]):
+    if value['schema_version'] in (SCHEMA_VERSIONS[3], SCHEMA_VERSIONS[4], SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]):
         _stack(game['stack'], value['visible_objects'])
     cards = value['card_knowledge']
     if cards is not None:
@@ -197,12 +197,13 @@ def _state(value, binding):
     _require(all(type(v) is str for v in value['unresolved']))
     space = value['legal_action_space']
     _keys(space, ('request_type', 'immediate_frontier', 'choice_graph', 'expanded_plans') +
-          (('request_parameters',) if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7]) else ()))
-    if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7]):
+          (('request_parameters',) if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]) else ()))
+    if value['schema_version'] in (SCHEMA_VERSIONS[5], SCHEMA_VERSIONS[6], SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]):
         from .request_parameters import check_space
         check_space(space, binding, value['visible_objects'],
-                    allow_effect_cost=value['schema_version'] in (SCHEMA_VERSIONS[6],SCHEMA_VERSIONS[7]),
-                    allow_targeted_activate=value['schema_version']==SCHEMA_VERSIONS[7])
+                    allow_effect_cost=value['schema_version'] in (SCHEMA_VERSIONS[6],SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]),
+                    allow_targeted_activate=value['schema_version'] in (SCHEMA_VERSIONS[7], SCHEMA_VERSIONS[8]),
+                    allow_current_discard=value['schema_version']==SCHEMA_VERSIONS[8])
     _require(space['request_type'] == binding['request_type'])
     _keys(space['expanded_plans'], ('completeness', 'plans'))
     _require(space['expanded_plans'] == {'completeness': 'unknown', 'plans': None})

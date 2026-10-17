@@ -1,0 +1,1261 @@
+{
+  "before_response": {
+    "schema_version": "mtgaplayer.decision-state.v8",
+    "status": "state_and_request_observed",
+    "binding": {
+      "source_generation": 1,
+      "match": "mp56-portable-match",
+      "game": 1,
+      "self_seat": 1,
+      "game_state_id": 30001,
+      "request_id": 20001,
+      "request_type": "GREMessageType_SelectNReq"
+    },
+    "source": {
+      "format": "player-log-gre-v1",
+      "mode": "offline",
+      "byte_offset": null,
+      "phase": null,
+      "stopped": null,
+      "partial_record": false,
+      "freshness_verified": false,
+      "snapshot_scope": "single_reducer_document"
+    },
+    "game": {
+      "room_state": "MatchGameRoomStateType_Playing",
+      "game_stage": "GameStage_Play",
+      "source_state_timestamp": null,
+      "turn": {
+        "turnNumber": 12,
+        "activePlayer": 1,
+        "decisionPlayer": 1,
+        "phase": "Phase_Ending",
+        "step": "Step_Cleanup",
+        "priorityPlayer": 1
+      },
+      "players": [
+        {
+          "seat": 1,
+          "life": 7
+        },
+        {
+          "seat": 2,
+          "life": 20
+        }
+      ],
+      "hidden_counts": {
+        "unknown:ZoneType_Limbo": 6,
+        "1:ZoneType_Library": 47,
+        "2:ZoneType_Hand": 2,
+        "2:ZoneType_Library": 46
+      },
+      "mana": null,
+      "effective_combat_stats": {
+        "basis": "accepted_gre_reduced_object_literals",
+        "scope": "visible_battlefield",
+        "effect_sources": null,
+        "durations": null
+      },
+      "rules": null,
+      "stack": {
+        "availability": "unknown",
+        "zone_id": null,
+        "members": null,
+        "order_basis": "literal_gre_zone_objectInstanceIds"
+      }
+    },
+    "visible_objects": [
+      {
+        "instance_id": 10001,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10002,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10003,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10004,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10005,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10006,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10007,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10008,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10009,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10010,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10011,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10012,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10013,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10014,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10015,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10016,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10017,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10018,
+        "card_id": null,
+        "zone": "ZoneType_Graveyard",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10019,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10020,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10021,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10022,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10023,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10024,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": 3,
+        "effective_toughness": 3
+      },
+      {
+        "instance_id": 10025,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      }
+    ],
+    "card_knowledge": null,
+    "effect_claims": null,
+    "legal_action_space": {
+      "request_type": "GREMessageType_SelectNReq",
+      "immediate_frontier": {
+        "kind": "select_n",
+        "availability": "not_applicable",
+        "completeness": "unknown",
+        "projection": null
+      },
+      "choice_graph": null,
+      "expanded_plans": {
+        "completeness": "unknown",
+        "plans": null
+      },
+      "request_parameters": {
+        "schema_version": "mtgaplayer.request-parameters.v5",
+        "profile": "current_visible_own_hand_discard_one_of_eight",
+        "binding": {
+          "source_generation": 1,
+          "match": "mp56-portable-match",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 30001,
+          "request_id": 20001,
+          "request_type": "GREMessageType_SelectNReq"
+        },
+        "discard_request": {
+          "kind": "select_n",
+          "payload": {
+            "profile": "observed_turn_based_discard_single",
+            "offered_object_refs": [
+              10025,
+              10021,
+              10011,
+              10005,
+              10004,
+              10003,
+              10002,
+              10001
+            ],
+            "min_sel": 1,
+            "max_sel": 1,
+            "prompt_numbers": [
+              1
+            ],
+            "id_type": "IdType_InstanceId",
+            "list_type": "SelectionListType_Dynamic",
+            "context": "SelectionContext_Discard",
+            "option_context": "OptionContext_TurnBased",
+            "validation_type": "SelectionValidationType_NonRepeatable",
+            "allow_cancel": null,
+            "source_object_ref": null,
+            "unfiltered_domain": null,
+            "min_weight": null,
+            "max_weight": null
+          }
+        },
+        "historical_response_used": false
+      }
+    },
+    "unresolved": [
+      "complete_legality_unknown",
+      "current_power_toughness_scope_limited",
+      "current_power_toughness_unknown_where_null",
+      "discard_strategy_unverified",
+      "discard_unfiltered_domain_unknown",
+      "effective_stat_durations_unknown",
+      "effective_stat_effect_sources_unknown",
+      "effects_not_observed",
+      "mana_payment_unknown",
+      "public_stack_membership_unknown",
+      "response_encoding_unknown",
+      "select_n_combinations_unverified",
+      "server_acceptance_unknown",
+      "stack_order_orientation_unverified",
+      "stack_resolution_unverified"
+    ],
+    "execution": {
+      "actionable": false,
+      "executor_connected": false,
+      "legal_choice_verified": false,
+      "complete_legality_verified": false,
+      "response_encoding_verified": false,
+      "server_acceptance_verified": false,
+      "execution_ready": false,
+      "input_sent": false
+    },
+    "read_only": true
+  },
+  "proposals": [
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10025
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10021
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10011
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10005
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10004
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10003
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10002
+        ]
+      }
+    },
+    {
+      "request_identity": {
+        "source_generation": 1,
+        "match": "mp56-portable-match",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 30001,
+        "request_id": 20001,
+        "request_type": "GREMessageType_SelectNReq"
+      },
+      "proposed_discard_selection": {
+        "selected_object_refs": [
+          10001
+        ]
+      }
+    }
+  ],
+  "after_response": {
+    "schema_version": "mtgaplayer.decision-state.v8",
+    "status": "state_observed_without_request",
+    "binding": {
+      "source_generation": 1,
+      "match": "mp56-portable-match",
+      "game": 1,
+      "self_seat": 1,
+      "game_state_id": 30001,
+      "request_id": null,
+      "request_type": null
+    },
+    "source": {
+      "format": "player-log-gre-v1",
+      "mode": "watch",
+      "byte_offset": null,
+      "phase": "append",
+      "stopped": false,
+      "partial_record": false,
+      "freshness_verified": false,
+      "snapshot_scope": "single_reducer_document"
+    },
+    "game": {
+      "room_state": "MatchGameRoomStateType_Playing",
+      "game_stage": "GameStage_Play",
+      "source_state_timestamp": null,
+      "turn": {
+        "turnNumber": 12,
+        "activePlayer": 1,
+        "decisionPlayer": 1,
+        "phase": "Phase_Ending",
+        "step": "Step_Cleanup",
+        "priorityPlayer": 1
+      },
+      "players": [
+        {
+          "seat": 1,
+          "life": 7
+        },
+        {
+          "seat": 2,
+          "life": 20
+        }
+      ],
+      "hidden_counts": {
+        "unknown:ZoneType_Limbo": 6,
+        "1:ZoneType_Library": 47,
+        "2:ZoneType_Hand": 2,
+        "2:ZoneType_Library": 46
+      },
+      "mana": null,
+      "effective_combat_stats": {
+        "basis": "accepted_gre_reduced_object_literals",
+        "scope": "visible_battlefield",
+        "effect_sources": null,
+        "durations": null
+      },
+      "rules": null,
+      "stack": {
+        "availability": "unknown",
+        "zone_id": null,
+        "members": null,
+        "order_basis": "literal_gre_zone_objectInstanceIds"
+      }
+    },
+    "visible_objects": [
+      {
+        "instance_id": 10001,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10002,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10003,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10004,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10005,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10006,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10007,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10008,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10009,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10010,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10011,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10012,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10013,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10014,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10015,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10016,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10017,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10018,
+        "card_id": null,
+        "zone": "ZoneType_Graveyard",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10019,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10020,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": true,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10021,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10022,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10023,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10024,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": 3,
+        "effective_toughness": 3
+      },
+      {
+        "instance_id": 10025,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      }
+    ],
+    "card_knowledge": null,
+    "effect_claims": null,
+    "legal_action_space": {
+      "request_type": null,
+      "immediate_frontier": {
+        "kind": null,
+        "availability": "not_provided",
+        "completeness": "unknown",
+        "projection": null
+      },
+      "choice_graph": null,
+      "expanded_plans": {
+        "completeness": "unknown",
+        "plans": null
+      },
+      "request_parameters": null
+    },
+    "unresolved": [
+      "complete_legality_unknown",
+      "current_own_request_not_provided",
+      "current_power_toughness_scope_limited",
+      "current_power_toughness_unknown_where_null",
+      "effective_stat_durations_unknown",
+      "effective_stat_effect_sources_unknown",
+      "effects_not_observed",
+      "mana_payment_unknown",
+      "public_stack_membership_unknown",
+      "response_encoding_unknown",
+      "server_acceptance_unknown",
+      "stack_order_orientation_unverified",
+      "stack_resolution_unverified"
+    ],
+    "execution": {
+      "actionable": false,
+      "executor_connected": false,
+      "legal_choice_verified": false,
+      "complete_legality_verified": false,
+      "response_encoding_verified": false,
+      "server_acceptance_verified": false,
+      "execution_ready": false,
+      "input_sent": false
+    },
+    "read_only": true
+  },
+  "after_successor_record": {
+    "schema_version": "mtgaplayer.decision-state.v8",
+    "status": "state_observed_without_request",
+    "binding": {
+      "source_generation": 1,
+      "match": "mp56-portable-match",
+      "game": 1,
+      "self_seat": 1,
+      "game_state_id": 30002,
+      "request_id": null,
+      "request_type": null
+    },
+    "source": {
+      "format": "player-log-gre-v1",
+      "mode": "watch",
+      "byte_offset": null,
+      "phase": "append",
+      "stopped": false,
+      "partial_record": false,
+      "freshness_verified": false,
+      "snapshot_scope": "single_reducer_document"
+    },
+    "game": {
+      "room_state": "MatchGameRoomStateType_Playing",
+      "game_stage": "GameStage_Play",
+      "source_state_timestamp": null,
+      "turn": {
+        "turnNumber": 13,
+        "activePlayer": 2,
+        "decisionPlayer": 2,
+        "phase": "Phase_Main1",
+        "step": null,
+        "priorityPlayer": 2
+      },
+      "players": [
+        {
+          "seat": 1,
+          "life": 7
+        },
+        {
+          "seat": 2,
+          "life": 20
+        }
+      ],
+      "hidden_counts": {
+        "unknown:ZoneType_Limbo": 6,
+        "1:ZoneType_Library": 47,
+        "2:ZoneType_Hand": 3,
+        "2:ZoneType_Library": 45
+      },
+      "mana": null,
+      "effective_combat_stats": {
+        "basis": "accepted_gre_reduced_object_literals",
+        "scope": "visible_battlefield",
+        "effect_sources": null,
+        "durations": null
+      },
+      "rules": null,
+      "stack": {
+        "availability": "unknown",
+        "zone_id": null,
+        "members": null,
+        "order_basis": "literal_gre_zone_objectInstanceIds"
+      }
+    },
+    "visible_objects": [
+      {
+        "instance_id": 10001,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10002,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10003,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10005,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10006,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10007,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10008,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10009,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10010,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10011,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10012,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10013,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10014,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10015,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10016,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10017,
+        "card_id": null,
+        "zone": "ZoneType_Exile",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10018,
+        "card_id": null,
+        "zone": "ZoneType_Graveyard",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10019,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10020,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": 2,
+        "effective_toughness": 1
+      },
+      {
+        "instance_id": 10021,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10022,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10023,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10024,
+        "card_id": null,
+        "zone": "ZoneType_Battlefield",
+        "owner_seat": 2,
+        "controller_seat": 2,
+        "tapped": null,
+        "effective_power": 3,
+        "effective_toughness": 3
+      },
+      {
+        "instance_id": 10025,
+        "card_id": null,
+        "zone": "ZoneType_Hand",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      },
+      {
+        "instance_id": 10026,
+        "card_id": null,
+        "zone": "ZoneType_Graveyard",
+        "owner_seat": 1,
+        "controller_seat": 1,
+        "tapped": null,
+        "effective_power": null,
+        "effective_toughness": null
+      }
+    ],
+    "card_knowledge": null,
+    "effect_claims": null,
+    "legal_action_space": {
+      "request_type": null,
+      "immediate_frontier": {
+        "kind": null,
+        "availability": "not_provided",
+        "completeness": "unknown",
+        "projection": null
+      },
+      "choice_graph": null,
+      "expanded_plans": {
+        "completeness": "unknown",
+        "plans": null
+      },
+      "request_parameters": null
+    },
+    "unresolved": [
+      "complete_legality_unknown",
+      "current_own_request_not_provided",
+      "current_power_toughness_scope_limited",
+      "current_power_toughness_unknown_where_null",
+      "effective_stat_durations_unknown",
+      "effective_stat_effect_sources_unknown",
+      "effects_not_observed",
+      "mana_payment_unknown",
+      "public_stack_membership_unknown",
+      "response_encoding_unknown",
+      "server_acceptance_unknown",
+      "stack_order_orientation_unverified",
+      "stack_resolution_unverified"
+    ],
+    "execution": {
+      "actionable": false,
+      "executor_connected": false,
+      "legal_choice_verified": false,
+      "complete_legality_verified": false,
+      "response_encoding_verified": false,
+      "server_acceptance_verified": false,
+      "execution_ready": false,
+      "input_sent": false
+    },
+    "read_only": true
+  }
+}

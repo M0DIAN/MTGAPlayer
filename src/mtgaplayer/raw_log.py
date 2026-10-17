@@ -548,13 +548,14 @@ class RawFollower:
 
 class RawReducer:
     def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
-                 include_targeted_activate=False):
+                 include_targeted_activate=False, include_current_discard=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
         self._include_state_messages = include_state_messages
         self._include_request_parameters = include_request_parameters
         self._include_targeted_activate = include_targeted_activate
+        self._include_current_discard = include_current_discard
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -822,7 +823,8 @@ class RawReducer:
                         self.objects[o['instance_id']].get('visibility') == 'Visibility_Public'}
                     from .action_target_menus import public_battlefield_refs
                     self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities,
-                        targeted_activate=self._include_targeted_activate,
+                        targeted_activate=self._include_targeted_activate, current_discard=self._include_current_discard,
+                        current_hand_refs=self._reviewed_current_hand_refs() if self._include_current_discard else None,
                         public_battlefield_refs=(public_battlefield_refs(self)
                                                 if self._include_targeted_activate else None))
                 if self.observer is not None:
@@ -1071,6 +1073,28 @@ class RawReducer:
                 'submission': copy.deepcopy(self.submitted), 'mana': None, 'layout': None,
                 'opportunity': None, 'rules': None, 'actionable': False,
                 'unsupported_broadcast_requests': self.unsupported_broadcast_requests}
+
+    def _reviewed_current_hand_refs(self):
+        """Private producer proof; never expose other-player/hidden identities."""
+        from collections import Counter
+        memberships = Counter(ref for zone in self.zones.values()
+            if type(zone.get('objectInstanceIds')) is list
+            for ref in zone['objectInstanceIds'] if _id(ref))
+        refs = []
+        for zone in self.zones.values():
+            if (zone.get('type') != 'ZoneType_Hand' or type(zone.get('ownerSeatId')) is not int or
+                    zone['ownerSeatId'] != self.seat):
+                continue
+            for ref in zone.get('objectInstanceIds', []) if type(zone.get('objectInstanceIds')) is list else []:
+                obj = self.objects.get(ref, {})
+                viewers = obj.get('viewers', [])
+                if (memberships[ref] == 1 and obj.get('type') == 'GameObjectType_Card' and
+                        obj.get('zoneId') == zone.get('zoneId') and type(obj.get('zoneId')) is int and
+                        type(obj.get('ownerSeatId')) is int and obj['ownerSeatId'] == self.seat and
+                        (obj.get('visibility') == 'Visibility_Public' or type(viewers) is list and
+                         any(type(seat) is int and seat == self.seat for seat in viewers))):
+                    refs.append(ref)
+        return refs
 
     def _public_stack(self, current):
         """Private literal membership staging; no top/resolution semantics.
