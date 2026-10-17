@@ -12,6 +12,23 @@ def check_proposal(value):
     from .decision_consumer import _bounded_json, _binding, _integer, _keys, _reference
     from .request_parameters import _action
     _bounded_json(value)
+    if type(value) is dict and 'proposed_activate_target_member' in value:
+        _keys(value,('request_identity','list_position','proposed_activate_target_member'),('source_snapshot_ref',))
+        _binding(value['request_identity'],complete=True)
+        if (value['request_identity']['request_id'] is None or
+                value['request_identity']['request_type']!='GREMessageType_ActionsAvailableReq'):
+            raise ValueError('invalid_choice_proposal')
+        _integer(value['list_position'],0,255)
+        member=value['proposed_activate_target_member']
+        _keys(member,('identifier_refs','target_idx','object_ref'))
+        _keys(member['identifier_refs'],('instanceId','grpId','facetId','abilityGrpId','uniqueAbilityId'))
+        for ref in member['identifier_refs'].values():_integer(ref,1)
+        _integer(member['target_idx'],1);_integer(member['object_ref'],1)
+        if 'source_snapshot_ref' in value:
+            ref=value['source_snapshot_ref']
+            _reference(ref,ref['session_id'],ref['sequence'],snapshot=True)
+            if ref['binding']!=value['request_identity']:raise ValueError('invalid_choice_proposal')
+        return
     if (type(value) is dict and type(value.get('request_identity')) is dict and
             value['request_identity'].get('request_type') == 'GREMessageType_PayCostsReq'):
         from .decision_consumer import _list
@@ -119,6 +136,23 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        from .action_target_menus import CURRENT_PROFILE,CURRENT_SCOPE,check_member
+        if evidence['profile']==CURRENT_PROFILE:
+            if 'proposed_activate_target_member' not in proposal:
+                return unknown('target_member_proposal_required')
+            status,reason,checks=check_member(evidence,proposal['proposed_activate_target_member'],
+                proposal['list_position'],state['visible_objects'],state['binding']['self_seat'])
+            result.update(validation_scope=CURRENT_SCOPE,known_constraints=status,reasons=[reason],
+                known_checks=checks,source_snapshot_ref=copy.deepcopy(source_snapshot_ref),
+                target_selection_count=None,target_minimum=None,target_maximum=None,
+                target_domain_complete_verified=False,target_selection_legality_verified=False,
+                target_set_combinations_enumerated=False,complete_costs_verified=False,
+                complete_payment_verified=False,target_quantity_verified=False,
+                global_target_legality_verified=False,historical_response_used=False,
+                future_parameters='unknown')
+            return result
+        if 'proposed_activate_target_member' in proposal:
+            return unknown('current_target_member_profile_not_observed')
         from . import semantic_effect_cost as cost
         if state['binding']['request_type'] == cost.REQUEST:
             if evidence['profile'] != cost.PROFILE:

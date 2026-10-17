@@ -108,6 +108,31 @@ $log = '<owner-only immutable Player.log snapshot>'
 
 The [real Equip fixture provenance](tests/fixtures/semantic_activate_targets_real_v10.README.md) records original locations, hashes and omissions. Its objects have no catalog IDs; only strict public BF/Stack endpoints are retained. `verified_known_constraints` covers the sampled historical relationships, not complete payment/legality, unique-ability continuation, raw-source reauthentication, response encoding, effect causation or server acceptance. Every execution/input flag stays false. The default export version remains1; v1–v9, State/Event versions and the existing Cast linker are unchanged.
 
+MP53 adds opt-in State/Event7 for a **current** targeted-Activate member proposal,
+before its response exists. It retains the complete offered inventory and checks
+the proposed original position, exact source/ability identities, current public
+Battlefield owner/controller and unique ability pairing, slot and explicit
+offered member. The v4 request-parameters profile accepts only a reviewed string
+highlight and discards its value. Missing quantity bounds stay unknown; this is
+not a final target set, full legality check or response encoder. Known-choice
+enumeration requires an explicit member proposal for this profile.
+
+```powershell
+python -m mtgaplayer replay "<explicit Player.log>" --format player-log --decision-state-version 7
+python -m mtgaplayer watch "<explicit Player.log>" --decision-events --decision-state-version 7 --samples 1000 | python -m mtgaplayer consume-events --validate-choice "<one-member-proposal.json>"
+```
+
+The proposal has `request_identity`, `list_position`, and
+`proposed_activate_target_member` with exact `identifier_refs`
+(`instanceId`, `grpId`, `facetId`, `abilityGrpId`, `uniqueAbilityId`), `target_idx`
+and one `object_ref`. Optional `source_snapshot_ref` must match the current
+Consumer. Pure/offline checks are research; only the existing Consumer can check
+an appended still-current snapshot, and its response/replacement/partial/gap/
+expiry/stop gates revoke the old proposal. Every input/execution flag stays false.
+State/Event1–6, semantics1–10, menu v2 and defaults remain unchanged. See the
+[real request fixture](tests/fixtures/decision_state_activate_target_member_real_v7.README.md)
+and [original-byte before/after verification](docs/current-activate-target-member.md).
+
 The default reducer consumes the exact current `SubmitTargetsReq → SelectTargetsReq` terminal pair. `SelectTargetsResp` consumes only its own old request; a later request must be accepted under its new identity. Stale, mixed, wrong-type, replaced or extra-body target terminal messages cannot consume a current request.
 
 `replay --format player-log` reads a specified Player.log and reports a structurally continuous, player-visible snapshot. `watch` polls an explicit file for a finite number of samples (1–1000) at a bounded interval and emits JSON lines. Its first sample processes history; later samples process only appended bytes. `--max-history-bytes` bounds startup or replacement replay (default 64 MiB). Replacement/truncation resets identity and waits for a new authenticated room and Full. Empty polls do not change `source_state_timestamp`; the final sample marks `stopped`. Raw source results always have `actionable: false`, `input_sent: false`, and `executor_connected: false`. A structurally valid offline snapshot is historical evidence, not a live action opportunity. In finite `watch`, `source.candidate_event` is non-null only when a matching GRE request appears among this poll's newly framed append records and remains complete, supported and own-seat-verified; initial history, unrelated appends (including completion of an unrelated partial tail), idle polls and retransmissions cannot emit it. The event repeats the verified request identity/count only (full evidence remains in `current.request`) and always carries `read_only: true`. Even this append-only observation is not a legal action or a proof of current screen/input readiness; `current.actionable`, `input_sent` and `executor_connected` remain false.

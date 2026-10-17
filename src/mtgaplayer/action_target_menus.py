@@ -34,7 +34,7 @@ def identity(req):
     return (b['generation'],b['match'],b['game'],b['self_seat'],req['game_state_id'],req['id'])
 
 
-def reviewed_row(row,position,visible,seat):
+def reviewed_row(row,position,visible,seat,*,allow_highlight=False):
     if (type(row) is not dict or not set(row)<=ALLOWED or
             row.get('actionType')!='ActionType_Activate' or
             type(row.get('shouldStop')) is not bool or
@@ -58,7 +58,10 @@ def reviewed_row(row,position,visible,seat):
         return None
     refs=[];seen=set()
     for cand in candidates:
-        if type(cand) is not dict or set(cand)!={'targetInstanceId'}:
+        if (type(cand) is not dict or
+                (set(cand)!={'targetInstanceId'} and not
+                 (allow_highlight and set(cand)=={'targetInstanceId','highlight'})) or
+                'highlight' in cand and type(cand['highlight']) is not str):
             return None
         ref=cand['targetInstanceId']
         obj=visible.get(ref) if _id(ref) and ref>0 else None
@@ -73,6 +76,169 @@ def reviewed_row(row,position,visible,seat):
             'selection_count':None,'parameter_mode':'future_choice_unverified',
             'offered_targets_form_complete_legal_domain':False,
             'target_selection_legality_verified':False}
+
+
+# One opt-in current-request member profile. The v2 observer above/below and
+# historical sample contracts retain their original strict projection.
+CURRENT_VERSION='mtgaplayer.request-parameters.v4'
+CURRENT_PROFILE='current_public_activate_target_member'
+CURRENT_SCOPE='current_request_activate_target_member_consistency'
+
+
+def public_battlefield_refs(reducer):
+    """Strict raw public object AND agreeing unique public BF membership."""
+    result=[]
+    for obj in reducer.document()['current'].get('objects',[]):
+        ref=obj['id'];raw=reducer.objects.get(ref,{})
+        zone=reducer.zones.get(raw.get('zoneId'),{})
+        memberships=[z for z in reducer.zones.values()
+                     if ref in z.get('objectInstanceIds',[])]
+        if (raw.get('visibility')=='Visibility_Public' and
+                zone.get('visibility')=='Visibility_Public' and
+                zone.get('type')=='ZoneType_Battlefield' and
+                len(memberships)==1 and memberships[0] is zone):
+            result.append(ref)
+    return result
+
+
+def project_current(message,visible,seat,source_abilities,public_refs):
+    """Called ONLY by RawReducer's accepted current/digest-bound request path.
+
+    Preserve every original position as opaque fixed metadata. Decode only a
+    reviewed target menu; payment values and future target domains stay absent.
+    """
+    from .semantic_activate import _base,ability_observation
+    from .raw_log import _frontier_row
+    from .request_parameters import LiteralRefs
+    from .semantic_samples import _need
+    _need(type(message) is dict and not set(message)-{'type','systemSeatIds',
+        'msgId','gameStateId','prompt','actionsAvailableReq'} and message.get('type')==REQ)
+    body=message.get('actionsAvailableReq')
+    _need(type(body) is dict and not set(body)-{'actions','inactiveActions'})
+    actions=body.get('actions')
+    _need(type(actions) is list and len(actions)<=256 and any(type(r) is dict and
+        r.get('actionType')=='ActionType_Activate' and r.get('targets') for r in actions))
+    objects={o['instance_id']:o for o in visible}
+    _need(len(objects)==len(visible))
+    public={ref:{'zone':objects[ref]['zone'],'controller':objects[ref]['controller_seat'],
+                 'card_id':objects[ref]['card_id']} for ref in public_refs}
+    rows=[]
+    for position,raw in enumerate(actions):
+        base=_base(raw,LiteralRefs(),())
+        source=base['identifier_refs'].get('instanceId')
+        _need(source is None or source in objects)
+        shape=_frontier_row(position,base['action_type'],raw)
+        menu=reviewed_row(raw,position,public,seat,allow_highlight=True)
+        pair=(ability_observation(raw,source_abilities.get(source))
+              if base['action_type']=='ActionType_Activate' and source in public
+              else None)
+        rows.append({'list_position':position,**base,
+            'parameter_shapes':shape['known_parameter_shapes'],
+            'other_fields_present':shape['other_top_level_fields_present'],
+            'target_menu':menu,'ability_binding':pair})
+    for row in rows:
+        if sum(other['action_type']==row['action_type'] and
+               other['identifier_refs']==row['identifier_refs'] for other in rows)!=1:
+            row['target_menu']=None
+    return {'profile':CURRENT_PROFILE,'rows':rows,'public_battlefield_refs':public_refs}
+
+
+def check_current(value,binding,visible):
+    """Strict sanitized contract; raw authentication remains the producer's job."""
+    from .semantic_samples import _keys,_need
+    from .semantic_activate import _base,ABILITY
+    from .semantic_samples import PARAMS
+    from .request_parameters import LiteralRefs
+    from .decision_consumer import _binding
+    _keys(value,('schema_version','profile','binding','rows','public_battlefield_refs',
+                 'historical_response_used'))
+    _binding(value['binding'],complete=True)
+    _need(value['schema_version']==CURRENT_VERSION and value['profile']==CURRENT_PROFILE and
+          value['binding']==binding and binding['request_type']==REQ and
+          binding['request_id'] is not None and value['historical_response_used'] is False)
+    objects={o['instance_id']:o for o in visible};_need(len(objects)==len(visible))
+    refs=value['public_battlefield_refs']
+    _need(type(refs) is list and len(refs)<=512 and all(_id(r) for r in refs) and
+          len(refs)==len(set(refs)) and all(r in objects and
+          objects[r]['zone']=='ZoneType_Battlefield' for r in refs))
+    rows=value['rows'];_need(type(rows) is list and len(rows)<=256)
+    for i,row in enumerate(rows):
+        _keys(row,('list_position','action_type','identifier_refs','flags',
+                   'parameter_shapes','other_fields_present','target_menu','ability_binding'))
+        _need(type(row['list_position']) is int and row['list_position']==i)
+        raw={'actionType':row['action_type'],**row['identifier_refs'],**row['flags']}
+        base=_base(raw,LiteralRefs(),())
+        _need(all(row[k]==base[k] for k in base))
+        source=row['identifier_refs'].get('instanceId')
+        _need(source is None or source in objects)
+        shapes=row['parameter_shapes']
+        _need(type(shapes) is dict and not set(shapes)-set(PARAMS) and
+              type(row['other_fields_present']) is bool)
+        for key,shape in shapes.items():
+            count='auto_tap_actions_count' if key=='autoTapSolution' else 'element_count'
+            _keys(shape,('kind',count))
+            _need(shape['kind'] in ('object' if key=='autoTapSolution' else 'array','unexpected'))
+            _need(shape[count] is None or type(shape[count]) is int and 0<=shape[count]<=1000000)
+        pair=row['ability_binding']
+        _need(pair in ABILITY or pair is None)
+        _need(pair is None or row['action_type']=='ActionType_Activate' and source in refs)
+        menu=row['target_menu']
+        if menu is None:continue
+        _need(sum(other['action_type']==row['action_type'] and
+                  other['identifier_refs']==row['identifier_refs'] for other in rows)==1)
+        _keys(menu,('list_position','action_type','source_visible_object_ref','target_idx',
+                   'offered_visible_target_refs','offered_visible_target_count','scope',
+                   'selection_count','parameter_mode','offered_targets_form_complete_legal_domain',
+                   'target_selection_legality_verified'))
+        targets=menu['offered_visible_target_refs']
+        _need(row['action_type']==menu['action_type']=='ActionType_Activate' and
+              type(menu['list_position']) is int and menu['list_position']==i and
+              _id(menu['source_visible_object_ref']) and menu['source_visible_object_ref']>0 and
+              menu['source_visible_object_ref']==source and source in refs and
+              (objects[source]['card_id'] is None or objects[source]['card_id']==row['identifier_refs']['grpId']) and
+              _id(menu['target_idx']) and menu['target_idx']>0 and
+              type(targets) is list and 1<=len(targets)<=64 and
+              all(_id(t) and t in refs for t in targets) and len(targets)==len(set(targets)) and
+              type(menu['offered_visible_target_count']) is int and menu['offered_visible_target_count']==len(targets) and
+              menu['scope']=='reviewed_public_battlefield_ids_only' and
+              menu['selection_count'] is None and menu['parameter_mode']=='future_choice_unverified' and
+              menu['offered_targets_form_complete_legal_domain'] is False and
+              menu['target_selection_legality_verified'] is False and
+              not row['other_fields_present'] and shapes.get('targets')=={'kind':'array','element_count':1})
+
+
+def check_member(value,member,position,visible,seat):
+    """One explicit member, never a final target set or legal-action verdict."""
+    unknown='insufficient_evidence';bad='violated_known_constraints';good='verified_known_constraints'
+    checks={k:unknown for k in ('offered_position_identity','source_identity','ability_identity',
+                               'target_slot','explicit_menu_membership','target_quantity')}
+    rows=value['rows']
+    if position>=len(rows):return unknown,'proposal_binding_invalid',checks
+    row=rows[position]
+    if row['action_type']!='ActionType_Activate' or member['identifier_refs']!=row['identifier_refs']:
+        return unknown,'proposal_binding_invalid',checks
+    checks['offered_position_identity']=good
+    menu=row['target_menu']
+    if menu is None:return unknown,'target_menu_profile_not_observed',checks
+    source=next(o for o in visible if o['instance_id']==menu['source_visible_object_ref'])
+    if source['owner_seat']!=seat or source['controller_seat']!=seat:
+        return unknown,'own_public_battlefield_source_not_verified',checks
+    checks['source_identity']=good
+    if row['ability_binding']=='observed_group_contradiction':
+        checks['ability_identity']=bad
+        return bad,'current_source_ability_group_contradiction',checks
+    if row['ability_binding']!='verified_observed_pair':
+        return unknown,'unique_public_source_ability_pair_not_verified',checks
+    checks['ability_identity']=good
+    if member['target_idx']!=menu['target_idx']:
+        checks['target_slot']=bad
+        return bad,'target_slot_differs_from_this_offered_row',checks
+    checks['target_slot']=good
+    if member['object_ref'] not in menu['offered_visible_target_refs']:
+        checks['explicit_menu_membership']=bad
+        return bad,'target_not_in_this_explicit_menu',checks
+    checks['explicit_menu_membership']=good
+    return good,'current_explicit_target_member_consistent',checks
 
 
 def project(reducer,message,req):

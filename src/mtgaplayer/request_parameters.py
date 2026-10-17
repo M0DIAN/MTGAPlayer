@@ -99,7 +99,14 @@ def effect_cost_objects(visible):
              'owner': obj.get('owner_seat'), 'controller': obj['controller_seat']} for obj in visible]
 
 
-def project(message, visible, seat=None, source_abilities=None):
+def project(message, visible, seat=None, source_abilities=None, *, targeted_activate=False,
+            public_battlefield_refs=None):
+    if targeted_activate:
+        from .action_target_menus import project_current
+        try:
+            return project_current(message,visible,seat,source_abilities or {},public_battlefield_refs or [])
+        except (ValueError,TypeError,KeyError,RecursionError):
+            pass
     from . import semantic_effect_cost as cost
     if message.get('type') == cost.REQUEST:
         try:
@@ -118,6 +125,10 @@ def project(message, visible, seat=None, source_abilities=None):
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from .action_target_menus import CURRENT_PROFILE,check_current
+    if type(value) is dict and value.get('profile')==CURRENT_PROFILE:
+        check_current(value,binding,visible)
         return
     from . import semantic_effect_cost as cost
     if type(value) is dict and value.get('profile') == cost.PROFILE:
@@ -161,9 +172,16 @@ def check(value, binding, visible):
             raise ValueError('invalid_request_parameters')
 
 
-def assemble(rows, binding, visible, *, allow_effect_cost=False):
+def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from .action_target_menus import CURRENT_PROFILE,CURRENT_VERSION
+    if type(rows) is dict and rows.get('profile')==CURRENT_PROFILE:
+        if not allow_targeted_activate:return None
+        value={'schema_version':CURRENT_VERSION,**copy.deepcopy(rows),
+               'binding':copy.deepcopy(binding),'historical_response_used':False}
+        check(value,binding,visible)
+        return value
     from . import semantic_effect_cost as cost
     if type(rows) is dict and rows.get('profile') == cost.PROFILE:
         if not allow_effect_cost:
@@ -188,12 +206,15 @@ def assemble(rows, binding, visible, *, allow_effect_cost=False):
     return value
 
 
-def check_space(space, binding, visible, *, allow_effect_cost=False):
+def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
         return
+    from .action_target_menus import CURRENT_PROFILE
+    if value['profile']==CURRENT_PROFILE and not allow_targeted_activate:
+        raise ValueError('unsupported_target_member_profile')
     from . import semantic_effect_cost as cost
     if value['profile'] == cost.PROFILE:
         if (not allow_effect_cost or space['request_type'] != cost.REQUEST or
@@ -202,7 +223,7 @@ def check_space(space, binding, visible, *, allow_effect_cost=False):
             raise ValueError('request_projection_mismatch')
         return
     from .semantic_activate import PROFILE as ACTIVATE_PROFILE
-    if value['profile'] not in (PROFILE, ACTIVATE_PROFILE):
+    if value['profile'] not in (PROFILE, ACTIVATE_PROFILE, CURRENT_PROFILE):
         # Target constraints live in this explicit v5 profile. The legacy graph
         # remains unknown rather than receiving an invented action inventory.
         if (space['request_type'] != 'GREMessageType_SelectTargetsReq' or
@@ -211,7 +232,7 @@ def check_space(space, binding, visible, *, allow_effect_cost=False):
         return
     from .raw_log import _RAW_ID_FIELDS
     frontier, graph = space['immediate_frontier']['projection'], space['choice_graph']
-    partial = value['profile'] == ACTIVATE_PROFILE
+    partial = value['profile'] in (ACTIVATE_PROFILE,CURRENT_PROFILE)
     rows = value['rows'] if partial else value['actions']
     if (type(frontier) is not dict or frontier.get('engine_active_action_count') != len(rows) or
             type(frontier.get('templates')) is not list or len(frontier['templates']) != len(rows) or
@@ -243,3 +264,16 @@ def check_space(space, binding, visible, *, allow_effect_cost=False):
                    if raw in row['identifier_refs']}
             if identity['engine_action_type'] != row['action_type'] or identity['raw_identifiers'] != ids:
                 raise ValueError('request_projection_mismatch')
+            if value['profile']==CURRENT_PROFILE and row['target_menu'] is not None:
+                # Cross-check observed slot identity/menu length, never infer
+                # a selection minimum/maximum from these structural counts.
+                constraints=[c for c in nodes[position]['constraints'] if c['parameter_category']=='targets']
+                menu=row['target_menu']
+                expected={'container_element_count':1,'total':1,'examined':1,'truncated':False,
+                    'groups':[{'position':0,'target_idx_raw':menu['target_idx'],
+                               'target_count':menu['offered_visible_target_count']}]}
+                import json
+                if (len(constraints)!=1 or constraints[0]['observed_structure']!={'kind':'array'} or
+                        json.dumps(constraints[0]['observed_quantity_or_domain'],sort_keys=True)!=
+                        json.dumps(expected,sort_keys=True)):
+                    raise ValueError('request_projection_mismatch')

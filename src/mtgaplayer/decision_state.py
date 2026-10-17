@@ -9,7 +9,8 @@ from .decision_input import build_decision_input, _catalog, _id
 SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
 SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
                    3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4',
-                   5: 'mtgaplayer.decision-state.v5', 6: 'mtgaplayer.decision-state.v6'}
+                   5: 'mtgaplayer.decision-state.v5', 6: 'mtgaplayer.decision-state.v6',
+                   7: 'mtgaplayer.decision-state.v7'}
 EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
                    'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
@@ -322,7 +323,7 @@ def build_decision_state(document, *, version=1):
         try:
             result['legal_action_space']['request_parameters'] = assemble(
                 request.get('_request_parameters') if request is not None else None, binding, visible,
-                allow_effect_cost=version >= 6)
+                allow_effect_cost=version >= 6, allow_targeted_activate=version >= 7)
             from .semantic_effect_cost import PROFILE as COST_PROFILE
             parameters = result['legal_action_space']['request_parameters']
             if parameters is not None and parameters['profile'] == COST_PROFILE:
@@ -331,7 +332,8 @@ def build_decision_state(document, *, version=1):
                     {'complete_payment_unknown', 'payment_rules_effect_unknown',
                      'payment_parent_source_unknown', 'cancellation_undo_reachability_unknown',
                      'future_payment_parameters_unknown'})
-            check_space(result['legal_action_space'], binding, visible, allow_effect_cost=version >= 6)
+            check_space(result['legal_action_space'], binding, visible, allow_effect_cost=version >= 6,
+                        allow_targeted_activate=version >= 7)
         except (ValueError, TypeError, KeyError, RecursionError):
             return None
     return copy.deepcopy(result)
