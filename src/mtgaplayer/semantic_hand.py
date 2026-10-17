@@ -1,4 +1,4 @@
-"""Opt-in observed hand choices; no rules solver or actionable request support.
+"""Opt-in finite hand checks/observations; never a rules solver or input grant.
 
 V6 adds London/AcceptHand and one TurnBased/Discard shape to v4. Identity and
 continuity remain owned by RawReducer and the established response gate. Only
@@ -22,6 +22,41 @@ UNKNOWN = ('allow_cancel', 'source_object_ref', 'unfiltered_domain', 'min_weight
 ENUMS = {'id_type': 'IdType_InstanceId', 'list_type': 'SelectionListType_Dynamic',
     'context': 'SelectionContext_Discard', 'option_context': 'OptionContext_TurnBased',
     'validation_type': 'SelectionValidationType_NonRepeatable'}
+CURRENT_PROFILE = 'current_visible_own_hand_discard_one_of_eight'
+CURRENT_SCOPE = 'current_offered_one_of_eight_discard_consistency'
+
+
+def check_current_discard(request, visible, seat):
+    """Reuse the historical request check on current visible-to-self objects.
+
+    This new current profile deliberately supports only the observed eight-offer
+    shape. The legacy projector/check_request and unknown fields stay unchanged.
+    """
+    _need(type(seat) is int and seat in (1, 2) and type(visible) is list and len(visible) <= 512)
+    refs = [obj['instance_id'] for obj in visible]
+    _need(all(_id(ref) and ref > 0 for ref in refs) and len(refs) == len(set(refs)))
+    snapshot = {'objects': [{'object_ref': obj['instance_id'], 'zone': obj['zone'],
+        'owner': obj['owner_seat']} for obj in visible]}
+    _need(request['kind'] == 'select_n' and request['payload']['profile'] == DISCARD)
+    check_request(request, snapshot, seat)
+    _need(len(request['payload']['offered_object_refs']) == 8)
+    for obj in visible:
+        if obj['instance_id'] in request['payload']['offered_object_refs']:
+            _need(type(obj['owner_seat']) is int and obj['owner_seat'] == seat)
+
+
+def check_current_discard_selection(request, selected, visible, seat):
+    """Same-request single member/count consistency, without an outcome argument."""
+    try:
+        check_current_discard(request, visible, seat)
+        _need(type(selected) is list and len(selected) <= 256 and
+              all(_id(ref) and ref > 0 for ref in selected))
+        check_response({'kind': 'select_n', 'payload': {'selected_object_refs': selected}}, request)
+        return 'verified_known_constraints', 'current_single_offered_own_hand_member'
+    except (SampleError, KeyError, TypeError) as exc:
+        if isinstance(exc, SampleError) and str(exc) == 'known_constraints_violated':
+            return 'violated_known_constraints', 'single_nonrepeatable_offered_selection_required'
+        return 'insufficient_evidence', 'current_discard_constraints_not_verified'
 
 
 def projection():

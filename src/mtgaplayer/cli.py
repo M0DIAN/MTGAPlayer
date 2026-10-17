@@ -143,7 +143,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         raise ValueError('decision_input_requires_player_log_format')
     if format == 'player-log':
         follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5,
-                                                        include_targeted_activate=decision_state_version >= 7)
+                                                        include_targeted_activate=decision_state_version >= 7,
+                                                        include_current_discard=decision_state_version >= 8)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         if observed_action_target_menus:
             from .action_target_menus import TargetMenuObserver
@@ -242,7 +243,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     if choice_graph and not action_frontier:
         raise ValueError('choice_graph_requires_action_frontier')
     follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5,
-                                                                     include_targeted_activate=decision_state_version >= 7)
+                                                                     include_targeted_activate=decision_state_version >= 7,
+                                                                     include_current_discard=decision_state_version >= 8)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     if observed_action_target_menus:
         from .action_target_menus import TargetMenuObserver
@@ -491,10 +493,10 @@ def main(argv=None):
                                    help='read-only current Activate public target menu evidence')
         replay_parser.add_argument('--known-choice-candidates', action='store_true',
                                    help='opt-in known proposals; requires player-log State5+; default candidate v2')
-        replay_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3), default=2,
-                                   help='v3 discovers reviewed target member/current selected literal proposals only')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1,
-                                   help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member')
+        replay_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3, 4), default=2,
+                                   help='v3 target proposals; v4 current one-of-eight Discard proposals only')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8), default=1,
+                                   help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member; v8 current eight-offer Discard')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
@@ -514,8 +516,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1,
-                              help='State/Event version; default1; explicit2/3/4/5/6/7 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8), default=1,
+                              help='State/Event version; default1; explicit2/3/4/5/6/7/8 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
@@ -527,8 +529,8 @@ def main(argv=None):
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
     consumer_parser.add_argument('--known-choice-candidates', action='store_true',
                                  help='opt-in current-only bounded choice alternatives sidecar')
-    consumer_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3), default=2,
-                                 help='v3 reviewed target proposal discovery; requires --known-choice-candidates')
+    consumer_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3, 4), default=2,
+                                 help='v3 target proposals; v4 Discard; requires --known-choice-candidates')
     consumer_parser.add_argument('--validate-choice', type=Path,
         help='read one explicit request-bound proposal before consumption; no input or strategy')
     consumer_parser.add_argument('--observed-changes', action='store_true',

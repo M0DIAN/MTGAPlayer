@@ -12,6 +12,7 @@ from .raw_log import _id
 VERSION = 'mtgaplayer.request-parameters.v1'
 PROFILE = 'reviewed_literal_mana_slice'
 EFFECT_COST_VERSION = 'mtgaplayer.request-parameters.v3'
+DISCARD_VERSION = 'mtgaplayer.request-parameters.v5'
 
 
 class LiteralRefs:
@@ -100,7 +101,19 @@ def effect_cost_objects(visible):
 
 
 def project(message, visible, seat=None, source_abilities=None, *, targeted_activate=False,
-            public_battlefield_refs=None):
+            public_battlefield_refs=None, current_discard=False, current_hand_refs=None):
+    if current_discard and message.get('type') == 'GREMessageType_SelectNReq':
+        from .semantic_hand import project_request, check_current_discard
+        try:
+            snapshot = {'objects': [{'object_ref': o['instance_id'], 'zone': o['zone'],
+                'owner': o['owner_seat']} for o in visible]}
+            request = project_request(message, LiteralRefs(), (0, None, None, seat), snapshot)
+            check_current_discard(request, visible, seat)
+            if current_hand_refs is None or not set(request['payload']['offered_object_refs']) <= set(current_hand_refs):
+                return None
+            return request
+        except (ValueError, TypeError, KeyError, RecursionError):
+            return None
     if targeted_activate:
         from .action_target_menus import project_current
         try:
@@ -125,6 +138,17 @@ def project(message, visible, seat=None, source_abilities=None, *, targeted_acti
 
 def check(value, binding, visible):
     if value is None:
+        return
+    from .semantic_hand import CURRENT_PROFILE as DISCARD_PROFILE, check_current_discard
+    if type(value) is dict and value.get('profile') == DISCARD_PROFILE:
+        from .decision_consumer import _binding
+        _binding(value['binding'], complete=True)
+        if (set(value) != {'schema_version', 'profile', 'binding', 'discard_request', 'historical_response_used'} or
+                value['schema_version'] != DISCARD_VERSION or value['binding'] != binding or
+                binding['request_type'] != 'GREMessageType_SelectNReq' or binding['request_id'] is None or
+                value['historical_response_used'] is not False):
+            raise ValueError('invalid_request_parameters')
+        check_current_discard(value['discard_request'], visible, binding['self_seat'])
         return
     from .action_target_menus import CURRENT_PROFILE,check_current
     if type(value) is dict and value.get('profile')==CURRENT_PROFILE:
@@ -172,9 +196,17 @@ def check(value, binding, visible):
             raise ValueError('invalid_request_parameters')
 
 
-def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False):
+def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False):
     if rows is None or binding['request_id'] is None:
         return None
+    from .semantic_hand import DISCARD, CURRENT_PROFILE as DISCARD_PROFILE
+    if type(rows) is dict and rows.get('kind') == 'select_n' and rows.get('payload', {}).get('profile') == DISCARD:
+        if not allow_current_discard:
+            return None
+        value = {'schema_version': DISCARD_VERSION, 'profile': DISCARD_PROFILE,
+            'binding': copy.deepcopy(binding), 'discard_request': copy.deepcopy(rows), 'historical_response_used': False}
+        check(value, binding, visible)
+        return value
     from .action_target_menus import CURRENT_PROFILE,CURRENT_VERSION
     if type(rows) is dict and rows.get('profile')==CURRENT_PROFILE:
         if not allow_targeted_activate:return None
@@ -206,11 +238,18 @@ def assemble(rows, binding, visible, *, allow_effect_cost=False, allow_targeted_
     return value
 
 
-def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False):
+def check_space(space, binding, visible, *, allow_effect_cost=False, allow_targeted_activate=False, allow_current_discard=False):
     """Cross-check the existing frontier/graph, not a second request ledger."""
     value = space['request_parameters']
     check(value, binding, visible)
     if value is None:
+        return
+    from .semantic_hand import CURRENT_PROFILE as DISCARD_PROFILE
+    if value['profile'] == DISCARD_PROFILE:
+        if (not allow_current_discard or space['request_type'] != 'GREMessageType_SelectNReq' or
+                space['immediate_frontier'] != {'kind': 'select_n', 'availability': 'not_applicable',
+                    'completeness': 'unknown', 'projection': None} or space['choice_graph'] is not None):
+            raise ValueError('request_projection_mismatch')
         return
     from .action_target_menus import CURRENT_PROFILE
     if value['profile']==CURRENT_PROFILE and not allow_targeted_activate:

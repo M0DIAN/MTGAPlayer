@@ -9,11 +9,12 @@ VERSION = 'mtgaplayer.known-choice-candidates.v2'
 SCOPE = 'reviewed_current_request_known_constraints_only'
 MAX_CANDIDATES = 64
 PROPOSAL_VERSION = 'mtgaplayer.known-choice-candidates.v3'
+DISCARD_VERSION = 'mtgaplayer.known-choice-candidates.v4'
 MAX_TARGET_PROBES = 256
 
 
 def check_version(version):
-    if type(version) is not int or version not in (2, 3):
+    if type(version) is not int or version not in (2, 3, 4):
         raise ValueError('invalid_known_candidate_version')
 
 
@@ -31,7 +32,7 @@ def _unknown(reason, ref=None):
 
 
 def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CANDIDATES, version=2):
-    """Enumerate reviewed choices (v2) or discover the two target probes (v3).
+    """Reviewed choices (v2), target probes (v3), or eight-offer Discard (v4).
 
     Does not establish freshness: supplied offline states are research only.
     Live users must call assess_current_known_candidates on the Consumer.
@@ -41,6 +42,8 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
         raise ValueError('invalid_known_candidate_limit')
     if version == 3:
         return _reviewed_target_proposals(state, source_snapshot_ref, limit)
+    if version == 4:
+        return _discard_proposals(state, source_snapshot_ref, limit)
     try:
         _bounded_json(state)
         _state(state, state['binding'])
@@ -193,7 +196,7 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
 def assess_current_known_candidates(consumer, *, limit=MAX_CANDIDATES, version=2):
     """Owner-thread lease/binding check, with no last_valid fallback."""
     check_version(version)
-    unknown = _unknown if version == 2 else _proposal_unknown
+    unknown = {2: _unknown, 3: _proposal_unknown, 4: _discard_unknown}[version]
     if type(limit) is not int or not 1 <= limit <= MAX_CANDIDATES:
         raise ValueError('invalid_known_candidate_limit')
     if not isinstance(consumer, DecisionConsumer):
@@ -237,6 +240,84 @@ def _proposal_unknown(reason, ref=None):
         complete_costs_verified=False, mana_payment_verified=False,
         new_selectable_domain_used=False, target_set_enumeration_performed=False)
     return result
+
+
+def _discard_unknown(reason, ref=None):
+    result = _unknown(reason, ref)
+    result.update(schema_version=DISCARD_VERSION, scope='reviewed_current_discard_proposals_only',
+        request_binding=None, probe_kind='discard_single_member_probe', validation_scope=None,
+        known_constraints='insufficient_evidence', offered_member_count=None,
+        minimum=None, maximum=None, selected_count=None,
+        verified_probes=0, unknown_probes=0, contradicted_probes=0, omitted_due_to_return_limit=0,
+        complete_costs_verified=False, mana_payment_verified=False, rules_effect_verified=False,
+        unfiltered_domain_complete_verified=False, quantity_rules_complete_verified=False)
+    return result
+
+
+def _discard_proposals(state, ref, limit):
+    """V4 only: existing pure validator, current eight offers, no outcome input."""
+    try:
+        from .semantic_hand import CURRENT_PROFILE, CURRENT_SCOPE
+        from .choice_validation import VERSION as VALIDATION_VERSION, validate_proposed_choice
+        from .decision_consumer import _reference
+        _bounded_json(state)
+        _state(state, state['binding'])
+        binding = state['binding']
+        if state['status'] != 'state_and_request_observed' or binding['request_id'] is None:
+            return _discard_unknown('no_verified_current_request')
+        if ref is not None:
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != binding:
+                return _discard_unknown('snapshot_binding_invalid')
+        evidence = state['legal_action_space'].get('request_parameters')
+        if evidence is None or evidence['profile'] != CURRENT_PROFILE:
+            return _discard_unknown('current_discard_profile_not_observed', ref)
+        payload = evidence['discard_request']['payload']
+        result = _discard_unknown('no_verified_discard_proposals', ref)
+        result.update(request_binding=copy.deepcopy(binding), request_type=binding['request_type'],
+            profile=CURRENT_PROFILE, validation_scope=CURRENT_SCOPE, offered_member_count=8,
+            minimum=payload['min_sel'], maximum=payload['max_sel'])
+        for member in payload['offered_object_refs']:
+            proposal = {'request_identity': copy.deepcopy(binding),
+                'proposed_discard_selection': {'selected_object_refs': [member]}}
+            if ref is not None:
+                proposal['source_snapshot_ref'] = copy.deepcopy(ref)
+            verdict = validate_proposed_choice(state, proposal, source_snapshot_ref=ref)
+            if (type(verdict) is not dict or verdict.get('schema_version') != VALIDATION_VERSION or
+                    verdict.get('validation_scope') != CURRENT_SCOPE or verdict.get('source_snapshot_ref') != ref or
+                    verdict.get('read_only') is not True or any(verdict.get(k) is not False for k in
+                    (*EXECUTION, 'all_payment_options_verified', 'complete_costs_verified',
+                     'complete_payment_verified', 'mana_payment_verified', 'historical_response_used',
+                     'unfiltered_domain_complete_verified', 'quantity_rules_complete_verified', 'rules_effect_verified')) or
+                    any(k in verdict and verdict[k] is not False for k in
+                        ('target_domain_complete_verified', 'complete_target_legality_verified',
+                         'target_selection_legality_verified', 'target_quantity_completeness_verified',
+                         'complete_legality_verified', 'server_acceptance_verified', 'payment_completed_verified',
+                         'global_restrictions_verified', 'full_action_domain_complete'))):
+                return _discard_unknown('choice_validator_contract_mismatch')
+            if ref is not None:
+                try:
+                    _reference(verdict['source_snapshot_ref'], ref['session_id'], ref['sequence'], snapshot=True)
+                except (ValueError, TypeError, KeyError):
+                    return _discard_unknown('choice_validator_contract_mismatch')
+            category = {'verified_known_constraints': 'verified_probes', 'insufficient_evidence': 'unknown_probes',
+                'violated_known_constraints': 'contradicted_probes'}.get(verdict['known_constraints'])
+            if category is None:
+                return _discard_unknown('choice_validator_contract_mismatch')
+            result[category] += 1
+            if category == 'verified_probes' and len(result['candidates']) < limit:
+                result['candidates'].append(proposal)
+        count = len(result['candidates'])
+        result.update(candidate_total_for_reviewed_constraints=result['verified_probes'], returned_candidates=count,
+            omitted_due_to_return_limit=result['verified_probes']-count, truncated=result['verified_probes']>count,
+            exhaustive_for_reviewed_constraints=not result['unknown_probes'] and result['verified_probes']==count)
+        if count:
+            result.update(status='reviewed_constraint_candidates_observed', reason='current_discard_proposals_verified',
+                known_constraints='verified_known_constraints')
+        _bounded_json(result)
+        return result
+    except (ValueError, TypeError, KeyError, IndexError, RecursionError, UnicodeError, OverflowError):
+        return _discard_unknown('state_or_request_evidence_invalid')
 
 
 def _reviewed_target_proposals(state, ref, limit):

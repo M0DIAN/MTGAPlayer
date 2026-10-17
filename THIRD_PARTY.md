@@ -1,5 +1,15 @@
 # Source inspection and reuse
 
+## MP56 current one-of-eight Discard (2026-10-17)
+
+Reuses `semantic_hand.project_request/check_request/check_response`, the existing
+authenticated RawReducer request/digest/consumed ledger, visible projection,
+DecisionState/Publisher/Consumer and ChoiceValidation/Candidates. Frozen original
+source SHA2569f33dc04…10f0ecb was found and verified before coding; only a sanitized
+current State8 fixture is added. No upstream code, game/card resource, mana
+matcher, dependency or input is imported. The old historical v6 fixture is
+unchanged. [Source, omissions and limits](docs/current-discard.md).
+
 ## MP55 reviewed current target proposal discovery (2026-10-17)
 
 Reuses existing ChoiceCandidates, ChoiceValidation, current Consumer identity/

@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "schema_version",
+    "status",
+    "binding",
+    "source",
+    "game",
+    "visible_objects",
+    "card_knowledge",
+    "effect_claims",
+    "legal_action_space",
+    "unresolved",
+    "execution",
+    "read_only"
+  ],
+  "additionalProperties": false,
+  "$id": "urn:mtgaplayer:decision-state:v8",
+  "title": "MTGAPlayer read-only DecisionState v8",
+  "$comment": "Register State5/7/8 locally. V8 only adds current one-of-eight Discard through the same authenticated reducer and strict visible own-hand gate. Generic SelectN and State1-7 remain unchanged. No raw source reauthentication or legality/input grant.",
+  "properties": {
+    "schema_version": {
+      "const": "mtgaplayer.decision-state.v8"
+    },
+    "status": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/status"
+    },
+    "binding": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/binding"
+    },
+    "source": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/source"
+    },
+    "game": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/game"
+    },
+    "visible_objects": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/visible_objects"
+    },
+    "card_knowledge": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/card_knowledge"
+    },
+    "effect_claims": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/effect_claims"
+    },
+    "legal_action_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_type",
+        "immediate_frontier",
+        "choice_graph",
+        "expanded_plans",
+        "request_parameters"
+      ],
+      "properties": {
+        "request_type": {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/properties/request_type"
+        },
+        "immediate_frontier": {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/properties/immediate_frontier"
+        },
+        "choice_graph": {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/properties/choice_graph"
+        },
+        "expanded_plans": {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/properties/expanded_plans"
+        },
+        "request_parameters": {
+          "anyOf": [
+            {
+              "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/properties/request_parameters"
+            },
+            {
+              "$ref": "#/$defs/currentDiscard"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/0"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/1"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/2"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/3"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/4"
+        },
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v7#/properties/legal_action_space/allOf/5"
+        },
+        {
+          "if": {
+            "properties": {
+              "request_parameters": {
+                "type": "object",
+                "properties": {
+                  "profile": {
+                    "const": "current_visible_own_hand_discard_one_of_eight"
+                  }
+                },
+                "required": [
+                  "profile"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_SelectNReq"
+              },
+              "choice_graph": {
+                "type": "null"
+              },
+              "immediate_frontier": {
+                "properties": {
+                  "kind": {
+                    "const": "select_n"
+                  },
+                  "availability": {
+                    "const": "not_applicable"
+                  },
+                  "completeness": {
+                    "const": "unknown"
+                  },
+                  "projection": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unresolved": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/unresolved"
+    },
+    "execution": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/execution"
+    },
+    "read_only": {
+      "$ref": "urn:mtgaplayer:decision-state:v7#/properties/read_only"
+    }
+  },
+  "$defs": {
+    "currentDiscard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "profile",
+        "binding",
+        "discard_request",
+        "historical_response_used"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "mtgaplayer.request-parameters.v5"
+        },
+        "profile": {
+          "const": "current_visible_own_hand_discard_one_of_eight"
+        },
+        "binding": {
+          "allOf": [
+            {
+              "$ref": "urn:mtgaplayer:decision-state:v7#/properties/binding"
+            },
+            {
+              "properties": {
+                "request_type": {
+                  "const": "GREMessageType_SelectNReq"
+                },
+                "request_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              }
+            }
+          ]
+        },
+        "discard_request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "payload"
+          ],
+          "properties": {
+            "kind": {
+              "const": "select_n"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "profile",
+                "offered_object_refs",
+                "min_sel",
+                "max_sel",
+                "prompt_numbers",
+                "id_type",
+                "list_type",
+                "context",
+                "option_context",
+                "validation_type",
+                "allow_cancel",
+                "source_object_ref",
+                "unfiltered_domain",
+                "min_weight",
+                "max_weight"
+              ],
+              "properties": {
+                "profile": {
+                  "const": "observed_turn_based_discard_single"
+                },
+                "offered_object_refs": {
+                  "type": "array",
+                  "minItems": 8,
+                  "maxItems": 8,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "min_sel": {
+                  "const": 1
+                },
+                "max_sel": {
+                  "const": 1
+                },
+                "prompt_numbers": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 99
+                  }
+                },
+                "id_type": {
+                  "const": "IdType_InstanceId"
+                },
+                "list_type": {
+                  "const": "SelectionListType_Dynamic"
+                },
+                "context": {
+                  "const": "SelectionContext_Discard"
+                },
+                "option_context": {
+                  "const": "OptionContext_TurnBased"
+                },
+                "validation_type": {
+                  "const": "SelectionValidationType_NonRepeatable"
+                },
+                "allow_cancel": {
+                  "type": "null"
+                },
+                "source_object_ref": {
+                  "type": "null"
+                },
+                "unfiltered_domain": {
+                  "type": "null"
+                },
+                "min_weight": {
+                  "type": "null"
+                },
+                "max_weight": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "historical_response_used": {
+          "const": false
+        }
+      }
+    }
+  }
+}

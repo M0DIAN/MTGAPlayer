@@ -2,6 +2,13 @@
 
 Independent Python 3.11 CLI with normalized JSONL state, finite synthetic tactics, a read-only MTGA Player.log GRE projection, and a Windows native interactive test harness. Runtime uses only the standard library. **Raw GRE never reaches the policy or native executor. MTGA automatic object localization and MTGA input are not enabled.**
 
+MP56 adds explicit State/Event8 and known-candidates v4 for the evidenced current
+one-of-eight TurnBased Discard profile. It discovers eight same-request single
+member proposals through the shared checker and revokes them on consumption;
+complete legality/effects, strategy and execution remain unverified. Legacy
+State/Event1–7, candidate v2/v3 and Advisor stay unchanged. See
+[current Discard usage and source limits](docs/current-discard.md).
+
 ```powershell
 # Use an independent Python 3.11, never a Codex interpreter cache.
 python3.11.exe -m venv .venv
