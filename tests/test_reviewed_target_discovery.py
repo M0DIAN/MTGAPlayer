@@ -265,7 +265,7 @@ class ReviewedTargetDiscoveryTests(unittest.TestCase):
         self.assertEqual(output[-1]['known_choice_candidates']['returned_candidates'],0)
 
     def test_explicit_selector_validation_and_cli_discovery_without_proposal_file(self):
-        for invalid in (1,5,True,3.0,'3'):
+        for invalid in (1,6,True,3.0,'3'):
             with self.assertRaises(ValueError):enumerate_known_candidates(self.states[0],version=invalid)
         for limit in (0,65,True):
             with self.assertRaises(ValueError):self.discover(self.states[0],limit=limit)

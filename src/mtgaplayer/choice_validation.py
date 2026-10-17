@@ -12,6 +12,25 @@ def check_proposal(value):
     from .decision_consumer import _bounded_json, _binding, _integer, _keys, _reference
     from .request_parameters import _action
     _bounded_json(value)
+    if type(value) is dict and 'proposed_cast_target_member' in value:
+        _keys(value, ('request_identity', 'list_position', 'proposed_cast_target_member'), ('source_snapshot_ref',))
+        _binding(value['request_identity'], complete=True)
+        if (value['request_identity']['request_id'] is None or
+                value['request_identity']['request_type'] != 'GREMessageType_ActionsAvailableReq'):
+            raise ValueError('invalid_choice_proposal')
+        _integer(value['list_position'], 0, 255)
+        member = value['proposed_cast_target_member']
+        _keys(member, ('identifier_refs', 'flags', 'target_idx', 'object_ref'))
+        _keys(member['identifier_refs'], ('instanceId', 'grpId', 'facetId'))
+        for ref in member['identifier_refs'].values(): _integer(ref, 1)
+        _keys(member['flags'], ('shouldStop',))
+        if type(member['flags']['shouldStop']) is not bool: raise ValueError('invalid_choice_proposal')
+        _integer(member['target_idx'], 1); _integer(member['object_ref'], 1)
+        if 'source_snapshot_ref' in value:
+            ref = value['source_snapshot_ref']
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != value['request_identity']: raise ValueError('invalid_choice_proposal')
+        return
     if type(value) is dict and 'proposed_discard_selection' in value:
         from .decision_consumer import _list
         _keys(value, ('request_identity', 'proposed_discard_selection'), ('source_snapshot_ref',))
@@ -168,6 +187,19 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        from .cast_target_members import PROFILE as CAST_PROFILE, SCOPE as CAST_SCOPE, DENIALS, check_member as cast_member
+        if 'proposed_cast_target_member' in proposal:
+            if evidence['profile'] != CAST_PROFILE:
+                return unknown('current_cast_member_profile_not_observed')
+            status, reason, witness = cast_member(evidence, proposal['proposed_cast_target_member'],
+                proposal['list_position'], state['visible_objects'])
+            result.update(validation_scope=CAST_SCOPE, known_constraints=status, reasons=[reason],
+                source_snapshot_ref=copy.deepcopy(source_snapshot_ref), payment_witness=witness,
+                target_selection_count=None, target_minimum=None, target_maximum=None,
+                payment_source_readiness='unknown_not_evaluated', **DENIALS)
+            return result
+        if evidence['profile'] == CAST_PROFILE:
+            return unknown('cast_member_proposal_required')
         if 'proposed_discard_selection' in proposal:
             from .semantic_hand import CURRENT_PROFILE, CURRENT_SCOPE, check_current_discard_selection
             if evidence['profile'] != CURRENT_PROFILE:

@@ -1,5 +1,10 @@
 # MP47: reviewed current known-constraint alternatives (opt-in)
 
+The separate explicit [MP59 candidates5](current-cast-target-members.md)
+supports current Blue1 Cast member probes on State/Event11. It retains unknown
+target quantities and predictive payment/readiness limits; candidates2–4 and
+their existing profiles keep their previous contracts.
+
 **Not all legal Magic actions.** This bounded pure enumerator reuses the
 existing current-request ChoiceValidation, semantic target and payment checks.
 It never simulates rules, future requests, hidden information or native input.

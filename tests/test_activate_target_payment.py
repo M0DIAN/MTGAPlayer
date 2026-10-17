@@ -319,7 +319,7 @@ class TargetPaymentTests(unittest.TestCase):
         for version in (2, 3, 4):
             result = enumerate_known_candidates(self.state, version=version)
             self.assertEqual(result['returned_candidates'], 0)
-        with self.assertRaises(ValueError): enumerate_known_candidates(self.state, version=5)
+        with self.assertRaises(ValueError): enumerate_known_candidates(self.state, version=6)
         pub, _, _, _, _, events = self.transport(); events += pub.stop(); output = []
         self.assertEqual(consume_events(io.StringIO(''.join(json.dumps(e)+'\n' for e in events)), output.append), 0)
         self.assertTrue(all('activate_target_payment_relation' not in v for v in output))

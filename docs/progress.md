@@ -1,3 +1,25 @@
+## MP59 — current Blue1 Cast member probes (2026-10-17)
+
+Issue71: accepted main c551833/treef3dc3e3 and natural CI39028281775 were
+reverified (Linux/Windows707, inputfalse). Before product edits, root and
+independent reviewers replayed retained scrubbed-real fixture1–103 only:
+Auth/room/Full3→100 continuous states, own request10100/state100/digest,
+active8/inactive2, Cast1/3 own visible Hand and four public BF members each,
+exact Blue1 and same-request mana5 full identity/option/selection. The current
+truth was frozen before separately checking actual104 Cast3→targets→submit→
+public results. No private original reauthentication or future backfill.
+
+Minimal explicit State/Event11/request7/candidates5 retains all positions,
+returns eight member probes with source/slot/member/predictive witness and
+bound refs, and reuses the existing current Consumer gates. Quantity stays
+null; source1256 object catalog/uniqueAbilities and readiness are unknown.
+Multi-slot Cast2 is opaque. No Equip proof, input, solver or new dependency.
+Focused controls include identity/visibility/color/option/duplicate offers,
+future bounds, same-poll actual response consumption, append/partial/gap/
+digest/seat/reset, lease/post-sidecar expiry and authority/version drift.
+Final validation, independent exact-HEAD review and CI receipts are recorded
+in the Draft PR handoff. P10 NOT_RUN; no merge authorized.
+
 ## MP58 — explicit pre-request untap event witnesses (2026-10-17)
 
 Issue69 authorizes evidence-first development/tests/independent review/push/
