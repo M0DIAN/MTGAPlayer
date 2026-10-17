@@ -51,6 +51,11 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
         from .semantic_effect_cost import REQUEST as COST_REQUEST, PROFILE as COST_PROFILE, check_selection
         from .choice_validation import check_proposal
         check(evidence, binding, state['visible_objects'])
+        from .action_target_menus import CURRENT_PROFILE
+        if evidence['profile']==CURRENT_PROFILE:
+            # A member observation cannot enumerate final target sets without
+            # quantity bounds. Use the explicit proposal checker instead.
+            return _unknown('target_member_proposal_required',source_snapshot_ref)
         request_type, profile = binding['request_type'], evidence['profile']
         proposals = []
         action_coverage = None

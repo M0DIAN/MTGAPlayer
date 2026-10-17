@@ -16,7 +16,8 @@ from .decision_state import FLAGS, SCHEMA_VERSIONS, state_schema_version, _bound
 EVENT_VERSION = 'mtgaplayer.decision-event.v1'
 EVENT_VERSIONS = {1: EVENT_VERSION, 2: 'mtgaplayer.decision-event.v2',
                   3: 'mtgaplayer.decision-event.v3', 4: 'mtgaplayer.decision-event.v4',
-                  5: 'mtgaplayer.decision-event.v5', 6: 'mtgaplayer.decision-event.v6'}
+                  5: 'mtgaplayer.decision-event.v5', 6: 'mtgaplayer.decision-event.v6',
+                  7: 'mtgaplayer.decision-event.v7'}
 EVENT_STATE_VERSIONS = {EVENT_VERSIONS[key]: value for key, value in SCHEMA_VERSIONS.items()}
 IDENTITY = ('source_generation', 'match', 'game', 'self_seat', 'game_state_id',
             'request_id', 'request_type')

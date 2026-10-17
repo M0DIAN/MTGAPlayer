@@ -137,7 +137,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
     if decision_input and format != 'player-log':
         raise ValueError('decision_input_requires_player_log_format')
     if format == 'player-log':
-        follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5)
+        follower, reducer = RawFollower(path), RawReducer(include_request_parameters=decision_state_version >= 5,
+                                                        include_targeted_activate=decision_state_version >= 7)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         if observed_action_target_menus:
             from .action_target_menus import TargetMenuObserver
@@ -234,7 +235,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('action_frontier_requires_decision_input')
     if choice_graph and not action_frontier:
         raise ValueError('choice_graph_requires_action_frontier')
-    follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5)
+    follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5,
+                                                                     include_targeted_activate=decision_state_version >= 7)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     if observed_action_target_menus:
         from .action_target_menus import TargetMenuObserver
@@ -482,9 +484,9 @@ def main(argv=None):
         replay_parser.add_argument('--observed-action-target-menus', action='store_true',
                                    help='read-only current Activate public target menu evidence')
         replay_parser.add_argument('--known-choice-candidates', action='store_true',
-                                   help='opt-in MP47 current known choices; requires player-log v5/v6')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6), default=1,
-                                   help='explicit v2 adds turn context; v3 adds public Stack order; v4 adds observed current P/T; v5 adds reviewed request literals; v6 adds observed payment selection')
+                                   help='opt-in current known choices; requires player-log v5+; target member profile needs an explicit proposal')
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1,
+                                   help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
@@ -504,8 +506,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6), default=1,
-                              help='State/Event version; default1; explicit2/3/4/5/6 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7), default=1,
+                              help='State/Event version; default1; explicit2/3/4/5/6/7 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,

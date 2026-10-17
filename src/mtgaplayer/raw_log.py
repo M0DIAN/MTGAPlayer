@@ -547,12 +547,14 @@ class RawFollower:
 
 
 class RawReducer:
-    def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False):
+    def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
+                 include_targeted_activate=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
         self._include_state_messages = include_state_messages
         self._include_request_parameters = include_request_parameters
+        self._include_targeted_activate = include_targeted_activate
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -818,7 +820,11 @@ class RawReducer:
                         for o in visible if o['zone'] == 'ZoneType_Battlefield' and
                         o['controller_seat'] == self.seat and
                         self.objects[o['instance_id']].get('visibility') == 'Visibility_Public'}
-                    self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities)
+                    from .action_target_menus import public_battlefield_refs
+                    self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities,
+                        targeted_activate=self._include_targeted_activate,
+                        public_battlefield_refs=(public_battlefield_refs(self)
+                                                if self._include_targeted_activate else None))
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)

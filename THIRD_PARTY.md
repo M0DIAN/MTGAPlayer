@@ -1,5 +1,16 @@
 # Source inspection and reuse
 
+## MP53 current targeted Activate reuse (2026-10-17)
+
+Reuses this repository's accepted RawFollower/RawReducer, request digest/seat/
+continuity gates, target-menu projector, ability observation and Consumer. The
+owner-local MP52 original-byte prefix is the positive pre-response evidence;
+the [portable State7 provenance](tests/fixtures/decision_state_activate_target_member_real_v7.README.md)
+pins its hash, original ordinals, separate aliases and omissions. The historical
+v10 response/result only corroborates actual position6 afterwards. No new upstream
+algorithm, mtgacoach package, card catalog, game asset, runtime or dependency is
+copied. Missing selection bounds and complete payment/legality remain unknown.
+
 ## MP43 targeted mtgacoach reuse assessment (2026-10-16)
 
 `josharmour/mtgacoach@2a9cab586ed120a9244f81834af72b7ab144be86` is the owner's first-priority external source for legal-action algorithms. [The targeted assessment](docs/mtgacoach-reuse.md) checks `gamestate_decisions.py`, `rules_engine.py` and `request_tracker.py` against the frozen real PayCosts state338→339. Its pure `_match_pips_to_sources` algorithm agrees with an independent finite matching oracle and needs no package dependency; it remains the preferred implementation when verified mana domains make it applicable. This actual request is a nonmana selection followed by an explicit public sacrifice, so mana matching cannot establish its result. No upstream code or dependency is copied into the product. The pinned metadata declares MIT but supplies no standalone license/copyright notice in the inspected targets; the assessment records the attribution boundary for any later port. Raw private evidence stays local and ignored.

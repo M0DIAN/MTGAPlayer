@@ -1,3 +1,30 @@
+## MP53 — current targeted Activate member (2026-10-17)
+
+Issue59 authorizes scoped implementation, fixes, independent review, push and a
+draft PR, with no merge. Fresh main is accepted MP52 squash4589303/tree9a24751.
+The genuine original-byte prefix through1402/msg1 authenticates17 current rows;
+position6 alone has a reviewed public BF source/ability/slot/member chain before
+response1421. Its string highlight explains the older menu's withholding. No
+target quantity bounds are present. One offer never establishes min=max=1.
+
+One explicit State/Event7 and request-parameters v4 profile reuses the existing
+current-request path and menu/ability checks. All positions remain aligned with
+the frontier/graph; unsupported rows remain opaque. It validates one member
+proposal, not a complete target set or payment. Independent falsification found
+Boolean nested identities, current source-group and graph slot/count conflicts;
+new-profile strict checks reject them. Legacy outputs retain their contracts.
+
+Original-byte watch→Consumer and two product CLIs start at1136–1401, append1402,
+retain1403–1420, then read actual1421 and revoke in that poll. Later target/result
+records cannot revive the old proposal. The sanitized portable fixture regenerates
+exactly; v10 corroboration runs afterwards for actual position6 only. Separate
+baseline/candidate processes find all State1–6 values equal at179 request record
+endpoints each, whole semantic1–10 documents/reports equal and default replay/watch
+equal. Source bytes remain unchanged. Required final tests/doctor, exact-head
+independent review and head/identical-tree synthetic-merge CI are reported on the
+draft PR. No real game input, complete legality, acceptance, latency, main CI,
+merge or P10 repair is claimed. [Evidence and limits](current-activate-target-member.md).
+
 ## MP52 — actual targeted Activate portable slice (2026-10-17)
 
 Owner instruction authorizes implementing the captured Equip chain, updating
