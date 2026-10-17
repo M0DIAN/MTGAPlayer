@@ -33,6 +33,14 @@ python3.11.exe -m venv .venv
 
 `py -3.11` can create the .venv where the Python launcher is installed. Linux/offline CI uses `python -m pip install -e .`, the same unittest command and replay/dry-run. The parallel Windows no-input CI job also runs the complete unittest suite before doctor; SQLite fixtures close connections explicitly while preserving transactions. `doctor --config config.toml` accepts only optional string `log_path`; `--log` overrides it. Doctor reports interpreter/base prefix, configuration, log existence, current-session window visibility and desktop limitations without screenshots or input. Sandbox window inventory is not the user's desktop inventory.
 
+MP55 adds explicit `--known-choice-candidates --known-choice-candidates-version 3`
+on replay/dry-run and consume-events. It discovers existing reviewed target-member
+and exact already-selected literal proposals through the same current validators,
+with separate row/probe counts and current binding/ref checks. Default v2 and
+Advisor outputs remain unchanged. These are read-only known-constraint proposals;
+complete legality/payment, target-domain completeness, encoding, acceptance and
+execution stay false. See [usage, output contract and real-source limits](docs/reviewed-target-proposals.md).
+
 ### Offline semantic samples (MP33)
 
 `export-semantic-samples` explicitly reads one local file through the existing RawFollower/RawReducer and exact own-request/response gate. It saves a **new sanitized observation episode JSON**, preserving concrete offered/selected references, reviewed action identities, strict booleans and observed empty parameters, plus the safe visible endpoint before the request and the first observed successor. It never copies a raw Full or internal hidden-object map. Namespace-specific aliases retain relationships across samples; visible ordinary Card catalog IDs remain, while request references to hidden objects receive no card identity. Private identity/log metadata, prompts, unfiltered selection IDs, inactive actions and nonprojected state fields are omitted, with fixed omission markers. This is not semantically equivalent to the raw source.

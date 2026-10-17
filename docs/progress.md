@@ -1,3 +1,30 @@
+## MP55 — reviewed current target proposal discovery (2026-10-17)
+
+Issue63 authorizes scoped implementation, fixes, independent review, push and
+Draft PR without merge. Fresh accepted main ce70512/tree647f43a9 and its natural
+CI39006080912 were verified before branching. Explicit known-candidates v3
+constructs existing proposals for the two supported target profiles and invokes
+the same validator, with current Consumer checks and post-computation recheck.
+No parser/reducer/ledger/solver, State/Event/semantic version or Advisor change.
+Default v2, manual validation and legacy outputs retain their exact values.
+
+The unchanged real fixtures discover one position6 member among17 action rows
+(16unknown, quantitiesnull) and one current selected literal (explicit1/1/1,
+single Unselect). Neither proves complete actions, newly selectable domains,
+Submit readiness, costs or legality. Separate original row/probe coverage,
+256-probe/64-return bounds and explicit false authority flags preserve unknowns.
+Independent falsification found scope/version/typed-deny contract drift controls;
+strict new-v3 checks now refuse them without partial candidates.
+
+Original-byte watch→Consumer and two CLI processes per case need no proposal
+file:1402 before1421 and1425 before1426 each return1, actual consumption returns0,
+and later new requests never revive the old binding/ref. Separate baseline and
+candidate processes compare State/Event1–7, v2/manual/Advisor/default Consumer,
+semantic1–10 and replay/watch full values. Exact-head tests/doctor, independent
+review and head/synthetic-merge CI receipts are reported in the Draft PR.
+Private evidence remains ignored; input_sent=false, P10=NOT_RUN, no latency
+claim or main merge. [Evidence and contract](reviewed-target-proposals.md).
+
 ## MP54 — current already-selected target set (2026-10-17)
 
 Issue61 authorizes bounded development/tests/independent review/push/draft PR,
