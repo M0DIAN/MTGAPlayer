@@ -596,3 +596,12 @@ and Sacrifice annotations to consistent public endpoints, while complete payment
 legality and request-source causality remain unverified. Current State6 and
 ChoiceValidation keep their existing inputs and constraints. See [the result
 contract](docs/semantic-effect-cost.md) and [pinned mtgacoach reuse assessment](docs/mtgacoach-reuse.md).
+
+## MP61 opt-in offered associations
+
+`mtgaplayer replay <Player.log> --format player-log --decision-state-version 12 --known-choice-candidates --known-choice-candidates-version 6`
+reports separate finite Cast member probes and the same request's Activate
+payment association. It preserves the complete observed prompt and typed target
+annotations. Results remain read-only; a member probe supplies no target quantity,
+payability, response encoding or input permission. Existing defaults and earlier
+contract versions retain their behavior. See [the evidence and limits](docs/current-cast-activate-associations.md).

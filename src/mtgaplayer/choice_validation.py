@@ -188,12 +188,14 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
         from .cast_target_members import PROFILE as CAST_PROFILE, SCOPE as CAST_SCOPE, DENIALS, check_member as cast_member
+        from .cast_activate_associations import PROFILE as FAMILIES_PROFILE, CAST_SCOPE as BLACK_SCOPE, check_black_member, activate_family
         if 'proposed_cast_target_member' in proposal:
-            if evidence['profile'] != CAST_PROFILE:
+            if evidence['profile'] not in (CAST_PROFILE, FAMILIES_PROFILE):
                 return unknown('current_cast_member_profile_not_observed')
-            status, reason, witness = cast_member(evidence, proposal['proposed_cast_target_member'],
+            member_checker = check_black_member if evidence['profile'] == FAMILIES_PROFILE else cast_member
+            status, reason, witness = member_checker(evidence, proposal['proposed_cast_target_member'],
                 proposal['list_position'], state['visible_objects'])
-            result.update(validation_scope=CAST_SCOPE, known_constraints=status, reasons=[reason],
+            result.update(validation_scope=BLACK_SCOPE if evidence['profile'] == FAMILIES_PROFILE else CAST_SCOPE, known_constraints=status, reasons=[reason],
                 source_snapshot_ref=copy.deepcopy(source_snapshot_ref), payment_witness=witness,
                 target_selection_count=None, target_minimum=None, target_maximum=None,
                 payment_source_readiness='unknown_not_evaluated', **DENIALS)
@@ -236,6 +238,7 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
             return result
         from .action_target_menus import CURRENT_PROFILE,CURRENT_SCOPE,check_member
         from .activate_target_payment import PROFILE as JOINT_PROFILE, target_evidence
+        evidence = activate_family(evidence)
         if evidence['profile'] in (CURRENT_PROFILE, JOINT_PROFILE):
             if 'proposed_activate_target_member' not in proposal:
                 return unknown('target_member_proposal_required')

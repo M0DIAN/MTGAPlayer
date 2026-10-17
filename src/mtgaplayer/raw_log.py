@@ -549,7 +549,7 @@ class RawFollower:
 class RawReducer:
     def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
                  include_targeted_activate=False, include_current_discard=False, include_target_payment_relation=False,
-                 include_cast_target_members=False):
+                 include_cast_target_members=False, include_cast_activate_associations=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
@@ -559,6 +559,7 @@ class RawReducer:
         self._include_current_discard = include_current_discard
         self._include_target_payment_relation = include_target_payment_relation
         self._include_cast_target_members = include_cast_target_members
+        self._include_cast_activate_associations = include_cast_activate_associations
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -829,11 +830,12 @@ class RawReducer:
                         targeted_activate=self._include_targeted_activate, current_discard=self._include_current_discard,
                         target_payment_relation=self._include_target_payment_relation,
                         cast_target_members=self._include_cast_target_members,
-                        cast_source_refs=self._cast_source_refs() if self._include_cast_target_members else None,
-                        mana_source_refs=self._mana_source_refs() if self._include_cast_target_members else None,
+                        cast_activate_associations=self._include_cast_activate_associations,
+                        cast_source_refs=self._cast_source_refs() if self._include_cast_target_members or self._include_cast_activate_associations else None,
+                        mana_source_refs=self._mana_source_refs() if self._include_cast_target_members or self._include_cast_activate_associations else None,
                         current_hand_refs=self._reviewed_current_hand_refs() if self._include_current_discard else None,
                         public_battlefield_refs=(public_battlefield_refs(self)
-                                                if self._include_targeted_activate or self._include_cast_target_members else None))
+                                                if self._include_targeted_activate or self._include_cast_target_members or self._include_cast_activate_associations else None))
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)

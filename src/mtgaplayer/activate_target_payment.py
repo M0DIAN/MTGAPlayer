@@ -138,6 +138,9 @@ def evaluate_relation(state, *, source_snapshot_ref=None):
             if ref['binding'] != binding:
                 return unknown('snapshot_binding_invalid')
         value = state['legal_action_space'].get('request_parameters')
+        from .cast_activate_associations import activate_family, PROFILE as FAMILIES_PROFILE, _expected_relations
+        combined = type(value) is dict and value.get('profile') == FAMILIES_PROFILE
+        value = activate_family(value)
         if value is None or value['profile'] != PROFILE:
             return unknown('joint_current_profile_not_observed', ref)
         result = unknown('no_verified_joint_association', ref); result['request_binding'] = copy.deepcopy(binding)
@@ -203,6 +206,13 @@ def evaluate_relation(state, *, source_snapshot_ref=None):
             'unknown_or_unreviewed_rows': sum(s not in (CONSISTENT, 'violated_known_constraints') for s in statuses),
             'row_statuses': [{'list_position': i, 'relation_status': s} for i,s in enumerate(statuses)]}
         if result['relations']: result.update(status=CONSISTENT, reason='same_current_target_and_predictive_route_observed')
+        if combined:
+            # New v12 entry points share the composite's current-source gate;
+            # a claimed GOOD verdict cannot override a changed ability/menu.
+            from .cast_target_members import _equal
+            expected, expected_statuses = _expected_relations(state, value)
+            if not _equal(result['relations'], expected) or [r['relation_status'] for r in result['action_row_coverage']['row_statuses']] != expected_statuses:
+                return unknown('choice_validator_contract_mismatch')
         _bounded_json(result)
         return result
     except (ValueError, TypeError, KeyError, IndexError, RecursionError, UnicodeError, OverflowError):

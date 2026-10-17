@@ -1585,3 +1585,41 @@ old fixtures remain unchanged. Source/diff review and independent data/oracle
 checks are complete; no separate-agent final-candidate review or remote CI is
 claimed. This is local new evidence coverage, not a reproduced old defect;
 P10 remains NOT_RUN. No new collection or gameplay input was performed.
+
+## MP61 — authenticated Black1 Cast and Activate coexistence (2026-10-17)
+
+The renewed read-only gate verified the frozen original/prefix hashes and the
+installed Live build0.1.14517.1329972. All three installed DLL hashes differ from
+the October10 catalog; current methods were recovered read-only and critical IL
+checked. A newer pinned public manifest matches those hashes but does not replace
+the installed-code audit. Independent reviewers inspected recovered source/IL,
+metadata and limited receipts; withheld raw log and DLL bytes were authenticated
+by root alone. Prompt is not universally decorative: only the inspected finite
+offered-data association passes. The public gate receipt records that boundary.
+
+Opt-in State/Event12, request8 and candidate6 retain the full prompt and typed
+highlight entries. Original request1402:m1 has17 active/five inactive rows:
+Black1 Cast1/3 each give3 public members with unique mana10; complex Cast2 remains
+unsupported. Activate6 remains one separate relation with mana12/14, preserving
+its complete old projection. Both families revoke on the actual1421 consumption
+poll;1422–1433 do not revive the old binding/ref. Portable aliases preserve every
+reviewed relation; known catalog IDs are consistently aliased, never named.
+Current Cast mana tap remains null. Existing event provenance remains separate.
+
+Twenty-three new focused tests cover typed fields, source/member/payment joins,
+family isolation, bounds/budgets, stale/malformed reports and Consumer currentness.
+Independent review reproduced and closed aggregate scope/authority/binding,
+coverage-count, bad-reference, stale-GOOD and integer-bound counterexamples.
+Only new v12 diagnostics add the same-source recheck; old9/10/11 behavior stays.
+Three old invalid-version controls now use7 because6 is explicitly registered.
+
+Python3.11.16 full unittest:742 PASS in108.394s. Windows doctor exits0 read-only.
+New formal State/Event12 schemas validate2 real portable projections,4 synthetic
+events and5 discriminating refusals within the24-resource registry. Separate
+isolated baseline/candidate processes compare158,475 complete old return values:
+all equal, source stable. Coverage includes State/Event1–11, candidates2–5,
+semantic1–10, defaults, Advisor, old relation/tap reports and public transports;
+baseline tree is identical to accepted main2732c2a. This comparison does not
+reauthenticate private bytes or prove live gameplay. Exact-candidate independent
+review and hosted head/merge CI are delivery gates for the Draft PR. No merge or
+game input is authorized; input_sent=false, LIVE_MTGA/P10 NOT_RUN.
