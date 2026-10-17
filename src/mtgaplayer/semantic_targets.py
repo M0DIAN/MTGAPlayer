@@ -134,6 +134,51 @@ def literal_selected(request):
     return None
 
 
+CURRENT_SELECTED_SCOPE = 'current_exact_one_selected_target_set_consistency'
+
+
+def check_current_selected_proposal(proposed):
+    """Explicit opt-in literal-set proposal, separate from a new Select domain."""
+    _keys(proposed, ('source_object_ref', 'ability_grp_ref', 'targeting_ability_grp_ref',
+                     'target_idx', 'targeting_player', 'object_refs'))
+    _need(all(_id(proposed[k]) for k in ('source_object_ref', 'ability_grp_ref',
+                                       'targeting_ability_grp_ref', 'target_idx')))
+    _need(type(proposed['targeting_player']) is int and proposed['targeting_player'] in (1, 2))
+    _need(type(proposed['object_refs']) is list and len(proposed['object_refs']) <= 256 and
+          all(_id(ref) for ref in proposed['object_refs']))
+
+
+def check_current_selected_set(request, proposed, visible, seat, public_stack):
+    """One current 1/1/1 Unselect literal only; no history or response input.
+
+    Bounds/count agreement is not complete quantity-rule or domain evidence.
+    check_final_set deliberately retains its Select-only domain requirement.
+    """
+    from .decision_state import _stack
+    _need(type(seat) is int and seat in (1, 2))
+    check_request(request, visible, seat)
+    check_current_selected_proposal(proposed)
+    # The existing State Stack projection supplies explicit public membership
+    # and object type. A null card ID never implies an Ability.
+    _stack(public_stack, [{'instance_id': o['object_ref'], 'zone': o['zone']} for o in visible])
+    if public_stack['availability'] != 'observed' or not any(
+            row['instance_id'] == request['source_object_ref'] and
+            row['object_type'] == 'GameObjectType_Ability' for row in public_stack['members']):
+        return 'insufficient_evidence', 'current_public_stack_ability_not_observed'
+    if any(type(request[k]) is not int or request[k] != 1 for k in
+           ('min_targets', 'max_targets', 'selected_count')):
+        return 'insufficient_evidence', 'exact_one_selected_request_profile_not_observed'
+    selected = literal_selected(request)
+    if selected is None or len(selected) != 1:
+        return 'insufficient_evidence', 'exact_one_current_unselect_literal_not_observed'
+    if any(proposed[k] != request[k] for k in ('source_object_ref', 'ability_grp_ref',
+               'targeting_ability_grp_ref', 'target_idx', 'targeting_player')):
+        return 'insufficient_evidence', 'proposal_binding_invalid'
+    if proposed['object_refs'] != selected:
+        return 'violated_known_constraints', 'proposal_differs_from_current_selected_literal'
+    return 'verified_known_constraints', 'current_selected_literal_satisfies_explicit_one_bounds'
+
+
 def action_targets(value, refs, scope):
     """Cast action candidates lack selection counts; preserve them as literals."""
     _need(type(value) is list and len(value) <= 64, 'request_unsupported')

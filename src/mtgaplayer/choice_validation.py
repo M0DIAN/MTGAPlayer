@@ -12,6 +12,20 @@ def check_proposal(value):
     from .decision_consumer import _bounded_json, _binding, _integer, _keys, _reference
     from .request_parameters import _action
     _bounded_json(value)
+    if type(value) is dict and 'proposed_current_selected_target_set' in value:
+        from .semantic_targets import check_current_selected_proposal
+        _keys(value, ('request_identity', 'proposed_current_selected_target_set'), ('source_snapshot_ref',))
+        _binding(value['request_identity'], complete=True)
+        if (value['request_identity']['request_id'] is None or
+                value['request_identity']['request_type'] != 'GREMessageType_SelectTargetsReq'):
+            raise ValueError('invalid_choice_proposal')
+        check_current_selected_proposal(value['proposed_current_selected_target_set'])
+        if 'source_snapshot_ref' in value:
+            ref = value['source_snapshot_ref']
+            _reference(ref, ref['session_id'], ref['sequence'], snapshot=True)
+            if ref['binding'] != value['request_identity']:
+                raise ValueError('invalid_choice_proposal')
+        return
     if type(value) is dict and 'proposed_activate_target_member' in value:
         _keys(value,('request_identity','list_position','proposed_activate_target_member'),('source_snapshot_ref',))
         _binding(value['request_identity'],complete=True)
@@ -136,6 +150,27 @@ def validate_proposed_choice(state, proposal, *, source_snapshot_ref=None):
         if evidence is None:
             return unknown('reviewed_request_parameters_not_observed')
         check(evidence, state['binding'], state['visible_objects'])
+        if 'proposed_current_selected_target_set' in proposal:
+            from .semantic_targets import PROFILE, CURRENT_SELECTED_SCOPE, check_current_selected_set
+            from .decision_consumer import _binding
+            if evidence['profile'] != PROFILE:
+                return unknown('current_selected_target_profile_not_observed')
+            # Keep legacy validators unchanged, while refusing bool/int
+            # equality in this new check's nested request scope.
+            _binding(evidence['binding'], complete=True)
+            status, reason = check_current_selected_set(evidence['targets'],
+                proposal['proposed_current_selected_target_set'],
+                [{'object_ref': o['instance_id'], 'zone': o['zone']} for o in state['visible_objects']],
+                state['binding']['self_seat'], state['game']['stack'])
+            result.update(validation_scope=CURRENT_SELECTED_SCOPE, known_constraints=status,
+                reasons=[reason], source_snapshot_ref=copy.deepcopy(source_snapshot_ref),
+                current_selected_literal_verified=status == 'verified_known_constraints',
+                complete_target_legality_verified=False, target_domain_complete_verified=False,
+                target_quantity_completeness_verified=False, complete_costs_verified=False,
+                complete_payment_verified=False, mana_payment_verified=False,
+                new_selectable_domain_used=False, target_set_enumeration_performed=False,
+                historical_response_used=False)
+            return result
         from .action_target_menus import CURRENT_PROFILE,CURRENT_SCOPE,check_member
         if evidence['profile']==CURRENT_PROFILE:
             if 'proposed_activate_target_member' not in proposal:
