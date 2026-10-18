@@ -17,7 +17,8 @@ class DeliveryQualificationTests(unittest.TestCase):
             output = Path(directory) / 'qualification.json'
             process = subprocess.run([sys.executable, 'scripts/qualify_delivery.py', '--samples', '8',
                 '--interval', '.01', '--output', str(output)], cwd=ROOT, capture_output=True, timeout=20)
-            self.assertEqual(process.returncode, 0, process.stderr)
+            self.assertEqual(process.returncode, 0,
+                f'qualification stdout={process.stdout!r}; stderr={process.stderr!r}')
             report = json.loads(output.read_text(encoding='utf-8'))
             records = [json.loads(line) for line in output.with_name('qualification-samples.jsonl').read_text().splitlines()]
         self.assertEqual(report['result'], 'QUALIFIED_LOCAL_READONLY')
