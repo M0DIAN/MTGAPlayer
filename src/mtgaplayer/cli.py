@@ -561,6 +561,7 @@ def main(argv=None):
     history.add_argument('--protocol-evidence', action='store_true', help='finite Prompt route predicates and FloatMana representation; requires --actions-available-gates')
     history.add_argument('--current-cost-stages', action='store_true', help='aggregate finite current PayCosts evidence; no payment solver or policy change')
     history.add_argument('--target-stage-completions', action='store_true', help='historical target update/revision/Submit comparison; no current permission or policy change')
+    history.add_argument('--current-target-coverage', action='store_true', help='finite current No-cancel target evidence; requires --target-stage-completions')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -710,7 +711,7 @@ def main(argv=None):
             result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records,
                 actions_available_gates=args.actions_available_gates, complex_action_intents=args.complex_action_intents,
                 protocol_evidence=args.protocol_evidence, current_cost_stages=args.current_cost_stages,
-                target_stage_completions=args.target_stage_completions)
+                target_stage_completions=args.target_stage_completions, current_target_coverage=args.current_target_coverage)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):

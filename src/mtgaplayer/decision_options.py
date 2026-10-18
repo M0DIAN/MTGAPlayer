@@ -230,7 +230,7 @@ def _build(state, ref, limit, intent_evidence=None):
     return result
 
 
-def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_complex_intents=False):
+def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_complex_intents=False, current_target_context=None):
     """Owner-thread current/ref/lease gate, one bounded cached collection per ref.
 
     Cache is data only. Every read rechecks currentness, including cache hits;
@@ -240,6 +240,8 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
         raise ValueError('invalid_current_decision_options_limit')
     if type(include_complex_intents) is not bool:
         raise ValueError('invalid_complex_action_intents_flag')
+    if current_target_context is not None and (type(current_target_context) is not tuple or len(current_target_context) != 2):
+        raise ValueError('invalid_current_target_context')
     def evaluate(state, *, source_snapshot_ref):
         key = (source_snapshot_ref, limit)
         cached = consumer._decision_options_cache
@@ -259,6 +261,15 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
                 _bounded_json(result)
             except (ValueError, TypeError, KeyError, IndexError, RecursionError, UnicodeError, OverflowError):
                 return _unknown('complex_intent_evidence_invalid_or_output_limit')
+        if current_target_context is not None:
+            from .current_target_request import _project, unknown
+            try:
+                result['current_target_evidence'] = _project(*current_target_context, state, source_snapshot_ref, limit)
+            except (ValueError, TypeError, KeyError, IndexError, RecursionError, UnicodeError, OverflowError):
+                result['current_target_evidence'] = unknown('current_target_shape_or_visible_identity_unreviewed')
+            try: _bounded_json(result)
+            except (ValueError, TypeError, RecursionError, UnicodeError, OverflowError):
+                return _unknown('current_target_evidence_output_limit')
         return result
     result = (_assess_current_report(consumer, evaluate, _unknown) if isinstance(consumer, DecisionConsumer)
         else _unknown('requires_current_consumer'))
@@ -267,4 +278,7 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
     if include_complex_intents and 'complex_action_intents' not in result:
         from .action_intents import empty
         result['complex_action_intents'] = empty(result['reason'])
+    if current_target_context is not None and 'current_target_evidence' not in result:
+        from .current_target_request import unknown
+        result['current_target_evidence'] = unknown(result['reason'])
     return result

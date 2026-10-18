@@ -257,3 +257,10 @@ strict update→independent revision→consumed header-only Submit, and exports
 aggregates only. Original default comparison/rates remain unchanged. See
 [target-stage-completions.md](target-stage-completions.md) for Card/Ability
 boundaries, request/submission/episode denominators and the28-request census.
+
+MP74's additional `--current-target-coverage` requires
+`--target-stage-completions`. It measures the explicit MP65 current No-cancel
+target side observation after the unchanged policy freeze. See
+[current-target-coverage.md](current-target-coverage.md) for the4 newly reviewed
+requests/7 local proposals,8 remaining unknown requests, strict currentness gates
+and why4 new paired updates do not establish new historical episodes.

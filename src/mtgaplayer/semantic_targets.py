@@ -28,12 +28,14 @@ def _objects(visible):
     return result
 
 
-def project_request(message, visible, seat, refs, scope):
+def project_request(message, visible, seat, refs, scope, *, allow_no_cancel=False):
     """Only after accepted request authentication and existing visibility filtering."""
     _need(type(message) is dict and not set(message)-{'type', 'msgId', 'gameStateId',
         'systemSeatIds', 'prompt', 'allowCancel', 'allowUndo', 'selectTargetsReq'}, 'request_unsupported')
     _need(message['type'] == 'GREMessageType_SelectTargetsReq', 'request_unsupported')
-    _need(message.get('allowCancel') == 'AllowCancel_Abort' and
+    _need(type(allow_no_cancel) is bool)
+    _need((message.get('allowCancel') == 'AllowCancel_Abort' or
+           allow_no_cancel and message.get('allowCancel') == 'AllowCancel_No') and
           ('allowUndo' not in message or type(message['allowUndo']) is bool), 'request_unsupported')
     body = message.get('selectTargetsReq')
     _keys(body, ('sourceId', 'abilityGrpId', 'targets'))
@@ -64,18 +66,20 @@ def project_request(message, visible, seat, refs, scope):
         'min_targets': slot.get('minTargets'), 'max_targets': slot.get('maxTargets'),
         'selected_count': slot.get('selectedTargets'), 'entries': entries,
         'allow_cancel': message['allowCancel'], 'allow_undo': message.get('allowUndo')}
-    check_request(value, visible, seat)
+    check_request(value, visible, seat, allow_no_cancel=allow_no_cancel)
     return value
 
 
-def check_request(value, visible, seat):
+def check_request(value, visible, seat, *, allow_no_cancel=False):
     _keys(value, ('source_object_ref', 'ability_grp_ref', 'targeting_ability_grp_ref',
         'target_idx', 'targeting_player', 'min_targets', 'max_targets', 'selected_count',
         'entries', 'allow_cancel', 'allow_undo'))
     _need(all(_id(value[k]) for k in ('source_object_ref', 'ability_grp_ref',
                                      'targeting_ability_grp_ref', 'target_idx')))
     _need(type(value['targeting_player']) is int and value['targeting_player'] == seat)
-    _need(value['allow_cancel'] == 'AllowCancel_Abort' and
+    _need(type(allow_no_cancel) is bool)
+    _need((value['allow_cancel'] == 'AllowCancel_Abort' or
+           allow_no_cancel and value['allow_cancel'] == 'AllowCancel_No') and
           (value['allow_undo'] is None or type(value['allow_undo']) is bool))
     for key in ('min_targets', 'max_targets', 'selected_count'):
         _need(value[key] is None or _number(value[key]))

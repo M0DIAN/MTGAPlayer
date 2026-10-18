@@ -2075,3 +2075,43 @@ Linux/Windows PR/main CI remain separate delivery gates. See
 docs/target-stage-completions.md and docs/evidence/mp73-target-stages.safe.json.
 Historical Windows qualification cause remains UNKNOWN. input_sent=false;
 P10=NOT_RUN.
+
+MP74 Current Target Request Coverage (base76ec1fa1182fda2808f38be0858f0e6940cb3a40,
+treeba422f936a1cc9cfb6d52d924927524be6bef1cb): first-accepted authenticated owner
+freezes classify12 unprojected requests. All sources are public own Stack
+Abilities with matching group identities.10 fail the old Abort-only profile;
+6 of these also contain references not in the visible object projection. The
+other2 are Abort Unselect literals without visible target identity. Four No
+requests have complete uniquely public Battlefield member slices; this is
+profile coverage mismatch, not evidence those requests are contradictory.
+Explicit MP65 current_target_context=(same_reducer,accepted_message) reuses the
+target parser and Candidate2 bounded enumeration, preserving No as a literal.
+New finite profile requires both prompt representations, absent allowUndo,
+matching source/request/targeting groups,1/1 bounds and onlySelect. The four real
+current domains provide7 local proposals (2,3,1,1), all research_eligible=false
+and complete-legality/execution fields false. Eight requests stayunknown; no
+player-reference, Unselect-domain, effect or payment inference. Default
+State/Event1–15/Candidate2–6/MP65/66 outputs are unchanged. Existing single-slot
+parser/checker default remains Abort-only. New history --current-target-coverage
+requires --target-stage-completions and freezes oldpolicy before enrichment.
+Four new paired updates are local submissions only; historical submittedsets4,
+comparablepreferences2 and originalpolicy2/164 remain unchanged. No new episode
+is inferred from the10 unlinked terminalheaders. Independent counterproofs
+closed cancellation/Undo/mixed/broadcast/unsupportedSubmit/partial revival and
+typed-Diff predecessor gaps using bounded private evidence on the same reducer;
+public documents/default acceptance are unchanged. Direct16tests and229 working
+focusedtests PASS; independent465 complete Candidate2–6 returns and64 RawReducer
+document comparisons match acceptedbase. Portable4-case typed aliases redact
+promptparameters and omit unrelatedstate; syntheticFull/auth/mutations are
+explicitly plumbing/negatives, not newrealGRE authentication. Owner-onlyfinal
+hash/currentness/compatibility receipts, exact-HEAD full3.11/doctor, formal
+independentreview and actualLinux/Windows PR/main CI are separate deliverygates.
+See docs/current-target-coverage.md and docs/evidence/mp74-current-target.safe.json.
+HistoricalWindowsqualification cause remains UNKNOWN. input_sent=false;
+P10=NOT_RUN.
+
+MP74 final-source owner recheck: both original hashes stillmatch, all164 default
+options/policy and both complete old historyreports match excluding version/
+timingmetadata. Added-only ms(n7/n5),p50/p95/p99/max:1.2277/1.5432/1.5432/1.5432
+and .8175/1.2887/1.2887/1.2887; no realMTGA latency claim. Final exactcandidate
+test/review/CI receipts remain mandatory. input_sent=false; P10=NOT_RUN.

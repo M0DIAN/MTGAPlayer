@@ -31,6 +31,36 @@ def _unknown(reason, ref=None):
         'read_only': True, **EXECUTION}
 
 
+def _target_proposals(request, binding, ref, limit):
+    """Shared bounded local membership/count enumeration, not a rules solver."""
+    from .semantic_targets import SELECT, check_final_set
+    from .choice_validation import check_proposal
+    entries = request['entries']; minimum, maximum = request['min_targets'], request['max_targets']
+    if entries is None or any(row['legal_action'] != SELECT for row in entries):
+        return [], None, 'complete_current_select_domain_not_observed'
+    if minimum is None or maximum is None:
+        return [], None, 'final_target_count_bounds_not_observed'
+    domain = [row['object_ref'] for row in entries]
+    if minimum > len(domain): return [], None, 'required_target_count_exceeds_offered_domain'
+    upper = min(maximum, len(domain))
+    total = sum(comb(len(domain), count) for count in range(minimum, upper+1))
+    if total == 0: return [], None, 'no_supported_final_target_sets'
+    proposals = []
+    for count in range(minimum, upper+1):
+        for selected in combinations(domain, count):
+            if len(proposals) == limit: break
+            final = {'source_object_ref': request['source_object_ref'],
+                     'target_idx': request['target_idx'], 'object_refs': list(selected)}
+            proposed = {'request_identity': copy.deepcopy(binding), 'proposed_final_target_set': final}
+            if ref is not None: proposed['source_snapshot_ref'] = copy.deepcopy(ref)
+            check_proposal(proposed)
+            if check_final_set(request, final)[0] != 'verified_known_constraints':
+                return [], None, 'known_constraints_not_verified'
+            proposals.append(proposed)
+        if len(proposals) == limit: break
+    return proposals, total, None
+
+
 def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CANDIDATES, version=2):
     """Reviewed choices (v2), target probes (v3), or eight-offer Discard (v4).
 
@@ -95,37 +125,8 @@ def enumerate_known_candidates(state, *, source_snapshot_ref=None, limit=MAX_CAN
                     return _unknown('known_constraints_not_verified')
                 proposals.append(proposed)
         elif request_type == 'GREMessageType_SelectTargetsReq' and profile == TARGET_PROFILE:
-            request = evidence['targets']
-            entries = request['entries']
-            minimum, maximum = request['min_targets'], request['max_targets']
-            if entries is None or any(row['legal_action'] != SELECT for row in entries):
-                return _unknown('complete_current_select_domain_not_observed')
-            if minimum is None or maximum is None:
-                return _unknown('final_target_count_bounds_not_observed')
-            domain = [row['object_ref'] for row in entries]
-            if minimum > len(domain):
-                return _unknown('required_target_count_exceeds_offered_domain')
-            upper = min(maximum, len(domain))
-            total = sum(comb(len(domain), count) for count in range(minimum, upper+1))
-            if total == 0:
-                return _unknown('no_supported_final_target_sets')
-            for count in range(minimum, upper+1):
-                for selected in combinations(domain, count):
-                    if len(proposals) == limit:
-                        break
-                    final = {'source_object_ref': request['source_object_ref'],
-                             'target_idx': request['target_idx'], 'object_refs': list(selected)}
-                    proposed = {'request_identity': copy.deepcopy(binding),
-                                'proposed_final_target_set': final}
-                    if source_snapshot_ref is not None:
-                        proposed['source_snapshot_ref'] = copy.deepcopy(source_snapshot_ref)
-                    check_proposal(proposed)
-                    status, _ = check_final_set(request, final)
-                    if status != 'verified_known_constraints':
-                        return _unknown('known_constraints_not_verified')
-                    proposals.append(proposed)
-                if len(proposals) == limit:
-                    break
+            proposals, total, reason = _target_proposals(evidence['targets'], binding, source_snapshot_ref, limit)
+            if reason: return _unknown(reason)
         elif request_type == 'GREMessageType_ActionsAvailableReq':
             # Preserve the complete active denominator while admitting only
             # existing, request-bound Cast/Activate checks. Unknown other rows
