@@ -17,7 +17,7 @@ from unittest.mock import patch
 
 from mtgaplayer import choice_continuation as first, target_revision as revision
 from mtgaplayer.choice_candidates import enumerate_known_candidates
-from mtgaplayer.cli import replay, watch_decision_events
+from mtgaplayer.cli import replay, watch, watch_decision_events
 from mtgaplayer.decision_consumer import DecisionConsumer, EXECUTION, _state, consume_events
 from mtgaplayer.decision_publisher import DecisionPublisher
 from mtgaplayer.raw_log import RawReducer
@@ -406,6 +406,59 @@ class TargetRevisionTests(unittest.TestCase):
                 if view['current_snapshot_ref'] is not None: refs.append(copy.deepcopy(view['current_snapshot_ref']))
             self.assertNotEqual(refs[0]['binding']['request_id'], refs[-2]['binding']['request_id'])
             self.assertIsNone(consumer.current_view()['decision_state']['binding']['request_id'])
+
+    def test_revision_duplicate_diff_cannot_revive_pending(self):
+        rows = self.synthetic_records(); combined = rows.pop()['greToClientEvent']['greToClientMessages']
+        diff = {'greToClientEvent': {'greToClientMessages': [combined[0]]}}
+        child = {'greToClientEvent': {'greToClientMessages': [combined[1]]}}
+        reducer, stage = self.producer(rows + [copy.deepcopy(diff), copy.deepcopy(diff), child])
+        self.assertIsNone(reducer.error); self.assertEqual(reducer.request['id'], 3)
+        self.assertIsNone(stage.revision.active); self.assertNotIn(revision.PRIVATE, reducer.request)
+        _, control = self.producer(rows + [diff, child])
+        self.assertIsNotNone(control.revision.active)
+
+    def test_revision_pending_partial_poll_cannot_revive_on_completion(self):
+        rows = self.synthetic_records()
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'synthetic-partial.jsonl'
+            path.write_text(''.join(json.dumps(r)+'\n' for r in rows[:6]), encoding='utf-8')
+            stream = watch(path, interval=0, samples=4, decision_state_version=14)
+            self.addCleanup(stream.close)
+            self.assertIsNone(next(stream)['decision_state']['binding']['request_id'])
+            tail = (json.dumps(rows[6])+'\n').encode()
+            with path.open('ab') as out: out.write(tail[:20])
+            self.assertEqual(next(stream)['error'], 'partial_raw_record_waiting')
+            with path.open('ab') as out: out.write(tail[20:])
+            after = next(stream)
+            self.assertIsNone(after['error']); self.assertEqual(after['decision_state']['binding']['request_id'], 3)
+            self.assertIsNone(after['decision_state'][revision.FIELD])
+            self.absent(revision.evaluate_revision(after['decision_state']))
+            next(stream)
+
+    def test_revision_typed_predecessor_refuses_same_value_float(self):
+        rows = self.synthetic_records()
+        rows[6]['greToClientEvent']['greToClientMessages'][0]['gameStateMessage']['prevGameStateId'] = 11.0
+        reducer, stage = self.producer(rows)
+        self.assertIsNone(reducer.error); self.assertEqual(reducer.request['id'], 3)
+        self.assertIsNone(stage.revision.active); self.assertNotIn(revision.PRIVATE, reducer.request)
+        _, control = self.producer(self.synthetic_records())
+        self.assertIsNotNone(control.revision.active)
+
+    def test_revision_first_predecessor_typed_without_changing_old_observer(self):
+        rows = self.synthetic_records()
+        rows[4]['greToClientEvent']['greToClientMessages'][0]['gameStateMessage']['prevGameStateId'] = 10.0
+        reducer, stage = self.producer(rows[:5])
+        self.assertIsNone(reducer.error); self.assertEqual(reducer.request['id'], 2)
+        self.assertIsNone(stage.active); self.assertNotIn(first.PRIVATE, reducer.request)
+        for row in rows[5:]: stage.prepare(row); reducer.apply(row); stage.after_apply()
+        self.assertEqual(reducer.request['id'], 3); self.assertIsNone(stage.revision.active)
+        self.assertNotIn(revision.PRIVATE, reducer.request)
+        old, _ = self.producer([]); old_stage = first.StageObserver(old)
+        old.observer = old_stage.observe; old_stage.reset()
+        for row in rows[:5]: old_stage.prepare(row); old.apply(row); old_stage.after_apply()
+        self.assertIsNone(old.error); self.assertIsNotNone(old_stage.active)
+        _, control = self.producer(self.synthetic_records())
+        self.assertIsNotNone(control.revision.active)
 
     def test_synthetic_replay_cli_opt_in_and_old_version_gate(self):
         rows = self.synthetic_records()

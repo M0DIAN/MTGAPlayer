@@ -1705,3 +1705,26 @@ controls retain a valid default request/candidate3 while refusing the new proof.
 Exact-HEAD/tree independent review and hosted head/merge Linux/Windows CI remain
 delivery gates recorded with the Draft PR.
 No merge, game input, new real path or latency claim; P10 NOT_RUN.
+
+## MP63 formal integration repair (2026-10-18)
+
+Remote main and both Draft PR heads were rechecked at the handed-off identities.
+PR79 receives only the v14 producer repairs from the reviewed local integration
+candidate: clear pending context on a partial poll even without a current
+request; quarantine silent duplicate-Diff callbacks; use typed JSON predecessor
+identity for first and revised child when Revision is enabled. State/Event14,
+the shared RawReducer and old v1–13 behavior remain unchanged. No CastStage or
+State/Event15 is included.
+
+Four direct synthetic regressions fail on the original product with four
+assertion failures, then all24 MP63 tests pass after repair. Python3.11.16 full
+unittest passes785 tests in108.144s. Separate processes compare249,353 complete
+old values with zero differences;216 normal v14 values equal the original PR.
+Owner-only frozen Equip byte/hash, prefix/watch/Publisher/Consumer/JSONL and all8
+portable projections still pass. Those receipts bind the same54 product sources.
+Formal development-only validation passes28 schema resources,8 portable states,
+32 events and10 negative controls. Windows doctor exits0 read-only. Exact-head
+independent review, updated PR CI and actual-main natural CI are separate
+delivery gates, recorded against their actual identities on PR79. Historical
+qualification failure evidence is retained; no unrelated repair is claimed.
+No MTGA input, new rule solver, runtime dependency or P10; input_sent=false.

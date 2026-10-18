@@ -114,7 +114,15 @@ class RevisionStage:
         if transports & {'authenticateResponse', 'matchGameRoomStateChangedEvent'}: self._invalidate_record(); return
         payload = record.get('payload')
         if 'payload' in record and type(payload) is not dict: self._invalidate_record(); return
-        if type(payload) is not dict: return
+        if type(payload) is not dict:
+            gre = record.get('greToClientEvent')
+            messages = gre.get('greToClientMessages') if type(gre) is dict else None
+            if type(messages) is list and any(type(m) is dict and type(m.get('gameStateMessage')) is dict and
+                    history._same(m['gameStateMessage'].get('gameStateId'), self.reducer.version) for m in messages):
+                # Identical Diff retransmissions are silent reducer no-ops;
+                # they still break this finite revision lineage.
+                self._invalidate_record()
+            return
         if payload.get('type') == 'ClientMessageType_UIMessage': return
         try:
             _bounded_json(record)
@@ -168,7 +176,7 @@ class RevisionStage:
                 if self.pending is None: return
                 saved = self.pending; gs = details['message']
                 _need('intervening_diff_count' not in saved and first._scope(r) == saved['scope'] and
-                    gs['prevGameStateId'] == saved['first_child']['binding']['game_state_id'])
+                    history._same(gs['prevGameStateId'], saved['first_child']['binding']['game_state_id']))
                 _need(all(history._same(_signature(r, i), signature) for i, signature in saved['signatures'].items()))
                 saved['intervening_diff_count'] = 1; saved['state_id'] = r.version
                 return

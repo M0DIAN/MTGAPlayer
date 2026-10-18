@@ -125,6 +125,17 @@ restore either consumed binding. Consumer owner-thread, append/new-request,
 partial/history/stopped/expiry gates and post-computation/output rechecks apply;
 there is no `last_valid` or old-ref substitution.
 
+## Producer continuity guards
+
+A partial poll clears the v14 observer even between consumption and a new
+request, when no current request carries a continuity bit. Completing that
+record cannot restore the discarded lineage. An identical state-ID Diff is
+quarantined before silent reducer retransmission can preserve pending Revision
+context. Both the first and revised Diff predecessors use typed JSON identity
+when Revision is enabled: numeric equality between an integer and float is not
+identity evidence. The default reducer and the existing v1–13 observer behavior
+remain unchanged. Direct synthetic regressions retain normal positive controls.
+
 ## Portable identity and authority limits
 
 `current_target_revision_real_v14.json` contains eight portable snapshots at the

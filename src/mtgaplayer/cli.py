@@ -410,6 +410,13 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         document = reducer.document(include_frontier_rows=action_frontier or decision_state,
                                     include_decision_state=decision_state)
         reduced_current = document['current']
+        if follower.framer.partial and stage is not None and decision_state_version == 14:
+            # Clear pending lineage even in the consumed-request interval where
+            # no current request carries a continuity bit.
+            stage.reset()
+            if isinstance(reduced_current.get('request'), dict):
+                reduced_current['request'].pop('_choice_continuation', None)
+                reduced_current['request'].pop('_revised_choice_continuation', None)
         if _poll_observer is not None and reduced_current.get('valid') and not follower.framer.partial:
             history_pending = False
         if follower.framer.partial:

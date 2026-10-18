@@ -226,6 +226,10 @@ class StageObserver:
                 saved = self.pending; gs = details['message']
                 _need(details['kind'] == 'diff' and _scope(r) == saved['scope'] and 'ability' not in saved and
                     gs['prevGameStateId'] == saved['parent']['binding']['game_state_id'])
+                # v14 must not inherit an untyped first-child predecessor.
+                # Keep the already published v1-13 observer behavior intact.
+                _need(self.revision is None or
+                    history._same(gs['prevGameStateId'], saved['parent']['binding']['game_state_id']))
                 current = history._public(r, LiteralRefs(), ())
                 source = r.objects[saved['parent']['identifier_refs']['instanceId']]
                 _need(history._same(self._source_signature(source), saved['source_signature']))
