@@ -549,7 +549,8 @@ class RawFollower:
 class RawReducer:
     def __init__(self, observer=None, *, include_state_messages=False, include_request_parameters=False,
                  include_targeted_activate=False, include_current_discard=False, include_target_payment_relation=False,
-                 include_cast_target_members=False, include_cast_activate_associations=False):
+                 include_cast_target_members=False, include_cast_activate_associations=False,
+                 include_multi_slot_cast=False):
         # Opt-in instrumentation only. Private request identities stay in the
         # caller's memory; default replay/watch have no observer.
         self.observer = observer
@@ -560,6 +561,9 @@ class RawReducer:
         self._include_target_payment_relation = include_target_payment_relation
         self._include_cast_target_members = include_cast_target_members
         self._include_cast_activate_associations = include_cast_activate_associations
+        if type(include_multi_slot_cast) is not bool or include_multi_slot_cast and not include_request_parameters:
+            raise ValueError('multi_slot_cast_requires_request_parameters')
+        self._include_multi_slot_cast = include_multi_slot_cast
         self.reset(0)
 
     def _observe(self, event, **details):
@@ -816,9 +820,10 @@ class RawReducer:
                                 **_request_semantics(message)}
                 if self._include_request_parameters:
                     from .request_parameters import project
+                    current_objects = self._current()['objects']
                     visible = [{'instance_id': o['id'], 'card_id': o['card_id'], 'zone': o['zone'],
                                 'owner_seat': o['owner'], 'controller_seat': o['controller']}
-                               for o in self._current()['objects']]
+                               for o in current_objects]
                     # Current whole-row replacement applies before this read.
                     # The narrow producer evidence never exports the raw list.
                     source_abilities = {o['instance_id']: self.objects[o['instance_id']].get('uniqueAbilities')
@@ -826,16 +831,24 @@ class RawReducer:
                         o['controller_seat'] == self.seat and
                         self.objects[o['instance_id']].get('visibility') == 'Visibility_Public'}
                     from .action_target_menus import public_battlefield_refs
+                    cast_refs = (self._cast_source_refs() if self._include_cast_target_members or
+                                 self._include_cast_activate_associations or self._include_multi_slot_cast else None)
+                    public_refs = (public_battlefield_refs(self, current_objects if self._include_multi_slot_cast else None)
+                                   if self._include_targeted_activate or self._include_cast_target_members or
+                                   self._include_cast_activate_associations or self._include_multi_slot_cast else None)
                     self.request['_request_parameters'] = project(message, visible, self.seat, source_abilities,
                         targeted_activate=self._include_targeted_activate, current_discard=self._include_current_discard,
                         target_payment_relation=self._include_target_payment_relation,
                         cast_target_members=self._include_cast_target_members,
                         cast_activate_associations=self._include_cast_activate_associations,
-                        cast_source_refs=self._cast_source_refs() if self._include_cast_target_members or self._include_cast_activate_associations else None,
+                        cast_source_refs=cast_refs,
                         mana_source_refs=self._mana_source_refs() if self._include_cast_target_members or self._include_cast_activate_associations else None,
                         current_hand_refs=self._reviewed_current_hand_refs() if self._include_current_discard else None,
-                        public_battlefield_refs=(public_battlefield_refs(self)
-                                                if self._include_targeted_activate or self._include_cast_target_members or self._include_cast_activate_associations else None))
+                        public_battlefield_refs=public_refs)
+                    if self._include_multi_slot_cast:
+                        from .multi_slot_cast import project as project_multi
+                        self.request['_multi_slot_cast'] = project_multi(message, visible, self.seat,
+                            cast_refs, public_refs)
                 if self.observer is not None:
                     self._observe('request_accepted', request=self.request, message=message,
                                   is_retransmission=prior is not None)
@@ -1054,6 +1067,7 @@ class RawReducer:
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
             request.pop('_request_parameters', None)
+            request.pop('_multi_slot_cast', None)
         if request and isinstance(request.get('action_inventory'), dict):
             inventory = request['action_inventory']
             if include_frontier_rows:

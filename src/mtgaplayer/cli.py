@@ -110,6 +110,7 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
     document['current'].pop('_observed_combat_stats', None)
     if isinstance(document['current'].get('request'), dict):
         document['current']['request'].pop('_request_parameters', None)
+        document['current']['request'].pop('_multi_slot_cast', None)
     if interrupted and document['decision_state'] is not None:
         document['decision_state']['unresolved'].append('current_request_continuity_unverified')
         document['decision_state']['unresolved'].sort()
@@ -134,9 +135,13 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            rules_index_path=None, advice_policy=None, decision_state_version=1,
            known_choice_candidates=False, observed_action_target_menus=False,
            known_choice_candidates_version=2, activate_target_payment_relation=False, payment_source_untap_witness=False,
-           current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False):
+           current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False,
+           current_multi_slot_cast=False):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if type(current_multi_slot_cast) is not bool or current_multi_slot_cast and (
+            format != 'player-log' or decision_state_version < 5):
+        raise ValueError('current_multi_slot_cast_requires_player_log_state5')
     if type(current_cast_continuation) is not bool or current_cast_continuation and (
             format != 'player-log' or decision_state_version != 15):
         raise ValueError('current_cast_continuation_requires_player_log_state15')
@@ -190,7 +195,8 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                                                         include_target_payment_relation=decision_state_version >= 9,
                                                         include_cast_target_members=decision_state_version >= 11,
                                                         include_cast_activate_associations=decision_state_version >= 12,
-                                                        include_state_messages=decision_state_version >= 10)
+                                                        include_state_messages=decision_state_version >= 10,
+                                                        include_multi_slot_cast=current_multi_slot_cast)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         tap = _observe_tap(reducer) if decision_state_version >= 10 else None
         stage = _observe_continuation(reducer, include_revision=decision_state_version == 14, include_cast=decision_state_version == 15) if decision_state_version >= 13 else None
@@ -297,10 +303,12 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
           choice_graph=False, combat_frontier=False, decision_state=False,
           _poll_observer=None, _clock_ns=None, decision_state_version=1,
-          observed_action_target_menus=False):
+          observed_action_target_menus=False, current_multi_slot_cast=False):
     """Finite read-only observations. Each yielded sample is a standalone document."""
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if type(current_multi_slot_cast) is not bool or current_multi_slot_cast and decision_state_version < 5:
+        raise ValueError('current_multi_slot_cast_requires_player_log_state5')
     decision_state = decision_state or decision_state_version != 1
     if combat_frontier and not decision_input:
         raise ValueError('combat_frontier_requires_decision_input')
@@ -316,7 +324,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                                                                      include_target_payment_relation=decision_state_version >= 9,
                                                                      include_cast_target_members=decision_state_version >= 11,
                                                         include_cast_activate_associations=decision_state_version >= 12,
-                                                                     include_state_messages=decision_state_version >= 10)
+                                                                     include_state_messages=decision_state_version >= 10,
+                                                                     include_multi_slot_cast=current_multi_slot_cast)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     tap = _observe_tap(reducer) if decision_state_version >= 10 else None
     stage = _observe_continuation(reducer, include_revision=decision_state_version == 14, include_cast=decision_state_version == 15) if decision_state_version >= 13 else None
@@ -484,7 +493,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
 
 
 def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
-                          max_observation_age_ns=None, clock_ns=None, session_id=None, decision_state_version=1):
+                          max_observation_age_ns=None, clock_ns=None, session_id=None, decision_state_version=1,
+                          current_multi_slot_cast=False):
     """Iterate poll-level DecisionEvent JSON objects; source is read only once.
 
     EOF/consumer abandonment also ends the subscription; consumers must discard
@@ -505,7 +515,8 @@ def watch_decision_events(path, interval=0.25, samples=5, max_history_bytes=64 *
     try:
         for document in watch(path, interval, samples, max_history_bytes, decision_state=True,
                               _poll_observer=observed, _clock_ns=publisher.clock_ns,
-                              decision_state_version=decision_state_version):
+                              decision_state_version=decision_state_version,
+                              current_multi_slot_cast=current_multi_slot_cast):
             yield from publisher.observe(document, metadata)
     except KeyboardInterrupt:
         reason = 'user_interrupt'
@@ -588,6 +599,8 @@ def main(argv=None):
                                    help='v3 target proposals; v4 current Discard; v5 Blue1 Cast members (State11); v6 separate Cast/Activate associations (State12)')
         replay_parser.add_argument('--current-cast-continuation', action='store_true',
                                    help='read-only actual Cast to first current four-target child (State15)')
+        replay_parser.add_argument('--current-multi-slot-cast', action='store_true',
+                                   help='opt-in ordered current Cast slot/member observations only; requires State5+')
         replay_parser.add_argument('--current-target-revision', action='store_true',
                                    help='actual selection update to current revised child; requires State14')
         replay_parser.add_argument('--current-choice-continuation', action='store_true',
@@ -602,6 +615,8 @@ def main(argv=None):
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
                               help='read-only current public target menu evidence')
+    watch_parser.add_argument('--current-multi-slot-cast', action='store_true',
+                              help='opt-in ordered current Cast slot/member observations only; requires State5+')
     watch_parser.add_argument('--interval', type=float, default=0.25)
     watch_parser.add_argument('--samples', type=int, default=5)
     watch_parser.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
@@ -782,6 +797,7 @@ def main(argv=None):
                             current_choice_continuation=args.current_choice_continuation,
                             current_target_revision=args.current_target_revision,
                             current_cast_continuation=args.current_cast_continuation,
+                            current_multi_slot_cast=args.current_multi_slot_cast,
                             observed_action_target_menus=args.observed_action_target_menus)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1
@@ -793,7 +809,8 @@ def main(argv=None):
                      if args.max_observation_age_ms is not None else None)
             events = watch_decision_events(args.input, args.interval, args.samples,
                                            args.max_history_bytes, limit,
-                                           decision_state_version=args.decision_state_version)
+                                           decision_state_version=args.decision_state_version,
+                                           current_multi_slot_cast=args.current_multi_slot_cast)
             reason = None
             try:
                 for result in events:
@@ -820,7 +837,8 @@ def main(argv=None):
                                 action_frontier=args.action_frontier,
                                 choice_graph=args.choice_graph, combat_frontier=args.combat_frontier,
                                 decision_state=args.decision_state, decision_state_version=args.decision_state_version,
-                                observed_action_target_menus=args.observed_action_target_menus):
+                                observed_action_target_menus=args.observed_action_target_menus,
+                                current_multi_slot_cast=args.current_multi_slot_cast):
                 print(json.dumps(result, ensure_ascii=False), flush=True)
             return 0
         except KeyboardInterrupt:

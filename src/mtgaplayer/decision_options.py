@@ -91,6 +91,13 @@ def _build(state, ref, limit):
     ac = advice['candidate_coverage']; rows = advice['candidate_assessments']
     frontier = state['legal_action_space']['immediate_frontier']
     params = state['legal_action_space'].get('request_parameters')
+    # _validate_state already checked this versioned Graph extension. Reuse
+    # its facts rather than decode the action/slots a second time here.
+    from .multi_slot_cast import FIELD as MULTI_SLOT
+    graph = state['legal_action_space']['choice_graph']
+    multi = {node['action_key']['list_position']: constraint[MULTI_SLOT]
+        for node in graph['action_nodes'] for constraint in node['constraints']
+        if MULTI_SLOT in constraint} if graph else {}
     result['request_observation'] = {'request_type': binding['request_type'],
         'parameter_profile': params['profile'] if params else None,
         'target_literals': copy.deepcopy(params.get('targets')) if params else None,
@@ -107,6 +114,8 @@ def _build(state, ref, limit):
                 template = frontier['projection']['templates'][position]
                 observation.update({k: copy.deepcopy(template[k]) for k in
                     ('visible_object_id', 'observed_parameter_shapes', 'unknown_parameter_fields_present')})
+                if position in multi:
+                    observation[MULTI_SLOT] = multi[position]
             option = _option(binding, ref, kind, 'decision_advisor', position, observation)
             option['list_position'] = position
             if row.get('structurally_interpreted'):

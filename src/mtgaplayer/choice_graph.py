@@ -268,6 +268,9 @@ def build_choice_graph(decision_input, action_frontier, request):
                      template.get('unresolved_parameters', []))
         if node is None:
             return None
+        if request.get('_multi_slot_cast'):
+            from .multi_slot_cast import attach
+            attach(node, request)
         nodes.append(node)
     if by_position:
         return None
