@@ -659,3 +659,13 @@ multiple choices, parent probes, selected literals and unknown tactical or
 combination domains cannot win by evidence rank. Each preference retains its
 request/ref/option key and all execution flags stay false. See
 [the policy contract and offline measurement boundaries](docs/shadow-decision.md).
+
+## MP80 opt-in poll-bound shadow runtime
+
+`mtgaplayer watch-shadow <Player.log>` runs the existing watch/Publisher/Consumer
+pipeline on one owner thread and combines current options, applicable local
+semantic evidence and the unchanged shadow policy at the completed-poll boundary.
+CLI output is a whitelisted safe summary; full request-bound research data stay
+in the local `LocalShadowRuntime` owner API. Partial, consumed, replaced, expired
+or stopped contexts revoke the entire frame. Defaults and all input permissions
+remain unchanged. See [the runtime contract](docs/poll-bound-shadow-runtime.md).

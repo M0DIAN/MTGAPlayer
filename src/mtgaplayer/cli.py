@@ -1,6 +1,7 @@
 import argparse
 import copy
 import json
+import itertools
 import math
 import os
 from pathlib import Path
@@ -304,10 +305,12 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           decision_input=False, action_gaps=False, action_frontier=False,
           choice_graph=False, combat_frontier=False, decision_state=False,
           _poll_observer=None, _clock_ns=None, decision_state_version=1,
-          observed_action_target_menus=False, current_multi_slot_cast=False):
-    """Finite read-only observations. Each yielded sample is a standalone document."""
+          observed_action_target_menus=False, current_multi_slot_cast=False, _owner_observer=None):
+    """Read-only completed polls; samples=None explicitly enables continuous watch."""
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if _owner_observer is not None and (not callable(_owner_observer) or _poll_observer is None):
+        raise ValueError('owner_context_requires_poll_observer')
     if type(current_multi_slot_cast) is not bool or current_multi_slot_cast and decision_state_version < 5:
         raise ValueError('current_multi_slot_cast_requires_player_log_state5')
     decision_state = decision_state or decision_state_version != 1
@@ -337,20 +340,33 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     facts = {}
     previous_request = None
     history_pending = _poll_observer is not None
+    owner_message = None  # One current message, never an intra-poll request ledger.
     def request_identity(request):
         binding = request.get('binding') if isinstance(request, dict) else None
         return tuple(binding.get(k) for k in ('generation', 'match', 'game', 'self_seat',
                                               'game_state_id')) + (request['id'], request['type']) if binding else None
     if _poll_observer is not None:
         def observe(event, details):
-            # Copy scalar facts immediately; never retain raw messages or the
-            # mutable reducer request. This is a per-poll summary, not a ledger.
+            nonlocal owner_message
+            # Legacy publication retains scalar poll facts only. The opt-in
+            # owner branch below separately keeps one accepted-message slot.
             if tap is not None:
                 tap.observe(event, details)
             if stage is not None:
                 stage.observe(event, details)
             if combat is not None:
                 combat.observe(reducer, event, details)
+            if _owner_observer is not None:
+                if event == 'request_accepted':
+                    if not details['is_retransmission'] or owner_message is not None:
+                        owner_message = copy.deepcopy(details['message'])
+                    key = 'owner_retransmissions' if details['is_retransmission'] else 'owner_requests_accepted'
+                    facts[key] = facts.get(key, 0) + 1
+                elif event in ('request_ended', 'continuity_error', 'unsupported_broadcast_request') or (
+                        event == 'state_accepted' and details['kind'].startswith('full')):
+                    owner_message = None
+                if event == 'request_ended' and details['disposition'] == 'consumed':
+                    facts['owner_requests_consumed'] = facts.get('owner_requests_consumed', 0) + 1
             if event == 'state_accepted' and details['kind'] != 'full_retransmit':
                 facts['state_changed'] = True
             elif event == 'request_accepted' and not details['is_retransmission']:
@@ -367,15 +383,21 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     # History is a baseline, never a new opportunity. A request can be emitted
     # only on its first complete, supported append observation.
     seen_requests = set()
-    for index in range(samples):
+    for index in (itertools.count() if samples is None else range(samples)):
         if _poll_observer is not None:
             started = clock()
             facts = {}
             previous_request = request_identity(reducer.request)
+        if _owner_observer is not None:
+            _owner_observer(reducer, None, poll_started_ns=started)
+        owner_offset = follower.offset if _owner_observer is not None else None
         reset, records = follower.poll()
+        if _owner_observer is not None:
+            facts['owner_bytes_read'] = follower.offset if reset else follower.offset - owner_offset
         if _poll_observer is not None:
             after_read = clock()
         if reset:
+            owner_message = None
             reducer.reset(follower.generation)
             if tap is not None: tap.reset()
             if stage is not None: stage.reset()
@@ -388,6 +410,13 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
             if stage is not None: stage.prepare(record)
             reducer.apply(record)
             if stage is not None: stage.after_apply()
+            if _owner_observer is not None and isinstance(record, dict):
+                payload = record.get('payload')
+                mixed = sum(k in record for k in ('payload', 'greToClientEvent',
+                    'authenticateResponse', 'matchGameRoomStateChangedEvent')) > 1
+                if mixed or ('payload' in record and not (
+                        type(payload) is dict and payload.get('type') == 'ClientMessageType_UIMessage')):
+                    owner_message = None
             if observed_action_target_menus:
                 menu_observer.observe(reducer,record)
             # Record *every* accepted supported request before a later record
@@ -424,6 +453,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
             # do not alter Full/Diff continuity or create another request ledger.
             if follower.framer.partial and reducer.request is not None:
                 reducer.request['_continuity_verified'] = False
+            if follower.framer.partial: owner_message = None
         document = reducer.document(include_frontier_rows=action_frontier or decision_state,
                                     include_decision_state=decision_state)
         reduced_current = document['current']
@@ -454,12 +484,13 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                                    'binding': binding, 'request_id': request['id'],
                                    'candidate_count': len(request['candidates']),
                                    'read_only': True}
+        finite_stop = samples is not None and index + 1 == samples
         document['source'] = {'format': 'player-log-gre-v1', 'generation': follower.generation,
                               'byte_offset': follower.offset, 'partial_record': follower.framer.partial,
                               'mode': 'watch', 'phase': phase, 'new_records': len(records),
                               'candidate_event': candidate_event, 'input_sent': False,
-                              'executor_connected': False, 'stopped': index + 1 == samples,
-                              'stop_reason': 'sample_limit' if index + 1 == samples else None}
+                              'executor_connected': False, 'stopped': finite_stop,
+                              'stop_reason': 'sample_limit' if finite_stop else None}
         if observed_action_target_menus:
             document['observed_action_target_menus'] = menu_observer.current(
                 reducer,source_complete=not follower.framer.partial and not follower.framer.errors)
@@ -488,8 +519,13 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                 'poll_read_ns': after_read - started,
                 'reducer_apply_ns': after_apply - after_read,
                 'decision_state_assembly_ns': assembly_ns if decision_state else 0})
+        if _owner_observer is not None:
+            from .response_evidence import _current_verified_raw_request
+            if owner_message is not None and _current_verified_raw_request(reducer, owner_message) is None:
+                owner_message = None
+            _owner_observer(reducer, owner_message, poll_completed=True)
         yield document
-        if index + 1 < samples:
+        if samples is None or index + 1 < samples:
             time.sleep(interval)
 
 
@@ -626,6 +662,14 @@ def main(argv=None):
         replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15), default=1,
                                    help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member; v8 current eight-offer Discard; v9 target/payment association; v10 untap event provenance; v11 Blue1 Cast members')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
+    shadow_parser = sub.add_parser('watch-shadow', help='single-owner poll-bound read-only shadow decisions; safe summaries only')
+    shadow_parser.add_argument('input', type=Path)
+    shadow_parser.add_argument('--interval', type=float, default=.25)
+    shadow_parser.add_argument('--samples', type=int, help='optional finite polls; default runs until interrupted')
+    shadow_parser.add_argument('--max-history-bytes', type=int, default=64*1024*1024)
+    shadow_parser.add_argument('--max-observation-age-ms', type=float, default=5000)
+    shadow_parser.add_argument('--max-event-silence-ms', type=float, default=5000)
+    shadow_parser.add_argument('--controlled-replay', action='store_true', help='explicitly label owner-controlled file append simulation')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
                               help='read-only current public target menu evidence')
@@ -708,6 +752,29 @@ def main(argv=None):
     bench.add_argument('--duration', type=float, default=90)
     bench.add_argument('--scenario', choices=['normal', 'reorder', 'unsupported', 'target-disappear'], default='normal')
     args = parser.parse_args(argv)
+    if args.command == 'watch-shadow':
+        from .shadow_runtime import LocalShadowRuntime,safe_summary
+        runtime=None
+        try:
+            if any(not math.isfinite(n) or not 0<n<=86_400_000 or round(n*1_000_000)<1
+                    for n in (args.max_observation_age_ms,args.max_event_silence_ms)):
+                raise ValueError('invalid_shadow_runtime_bounds')
+            runtime=LocalShadowRuntime(args.input,interval=args.interval,samples=args.samples,
+                max_history_bytes=args.max_history_bytes,max_observation_age_ns=round(args.max_observation_age_ms*1_000_000),
+                max_event_silence_ns=round(args.max_event_silence_ms*1_000_000),
+                observation_mode='controlled_stream_replay' if args.controlled_replay else 'local_log_watch')
+            terminal=None
+            for frame in runtime.frames():
+                terminal=frame;summary=safe_summary(frame)
+                if runtime._closed:summary['performance']=runtime.performance_report()
+                _emit_consumer_diagnostic(summary)
+            return 1 if terminal is None or terminal['reason'] in ('source_io_error','pipeline_error') else 0
+        except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
+            try:_emit_consumer_diagnostic({'error':'shadow_runtime_io_or_contract_error','read_only':True,'input_sent':False,'P10':'NOT_RUN'})
+            except OSError:pass
+            return 1
+        finally:
+            if runtime is not None:runtime.close()
     if args.command == 'evaluate-shadow-history':
         from .shadow_history import evaluate_shadow_history
         try:

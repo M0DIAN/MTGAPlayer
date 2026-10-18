@@ -2222,3 +2222,24 @@ returns, two default reports and MP78 current/history outputs match base.
 Final exactHEAD owner rerun/full3.11/doctor/review/CI remain separate delivery
 gates. Old164 and2/164 remain prior accepted evidence. See docs/current-group-evidence.md.
 input_sent=false; P10=NOT_RUN; historical Windows qualification root cause UNKNOWN.
+
+MP80 poll-bound shadow runtime on accepteded0d5fa/tree3e74aa3: read-only audit
+confirmed the existing dual-process event consumer lacks the owning authenticated
+raw context required by current semantic slices. Explicit watch-shadow reuses
+production watch's unique Follower/Reducer, State15, Publisher and Consumer on
+one thread. One accepted-message slot and a completed-poll visible fingerprint
+bind the whole frame to the same raw digest/request/ref/lease and append source.
+Same-poll consumed/replaced requests never become opportunities; partial/reset/
+expiry/stop revoke all data. STALE subscriptions renew only for a genuinely new
+append request, without another raw state. Default protocols and policy unchanged.
+Owner reauthenticated new34/other0 sources and identical MP77 archives; recordwise
+553 polls contain1 history-only and33 append requests,233 current observations.
+Search287/441, Group143/302/490, coalesced consumption, split143, rotation and
+truncation controls pass with original bytes. Complete34 option/policy returns,
+two default and two Search/Group history reports match base (34,109 leaf values,
+versions/timings only normalized). Old164/2 remains prior accepted evidence.
+Independent direct counterproof repaired bytes fingerprint comparison, missing
+completed-poll raw/source binding, stop-publication failure cleanup and unknown
+Cost-domain zero summaries. ExactHEAD tests/doctor/review and actual PR/main CI
+remain separate final delivery gates. See docs/poll-bound-shadow-runtime.md.
+input_sent=false; P10=NOT_RUN; historical Windows qualification root cause UNKNOWN.
