@@ -24,3 +24,11 @@ that future response nor its outcome contributed to these projections.
 No parent Cast/Activate, complete payment, full action legality, server acceptance
 or execution is proved. Repeated source rows remain separate original positions.
 The requirement's associated object has an unknown rule role.
+
+MP75 reuses these same two projections for the optional single-concrete-color
+requirement/predictive-unit comparison. No fixture bytes or original request
+identities are rewritten to make a new positive. Both real slices have Black1
+requirements and Black1 predictions uniquely joining original action position1;
+ten alternative actions retain positions0–9. MP75 synthetic controls show color,
+amount, source/ability, repeated-resource and lifecycle counterexamples. Equality
+does not establish source readiness, ability catalog truth or complete payment.

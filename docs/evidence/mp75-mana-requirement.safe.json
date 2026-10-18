@@ -1,0 +1,318 @@
+{
+  "base_main": "1ee9b168bf9772721c1c848d8b64eb1a4d5f793b",
+  "base_tree": "19650b8b8d55940246882a57184581176eef0242",
+  "owner_original_authenticated_before_and_after": true,
+  "reviewer_original_authenticated": false,
+  "authenticated_distinct_requests": 164,
+  "all_frozen_default_options_policy_equal": true,
+  "separate_current_mana_requests": 2,
+  "real_current_mana_matches": [
+    {
+      "record": 630,
+      "request_digest_verified_before_and_after": true,
+      "requirement_amounts": [
+        {
+          "color": [
+            "ManaColor_Black"
+          ],
+          "count": 1
+        }
+      ],
+      "predictive_amounts": [
+        {
+          "color": "ManaColor_Black",
+          "count": 1
+        }
+      ],
+      "predictive_solution_position": 0,
+      "matched_payment_action_positions": [
+        1
+      ],
+      "source_identity_consistency": true,
+      "ability_identity_consistency": true,
+      "requirement_object_role": "unknown",
+      "source_readiness": "unknown",
+      "complete_payment_verified": false,
+      "complete_action_legality_verified": false,
+      "before_future_response": true
+    },
+    {
+      "record": 668,
+      "request_digest_verified_before_and_after": true,
+      "requirement_amounts": [
+        {
+          "color": [
+            "ManaColor_Black"
+          ],
+          "count": 1
+        }
+      ],
+      "predictive_amounts": [
+        {
+          "color": "ManaColor_Black",
+          "count": 1
+        }
+      ],
+      "predictive_solution_position": 0,
+      "matched_payment_action_positions": [
+        1
+      ],
+      "source_identity_consistency": true,
+      "ability_identity_consistency": true,
+      "requirement_object_role": "unknown",
+      "source_readiness": "unknown",
+      "complete_payment_verified": false,
+      "complete_action_legality_verified": false,
+      "before_future_response": true
+    }
+  ],
+  "sources": [
+    {
+      "source": {
+        "sha256_read_bytes": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+        "bytes_read": 7718945,
+        "records_processed": 1433,
+        "complete": true,
+        "stable_during_read": true,
+        "record_limit_reached": false,
+        "partial_record": false,
+        "framing_errors": 0
+      },
+      "totals": {
+        "observed_requests": 80,
+        "evaluable_requests": 62,
+        "research_preferences": 1,
+        "abstentions": 61,
+        "unsupported": 18,
+        "invalid_or_incomplete": 0,
+        "expired_or_consumed": 79
+      },
+      "cost_stage": {
+        "unit": "unique authenticated current PayCosts request, first accepted observation; rows counted separately",
+        "pay_costs_requests_observed": 6,
+        "reviewed_nonmana_select_profile": 6,
+        "reviewed_mana_payment_stage": 0,
+        "unreviewed_cost_shape": 0,
+        "local_cost_candidates_observed_requests": 6,
+        "local_cost_candidates_unknown_requests": 0,
+        "local_cost_candidate_memberships": 17,
+        "observed_mana_requirements": 0,
+        "observed_payment_action_rows": 0,
+        "observed_predictive_auto_tap_solutions": 0,
+        "historically_paired_cost_responses": 5,
+        "paired_effect_cost_responses": 5,
+        "paired_other_cost_child_responses": 0,
+        "prior_paired_complex_submissions_observed": 17,
+        "cost_requests_with_prior_paired_complex_context": 6,
+        "strictly_associated_parent_cost_stages": 0,
+        "explicit_parent_cost_link_verified": false,
+        "causal_relationship_unverified_requests": 6,
+        "complete_payment_verified": null,
+        "complete_legal_complex_actions": null,
+        "scope": "finite current requirement/object and predictive action observations; prior context is temporal only",
+        "policy_unchanged": true
+      },
+      "mana_match": {
+        "unit": "first accepted authenticated own PayCosts request; requirements, solutions and single-route comparisons are separate units",
+        "authenticated_requests": 80,
+        "pay_costs_requests": 6,
+        "reviewed_nonmana_requests": 6,
+        "reviewed_mana_requests": 0,
+        "observed_mana_requirements": 0,
+        "observed_predictive_solutions": 0,
+        "reviewed_amount_matches": 0,
+        "reviewed_contradictions": 0,
+        "unsupported_combination_shapes": 0,
+        "unreviewed_identity_or_continuity": 0,
+        "unreviewed_cost_stage_requests": 0,
+        "source_readiness_verified": null,
+        "complete_payment_verified": null,
+        "complete_action_legality_verified": null,
+        "historical_response_used_for_current_match": false,
+        "policy_unchanged": true,
+        "other_payment_routes": "unknown",
+        "historical_only": true,
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      "added_review_latency_ms": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      },
+      "complete_previous_history_equal_except_versions_timings": true
+    },
+    {
+      "source": {
+        "sha256_read_bytes": "b5b9d4cb013bb6e82c42070c9d238e5a2121ac1f15106bb5beb4aae2977974ca",
+        "bytes_read": 6566716,
+        "records_processed": 1490,
+        "complete": true,
+        "stable_during_read": true,
+        "record_limit_reached": false,
+        "partial_record": false,
+        "framing_errors": 0
+      },
+      "totals": {
+        "observed_requests": 84,
+        "evaluable_requests": 64,
+        "research_preferences": 1,
+        "abstentions": 63,
+        "unsupported": 20,
+        "invalid_or_incomplete": 0,
+        "expired_or_consumed": 84
+      },
+      "cost_stage": {
+        "unit": "unique authenticated current PayCosts request, first accepted observation; rows counted separately",
+        "pay_costs_requests_observed": 6,
+        "reviewed_nonmana_select_profile": 4,
+        "reviewed_mana_payment_stage": 2,
+        "unreviewed_cost_shape": 0,
+        "local_cost_candidates_observed_requests": 4,
+        "local_cost_candidates_unknown_requests": 2,
+        "local_cost_candidate_memberships": 31,
+        "observed_mana_requirements": 2,
+        "observed_payment_action_rows": 20,
+        "observed_predictive_auto_tap_solutions": 2,
+        "historically_paired_cost_responses": 4,
+        "paired_effect_cost_responses": 3,
+        "paired_other_cost_child_responses": 1,
+        "prior_paired_complex_submissions_observed": 9,
+        "cost_requests_with_prior_paired_complex_context": 3,
+        "strictly_associated_parent_cost_stages": 0,
+        "explicit_parent_cost_link_verified": false,
+        "causal_relationship_unverified_requests": 6,
+        "complete_payment_verified": null,
+        "complete_legal_complex_actions": null,
+        "scope": "finite current requirement/object and predictive action observations; prior context is temporal only",
+        "policy_unchanged": true
+      },
+      "mana_match": {
+        "unit": "first accepted authenticated own PayCosts request; requirements, solutions and single-route comparisons are separate units",
+        "authenticated_requests": 84,
+        "pay_costs_requests": 6,
+        "reviewed_nonmana_requests": 4,
+        "reviewed_mana_requests": 2,
+        "observed_mana_requirements": 2,
+        "observed_predictive_solutions": 2,
+        "reviewed_amount_matches": 2,
+        "reviewed_contradictions": 0,
+        "unsupported_combination_shapes": 0,
+        "unreviewed_identity_or_continuity": 0,
+        "unreviewed_cost_stage_requests": 0,
+        "source_readiness_verified": null,
+        "complete_payment_verified": null,
+        "complete_action_legality_verified": null,
+        "historical_response_used_for_current_match": false,
+        "policy_unchanged": true,
+        "other_payment_routes": "unknown",
+        "historical_only": true,
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      "added_review_latency_ms": {
+        "sample_count": 2,
+        "p50_ms": 0.1231,
+        "p95_ms": 0.1411,
+        "p99_ms": 0.1411,
+        "max_ms": 0.1411
+      },
+      "complete_previous_history_equal_except_versions_timings": true
+    }
+  ],
+  "added_only_review_latency_ms": {
+    "sample_count": 2,
+    "p50_ms": 0.1231,
+    "p95_ms": 0.1411,
+    "p99_ms": 0.1411,
+    "max_ms": 0.1411
+  },
+  "timing_scope": "only added _review_mana_requirement comparison and public source identity checks; current raw/Consumer lease gates outside this nested timing; offline not MTGA latency",
+  "runtime_source_sha256": {
+    "__init__.py": "876f118fd9ae490143c0b886893a3ae1816db2aa84f4517fb60c0d76b1912985",
+    "__main__.py": "482b8693e2fe6dbd732e3d7961e03827d3efa187bad11d29da188be580ebbeea",
+    "action_frontier.py": "8ea41213887ee77b257779aaa8e5c3756b47b21eabfa6ceaa75ab97c3154a729",
+    "action_gaps.py": "e8a3a5d6e3b8868a87e4f3a89964c05934eb1de66520e0e9a5532852a4dd89cf",
+    "action_intents.py": "e3487b48153ee824c3d4e965540acb11e03471d0ad1b88383228be111d6eaeed",
+    "action_target_menus.py": "e96adbeaac1d0728e228ee8f995b7a3d0f7455b594869d569c92cfc7b23a8e55",
+    "actions_available_gates.py": "d5541f6bb1cac7f16ab34fe67c81317fda22c9d8b8bdbc8ef269fa577071d9f4",
+    "activate_target_payment.py": "dea561e5be88f062dd7ed7af221398ffa659ccd9756a2c14d83056e9a9d39321",
+    "benchmark.py": "f69f1c95b379f1178e2ab70b695fc90d3b9520e019d21a3a473582c2b38d1f09",
+    "card_catalog.py": "112dc75261ff2cf251ff16b2c3b9cd8bc95babb4392e75a08bf022438e8424d0",
+    "cast_activate_associations.py": "8846df6584b82e55754169c6753b6903d9447e77ed2be97bb4643b36dc1b4dc9",
+    "cast_continuation.py": "1f40216d52faefa179a7eab893339d7e024b90ce43dd3112dd8c60c7cc519304",
+    "cast_target_members.py": "c27f950078306a9cffd0fea75ad774d826da2417817c467e135174f2ff9c1b7a",
+    "choice_candidates.py": "bfb0471c159c4cca160bd16e6bdace6d76dc6056aa9626a56cd7bb78284e5bff",
+    "choice_continuation.py": "3f052de646585258d01e1ff7799000ea73e4c52c4134167ff6af8d53b1140527",
+    "choice_graph.py": "226e0d2bc0952f3a6815fd1c278c43e8dc4fb25e8e59ad88f44b4823451f2f06",
+    "choice_history.py": "b3dd8be1ee98c9255c41517d9b0d77c0c234d2de92517a51cc7eb4d3d02c5403",
+    "choice_validation.py": "938e464ef56fb0f9a47f83bad049488d7f030255d17a23877767871340272f9e",
+    "cli.py": "90e4fe1213435475df4c14c7d734edc0f5e7d4b6551409c5cebc51c302f94e63",
+    "combat_frontier.py": "b9f61066ca91de2a6277ec8f458d76f1b9bd0db4ec0222e522030ed518f8cee2",
+    "current_cost_stage.py": "19c961ba9f256c24b35bb0e8fb87d60822a46134c241b903cccca1acabe2a35e",
+    "current_target_request.py": "957aae36f8d23206007ad3ca4a9596b7ffec62abda51a2a6e02999465b27da8d",
+    "decision_advisor.py": "d989a53d8730a3f92c4ff3d72fd29e029ad2ff3f6db00b26abf252b2e899e93b",
+    "decision_consumer.py": "378ddb532786168e9bb0eb856d878bd67803886407253f4d552ebd208dbbfed6",
+    "decision_input.py": "a17667d4e98488988ed33067a7608ca9be54ea2b318074b9b51b685e0a2504c1",
+    "decision_options.py": "8578431a15af2f1d79a6754f97566f6b32adc0b8ed32131d92f836fdbb113199",
+    "decision_publisher.py": "3e95af69a418d134a3fd2cbd6cc9a7d81fe02d1228e77dad00e6ae970d3edeac",
+    "decision_state.py": "d8095407d0f37b4cf8c2e1494ed30d860a59d65056daf2c1135e0c6e550f2acf",
+    "files.py": "d63f295b6d5458f82fbf5f34d7cd9d1bf49eb4f5558baec2d1e5e9804c66b6cd",
+    "harness.py": "7b125aaca9dcbde79a1c6d404a2b3fdd59a62954b38d61503054019997cf6090",
+    "live_performance.py": "105677d4b2923e849c2f2eb8d53250123ac6583a045d9502b95397c9f776cc55",
+    "markers.py": "dc2eca309b6a5b38f95dd71d5cffef2629b433162c9e1b31fae48b4a664cd5e0",
+    "multi_slot_cast.py": "87567359b13e480ddd41cfb87e2ff0aa9f04e0fa40227180045d8b3120001ad7",
+    "native.py": "7eae56033f6dc0e2a040818c425042a90793de506bca52943af2e1d4e77137d4",
+    "observation_timeline.py": "a90657b83a77e25b54b537c707314a59afa5d8ce2bc3649ad8436e3998c417ea",
+    "observed_changes.py": "4160b95dd81feef7b4b3614ea13dfde212a8ce0f4c62e28a50a53bd116596be0",
+    "payment_source_tap.py": "d42634006d8c051ff0dbb0e59c9cba33de0d67fd3329343ac9bc29362c65d203",
+    "player.py": "a4fafe662a2da96aaa270ecb6ede885f7366f492826eabcef2fd906da608f45e",
+    "policy.py": "15813d0b582492b98b2b73355c71925f4f406465da4645df92bbb113cd70ed4c",
+    "raw_log.py": "5ae32cf28f1e83fa66c7cb1ad0326d53228ef202f17a98df10a1a70e042a3726",
+    "request_parameters.py": "67d0363fa4bdad5dc35a20332a2d36255b3825fe4a5e2a7d23e1e80dcfc3fd90",
+    "response_evidence.py": "aefcb3d939abf59993c1bf5d03238ea0f0d37993d0ee42c0f4de372e55885e53",
+    "rule_context.py": "39bc83230ed9480d9ad0a2c271fdc43821375ced4708f61a4d04af14712c789c",
+    "rules_index.py": "01a5cd74e31a64909a219f46412286e2d30b5b8343f0634eca58aa6088b8f887",
+    "semantic_activate.py": "15cff92bfd0d3cdbfc2d65f7bdd1c66773ada4ada4abfb2009fbd2483eecfce3",
+    "semantic_activate_targets.py": "1831d5353a8c86b83e37b327e82d21c0440be01ba0d7baededc42205b9560b64",
+    "semantic_cast.py": "45382943dfa9a1877f6eae1c74b4c10616a1490f85af827bb690019bc0d45015",
+    "semantic_combat.py": "d87e4bee39b0253ebc072374f2f47786ee98ad8f1e7812d3980ef3dd3879e680",
+    "semantic_cross_request.py": "30438fe987266688d0b037031106ebb70b9d7763c920c6881f1f663e50781445",
+    "semantic_effect_cost.py": "c63c5b896981fd8c28565088716222569d747957e5e923be5a1524cf53cde0e8",
+    "semantic_effect_cost_result.py": "083c0f9abdf18c697d5b6e903f811c4764e0e202a56db5301accaa3bd02658a3",
+    "semantic_evidence.py": "6fecf4b25c5275d91992411254c325543cc2c7c8cdbf4612e3844e29f8a2d996",
+    "semantic_hand.py": "5681b850a94f978645fb2d2ef7622c0ec57bd39a48ae53cafc2a94d1fcde388f",
+    "semantic_samples.py": "10440c0493633646d98b297c188c2517d01a88c90f9aab965c414c755643778c",
+    "semantic_search.py": "d96ff4661b243b24c2556ccb3535679722c8a1af1228edc294faf3fb426a43a6",
+    "semantic_targets.py": "5cf96012c84b33720f3f37c6f4d2044b64d36dd850ec5cf3e19e1ee3fbdf82c2",
+    "shadow_decision.py": "df71b9265053b3d29556b190dfe4cc7fc8e07acf162489de46ed5b24b02dd1c2",
+    "shadow_history.py": "0bb800462a2271c4d06e8da415943d1c9749c74a229d7f7260e44dd5aca521aa",
+    "state.py": "0bd4efa4e2a9ecdffbb405dd685d8e22f3485ba067c5f8d276fa249c97490065",
+    "stream.py": "a611ddcaa54f135c23528983ee22ffd51a489026dfb90a5be38d0806d5edaaaf",
+    "target_revision.py": "bc6eddc9240a51655b9232b6812454683bf351dfabb0a9fedee1ef3b48820694",
+    "target_stage_completions.py": "fac5e0785bf26ad51f3b2905aff4a136bea689c87ea0dd77a94e93ffe3b19660",
+    "visual.py": "9e66e2e3350bb59a43fa044d1b56139bc65a7e131ffdf7d98ca4350d6fa81d63",
+    "visual_observation.py": "fab07656999fd1b5b55dcbb889995bc29ef9d4e4fd23a041f9c28a1c8647ed68"
+  },
+  "source_stable": true,
+  "existing_portable_projection_sha256_lf": "4bd044a71efc923299e260a08bb8899d3d62051e9905cb90c8da3b8a68c5ca83",
+  "historical_windows_qualification_failure_root_cause": "UNKNOWN",
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

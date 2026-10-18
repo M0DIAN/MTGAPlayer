@@ -2115,3 +2115,34 @@ options/policy and both complete old historyreports match excluding version/
 timingmetadata. Added-only ms(n7/n5),p50/p95/p99/max:1.2277/1.5432/1.5432/1.5432
 and .8175/1.2887/1.2887/1.2887; no realMTGA latency claim. Final exactcandidate
 test/review/CI receipts remain mandatory. input_sent=false; P10=NOT_RUN.
+
+MP75 Current Mana Requirement and Predictive Payment Consistency (base
+1ee9b168bf9772721c1c848d8b64eb1a4d5f793b/tree19650b8b8d55940246882a57184581176eef0242):
+authenticated both unchanged owner originals before semantic reading and after.
+First-accepted records630/668 independently retain Black1,10 original payment
+actions and one Black1 predictive scheme joining position1. MP72 already joined
+descriptors/options but did not compare current requirements against outputs;
+synthetic Red1/Black2 and duplicate/source mismatch controls prove that gap.
+Explicit mana_requirement_match=True on the existing current cost API reuses
+shared parsers and public identity gates, supporting only one concrete color,
+requirement/solution/descriptor/unit and exact amount equality. No summation of
+alternative/repeated sources, readiness, ability-catalog, complete-payment or
+legality claim. Same reducer's bounded typed/interruption witnesses protect the
+new proof; stronger refusals stay in its side report and preserve old structural
+counts. Independent review caught this isolation/count-classification gap;
+direct16 tests now PASS including the exact float-predecessor history counterproof.
+Default State/Event/Candidate/MP65–74 interfaces and MP66 policy remain unchanged.
+Final owner receipts, focused/full3.11/doctor, exact-HEAD independent review and
+actual Linux/Windows PR/main CI are pending separate gates. See
+docs/mana-requirement-consistency.md. Historical Windows failure cause remains
+UNKNOWN. input_sent=false; P10=NOT_RUN.
+
+MP75 final-source owner recheck PASS: same164 requests/12PayCosts,10nonmana/
+2mana,2requirements/2predictions/2amountmatches,0contradictions/unsupported
+combination shapes. All164 full defaultoptions/policy and both old complete
+historyreports match exceptversion/timing/newoptionalreport. Nine strictly
+paired historical cost submissions and policy2/164 remainunchanged. Source
+readiness/fullpayment/fulllegality unknown. Addedhelperonly n2 ms
+p50/p95/p99/max=.1231/.1411/.1411/.1411 (oldouter gates excluded;offline).
+Final exact-HEAD tests/review/CI remain separate gates. See
+docs/evidence/mp75-mana-requirement.safe.json. input_sent=false; P10=NOT_RUN.
