@@ -231,7 +231,7 @@ def _build(state, ref, limit, intent_evidence=None):
 
 
 def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_complex_intents=False,
-                                    current_target_context=None,current_search_context=None):
+                                    current_target_context=None,current_search_context=None,current_group_context=None):
     """Owner-thread current/ref/lease gate, one bounded cached collection per ref.
 
     Cache is data only. Every read rechecks currentness, including cache hits;
@@ -245,6 +245,8 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
         raise ValueError('invalid_current_target_context')
     if current_search_context is not None and (type(current_search_context) is not tuple or len(current_search_context)!=2):
         raise ValueError('invalid_current_search_context')
+    if current_group_context is not None and (type(current_group_context) is not tuple or len(current_group_context)!=2):
+        raise ValueError('invalid_current_group_context')
     def evaluate(state, *, source_snapshot_ref):
         key = (source_snapshot_ref, limit)
         cached = consumer._decision_options_cache
@@ -281,6 +283,14 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
             try:_bounded_json(result)
             except (ValueError,TypeError,RecursionError,UnicodeError,OverflowError):
                 return _unknown('current_search_evidence_output_limit')
+        if current_group_context is not None:
+            from .current_group import _project,unknown
+            try:result['current_group_evidence']=_project(*current_group_context,state,source_snapshot_ref,limit)
+            except (ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
+                result['current_group_evidence']=unknown('current_group_shape_or_visible_identity_unreviewed')
+            try:_bounded_json(result)
+            except (ValueError,TypeError,RecursionError,UnicodeError,OverflowError):
+                return _unknown('current_group_evidence_output_limit')
         return result
     result = (_assess_current_report(consumer, evaluate, _unknown) if isinstance(consumer, DecisionConsumer)
         else _unknown('requires_current_consumer'))
@@ -295,4 +305,7 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_comp
     if current_search_context is not None and 'current_search_evidence' not in result:
         from .current_search import unknown
         result['current_search_evidence']=unknown(result['reason'])
+    if current_group_context is not None and 'current_group_evidence' not in result:
+        from .current_group import unknown
+        result['current_group_evidence']=unknown(result['reason'])
     return result

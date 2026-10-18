@@ -1,0 +1,28 @@
+{
+  "schema_version": "mtgaplayer.mp79-group-reference.v1",
+  "repository": "ettrue124/ArcaneForge",
+  "commit": "45f27866c5dfd5891fc101c00e611a36254d2f49",
+  "descriptor": {
+    "path": "analysis/action-inventory/arena-descriptor-set.json",
+    "sha256": "e6d29615014d3ce89d3cdb5f6d7f4662f98123bc9ad1eb0e42b8b61d2e40ba5c",
+    "git_blob": "c5efd4aa008f95bb9352ff7fef13e8bef33d7499"
+  },
+  "scry_workflow": {
+    "path": "analysis/arena-request-catalog-20261010/ui-sources/ScryWorkflow.cs",
+    "sha256": "ca1f00d2eac5f8f7274852cf6a9849217aad552997f21494536783cb2f4c6425",
+    "git_blob": "159559f2005d8fa2f1aa8b6fff67e992b96f1edd"
+  },
+  "group_request_fields": ["instanceIds", "groupSpecs", "groupType", "context", "sourceId"],
+  "group_specification_fields": ["lowerBound", "upperBound", "zoneType", "subZoneType", "isFacedown", "hot_ids"],
+  "group_response_fields": ["groups", "groupType"],
+  "group_fields": ["ids", "groupId", "zoneType", "subZoneType", "minSelect", "maxSelect", "isFacedown"],
+  "scope": "static protocol structure only, not actual runtime routing or rules",
+  "absent_lower_bound": null,
+  "absent_response_ids": null,
+  "scalar_defaults_inferred": false,
+  "current_binary_reauthenticated": false,
+  "complete_legality_verified": false,
+  "response_encoding_verified": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

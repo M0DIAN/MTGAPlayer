@@ -2200,3 +2200,25 @@ Actual complete34 default option/policy returns and both default history reports
 match base (versions/timings only normalized); raw data stay local. Final owner
 recheck, exactHEAD full3.11/doctor/review and actual PR/main CI remain separate
 delivery gates. See docs/current-search-evidence.md. input_sent=false; P10=NOT_RUN.
+
+MP79 Current Group observation on acceptede7a52fe/tree186a884: existing v6 hand
+and Group response classification cannot supply a current Group semantic slice.
+Owner reauthenticated unchanged MP76 snapshots and verified/deduplicated MP77
+archives: independent34/0 own-request denominators, Group3/Mulligan1, three Group
+freezes143/302/490 before strict consumed responses165/306/505. Independent gate
+review permits only the observed Ordered/Scry two-unresolved-item profile with
+own public Stack Ability and ordered Top/Bottom Library upperBound2. lowerBound,
+item identities and full combinations remain unknown; no Mulligan implementation.
+Consumer.current_decision_options(current_group_context=...) and explicit
+history --current-group-evidence reuse the single existing pipeline/frozen
+context, with before/after raw/current/source/ref/lease checks and private sticky
+Group interruption. No default options/policy or State/Event changes. Real API
+acceptance exposed v6's inapplicable0..99 hand-prompt quantity assumption; Group
+now checks only the observed single int32 Number structure and exports no value
+or inferred meaning.13 direct tests and independent lifecycle/response controls
+pass. Preliminary owner acceptance verifies3 requests/6 unresolved memberships,
+3 paired local response checks and revocation.34 complete default option/policy
+returns, two default reports and MP78 current/history outputs match base.
+Final exactHEAD owner rerun/full3.11/doctor/review/CI remain separate delivery
+gates. Old164 and2/164 remain prior accepted evidence. See docs/current-group-evidence.md.
+input_sent=false; P10=NOT_RUN; historical Windows qualification root cause UNKNOWN.
