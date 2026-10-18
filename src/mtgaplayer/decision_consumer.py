@@ -515,6 +515,11 @@ class DecisionConsumer:
         from .decision_options import assess_current_decision_options
         return assess_current_decision_options(self, limit=limit)
 
+    def shadow_decision(self, *, policy_version='deterministic_shadow.v1'):
+        """Explicit current research policy; never grants input authority."""
+        from .shadow_decision import assess_current_shadow_decision
+        return assess_current_shadow_decision(self, policy_version=policy_version)
+
     def current_view(self):
         now = self._now()
         self._tick(now)
@@ -639,7 +644,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                    prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
                    known_choice_candidates=False, known_choice_candidates_version=2,
                    activate_target_payment_relation=False, payment_source_untap_witness=False, current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False,
-                   current_decision_options=False):
+                   current_decision_options=False, shadow_decision=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -700,6 +705,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         from .target_revision import assess_current_revision
     if type(current_decision_options) is not bool:
         raise ValueError('invalid_current_decision_options_option')
+    if type(shadow_decision) is not bool:
+        raise ValueError('invalid_shadow_decision_option')
     consumer = consumer if consumer is not None else DecisionConsumer()
     if type(observed_changes) is not bool:
         raise ValueError('invalid_observed_changes_option')
@@ -787,6 +794,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             cast_continuation = assess_current_cast(consumer)
         if current_decision_options:
             options = consumer.current_decision_options()
+        if shadow_decision:
+            shadow = consumer.shadow_decision()
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
@@ -807,6 +816,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             sidecars.append(cast_continuation)
         if current_decision_options:
             sidecars.append(options)
+        if shadow_decision:
+            sidecars.append(shadow)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -834,6 +845,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 cast_continuation = assess_current_cast(consumer)
             if current_decision_options:
                 options = consumer.current_decision_options()
+            if shadow_decision:
+                shadow = consumer.shadow_decision()
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -860,6 +873,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['current_cast_continuation'] = cast_continuation
         if current_decision_options:
             value['current_decision_options'] = options
+        if shadow_decision:
+            value['shadow_decision'] = shadow
         return value
 
     try:

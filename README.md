@@ -648,3 +648,14 @@ member probes, final target sets and selected literal probes retain separate
 meanings and source coverage. State14 and15 keep their parallel contexts; no
 State/Event16 is added. Defaults remain unchanged and all legality, execution
 and input flags stay false. See [the contract and local measurement scope](docs/current-decision-options.md).
+
+## MP66 opt-in deterministic shadow policy
+
+`consume-events --shadow-decision` or `DecisionConsumer.shadow_decision()` returns
+a current research preference, abstention, expiry or unsupported result. It
+reuses MP65 options and Advisor's existing unique Play heuristic. Only a fully
+covered unique reviewed final target-set proposal adds a new preference case;
+multiple choices, parent probes, selected literals and unknown tactical or
+combination domains cannot win by evidence rank. Each preference retains its
+request/ref/option key and all execution flags stay false. See
+[the policy contract and offline measurement boundaries](docs/shadow-decision.md).
