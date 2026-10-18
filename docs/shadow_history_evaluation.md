@@ -143,3 +143,102 @@ same-process offline measurement does not prove real MTGA three-second latency.
 
 No MP66 algorithm changes, complete legality solver, new State/Event version,
 online service or native input. input_sent=false; P10=NOT_RUN.
+
+## ActionsAvailable concurrent gate diagnostics (MP69)
+
+`evaluate-shadow-history <explicit-local-file> --actions-available-gates` adds
+`actions_available_gate_analysis`, version
+`mtgaplayer.actions-available-gate-analysis.v1`. The default report has no new
+field or timing stage. This observes the same accepted-request callback, frozen
+MP65 options and MP66 result, and reuses Advisor's inventory/graph checks. It
+does not reparse GRE, rebuild state, enumerate combinations or change policy.
+
+Every condition uses requests as its unit and records true/false/unknown counts.
+Unknown counts mean unavailable evidence, not false. The original MP66 first
+reason is retained. Multiple offered active rows are not multiple verified
+complete legal actions. Source completeness refers only to returned engine rows
+and generator budgets; the complete legal domain and complete legal candidate
+count remain null. Local engine proposals, member probes and payment
+associations remain separate kinds. Returned tactical-unknown labels describe
+unverified knowledge, not a proven cause of refusal or a prediction of benefit.
+
+The opt-in static counterfactual calls the existing Advisor preference check
+with its unknown-field argument false on the same validated rows and graph.
+It mutates no state and supplies no new legality or tactical evidence. Its next
+reason must not be interpreted as a successful decision after a field repair.
+
+The same two source digests above still produce exactly164 distinct current
+authenticated requests, with zero cross-source overlap and74 ActionsAvailable
+(40+34). All164 frozen option and policy returns match with diagnostics on/off;
+default report values match the retained MP68 results except version/timing
+metadata. Preference coverage remains2/164; ActionsAvailable preferences remain0.
+
+| Concurrent observation | Requests |
+|---|---:|
+| Original field-gate refusal |74|
+| Cast present / Activate present / Play present |74 /47 /26|
+| Multiple offered active rows |74|
+| Static next gate: complex or unsupported candidates |74|
+| At least one structurally unreviewed row |70|
+| At least one source visibility/card identity still unverified |69|
+| Returned locally verified option present / absent |20 /54|
+| Returned tactical knowledge remains unknown |74|
+| Returned engine inventory/budget incomplete |0|
+| Current binding mismatch / Graph conflict |0 /0|
+
+These overlap. In20 requests with local verification, engine-action proposals
+occur in12, Cast member probes in6 and Activate/payment associations in4.
+Their sum22 double counts requests; none is a full legal-action count. No
+source-card disagreement was observed;69 requests have unknown identity, which
+is different from a contradiction. Continuity errors before acceptance remain
+in the parent report and are outside this accepted-request denominator.
+
+Only reviewed fixed field names and type classes are exported. All74 messages
+have `prompt: object` containing exactly a nonzero uint32 `promptId`, with
+`parameters` absent; the existing MP61 `_prompt` checker supplies this structural
+check. There are no other extra message/payload names in this cohort.
+`actions: array` appears74 times and `inactiveActions: array`44 times. The
+authenticated envelope identity fields retain existing reducer semantics.
+Unreviewed field names in other inputs are replaced by a fixed category,
+never printed, and raw values/IDs/cards/paths remain excluded. Overlap patterns
+are capped at128 with an explicit omitted-request count.
+
+The prior [MP61 client receipt](evidence/mp61-client-prompt-gate.json) proves
+only a finite offered-association path under its inspected conditions. It does
+not prove all prompts display-only or harmless to routing. Therefore this task
+reviews prompt representation but leaves its general request/routing meaning
+unknown for all74 requests. No protocol field is ignored, no unknown flag is
+cleared, and Advisor/Shadow policy outcomes are unchanged.
+
+Public Cast103 supplies a direct counterexample to a field-only explanation:
+no unknown envelope fields,8 active rows,7 structurally reviewed and1 unreviewed;
+16 MP65 options are8 engine rows plus8 member probes. It still abstains for
+complex candidates. Position2's two-slot members are not a complete proposal;
+position3 stays independent. Later104/107/110 consume without restoring prior
+decisions and109 borrows no106 domain. Original owner Equip cutoffs preserve
+1402 abstain,1422 research preference,1425 abstain and1421/1424/1426 withdrawal.
+Private originals are authenticated by the owner; reviewers use public controls
+and safe receipts, not a claim to have authenticated those private bytes.
+
+Actual opt-in diagnostic overhead (ms), one bounded measurement per source:
+
+| Source | n requests | p50 | p95 | p99 | max |
+|---|---:|---:|---:|---:|---:|
+| Frozen Equip |40|1.0465|1.6387|7.9798|7.9798|
+| Existing player |34|0.7112|1.7635|2.2144|2.2144|
+
+The stage includes reading the detached current view and checking existing
+rows, not a second reducer or full-file read. Existing outer timing stages
+include it; do not add nested timings. This offline observation is not real
+MTGA latency or a three-second qualification.
+
+Measured next priorities are no longer a field-only repair ranked by74 first
+reasons. First establish finite complete Cast/Activate proposal evidence
+(source, effect/target set, payment and future-stage boundaries);70 structural
+and69 identity gaps overlap74 complex requests, while20 already have partial
+local evidence. Then establish choice-relevant effect/utility evidence for
+competition; all74 retain tactical unknowns even if prompt semantics are later
+proved. Preserve prompt routing as an independent evidence prerequisite rather
+than predicting preference gains from clearing it. Other request families
+(38 unsupported,30 classified) and target-set stages (26 target abstentions)
+remain measurable independent work. Counts alone do not estimate repair yield.

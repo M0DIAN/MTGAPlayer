@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None):
+    def __init__(self, on_freeze=None, actions_available_gates=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -49,6 +49,11 @@ class _Evaluation:
         self.action_requests = Counter(); self.choices = Counter(); self.choice_units = Counter()
         self.diagnostics = Counter(); self.timings = {name:[] for name in STAGES}
         self.timing_counts = Counter()
+        self.action_gates = None
+        if actions_available_gates:
+            from .actions_available_gates import ActionsAvailableGates
+            self.action_gates = ActionsAvailableGates()
+            self.timings['actions_available_gate_analysis'] = []
         self.reducer = RawReducer(include_state_messages=True, include_request_parameters=True,
             include_targeted_activate=True, include_current_discard=True, include_target_payment_relation=True,
             include_cast_target_members=True, include_cast_activate_associations=True, include_multi_slot_cast=True)
@@ -151,6 +156,11 @@ class _Evaluation:
         selected=[o for o in options['options'] if o['option_key']==decision['preferred_option_key']]
         self.frozen={'token':token,'ordinal':self.ordinal,'decision':copy.deepcopy(decision),
             'selected':copy.deepcopy(selected[0]) if len(selected)==1 else None}
+        if self.action_gates is not None and kind == 'actions_available':
+            gate_start=time.perf_counter_ns();view=self.consumer.current_view()
+            self.action_gates.observe(details['message'],request,options,decision,
+                view['decision_state'],view['current_snapshot_ref'])
+            self.timed('actions_available_gate_analysis',time.perf_counter_ns()-gate_start)
         if self.on_freeze is not None:self.on_freeze(self.ordinal,copy.deepcopy(request),copy.deepcopy(options),copy.deepcopy(decision))
         self.timed('evaluation_bookkeeping',time.perf_counter_ns()-start)
 
@@ -217,11 +227,13 @@ class _Evaluation:
             self.frozen=None
 
 
-def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000, _on_freeze=None):
+def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
+                            actions_available_gates=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
-    evaluation=_Evaluation(_on_freeze);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(actions_available_gates) is not bool:raise ValueError('invalid_actions_available_gates_flag')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -255,7 +267,7 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
     code_digest=hashlib.sha256()
     for source in sorted(Path(__file__).resolve().parent.glob('*.py')):
         code_digest.update(source.name.encode('utf8')+b'\0'+source.read_bytes())
-    return {'schema_version':VERSION,'mode':'historical_simulation','live_decision_opportunity':False,
+    result = {'schema_version':VERSION,'mode':'historical_simulation','live_decision_opportunity':False,
         'versions':{**code_version(),'evaluation_pipeline_source_sha256':code_digest.hexdigest(),
             'policy':'deterministic_shadow.v1','state':15},
         'source':{'sha256_read_bytes':digest.hexdigest(),'bytes_read':read_bytes,'records_processed':evaluation.ordinal,
@@ -287,3 +299,5 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'diagnostics':dict(sorted(evaluation.diagnostics.items())),'timings_ms':timings,
         'timing_scope':'same-process offline; nested stages overlap; shadow API includes cached MP65/currentness checks; not MTGA latency',
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
+    if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
+    return result

@@ -555,6 +555,7 @@ def main(argv=None):
     history.add_argument('input', type=Path)
     history.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     history.add_argument('--max-records', type=int, default=100000)
+    history.add_argument('--actions-available-gates', action='store_true', help='aggregate concurrent research gates; does not change policy')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -699,7 +700,8 @@ def main(argv=None):
     if args.command == 'evaluate-shadow-history':
         from .shadow_history import evaluate_shadow_history
         try:
-            result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records)
+            result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records,
+                actions_available_gates=args.actions_available_gates)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):

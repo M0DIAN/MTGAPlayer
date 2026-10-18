@@ -1917,3 +1917,28 @@ docs/shadow_history_evaluation.md for cohort denominators and measured prioritie
 Head/PR Linux/Windows CI and natural main CI remain distinct delivery gates.
 Historical qualification failure remains unknown, not claimed repaired.
 input_sent=false; P10=NOT_RUN.
+
+## MP69 ActionsAvailable decision gate analysis (2026-10-18)
+
+Accepted main ec8b1f7c9a8230a188a18abd250c7ad9c6fbb42b is verified remotely.
+The same owner sources/digests yield164 distinct authenticated current requests,
+including74 ActionsAvailable (40+34), without cross-source identity overlap.
+All74 first refuse at the field gate, all contain prompt with the existing
+nonzero-uint32/parameters-absent shape, and all have Cast/multiple active rows.
+Static removal of only the field argument reaches the existing complex gate
+74 times. These are overlapping observations, not a causal repair benefit.
+70 requests have unreviewed structure,69 unknown source visibility/identity,
+20 have local reviewed options; complete legal candidate totals remain null.
+
+The existing historical evaluator gains only explicit --actions-available-gates.
+It consumes the same frozen request/options/policy, reuses strict helpers and
+emits fixed whitelisted field/type summaries. No raw values or unreviewed names
+are exported. Prompt shape is reviewed, but its general routing meaning is not
+proved by the finite MP61 receipt; no field is ignored or policy gate cleared.
+All164 frozen option/decision returns match with diagnostics off/on; MP68
+functional report values and preference2/164 remain unchanged. Original Equip
+and public Cast cutoffs preserve consumption, position/domain separation and
+unknown complete combinations. Direct type/privacy/competition counterexamples
+pass; full tests, exact-candidate independent review and actual head/PR/main
+CI remain separate final gates recorded with their actual identities.
+No new solver, parser, State/Event or native input. input_sent=false; P10=NOT_RUN.
