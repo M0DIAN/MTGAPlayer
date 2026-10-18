@@ -86,15 +86,38 @@ def _target_identity(reducer, ident):
         'zone_ref': obj['zoneId'], 'owner_seat': obj['ownerSeatId'], 'controller_seat': obj['controllerSeatId']}
 
 
+def _no_identity_migration(gs, tracked):
+    """New historical proof cannot disregard a contradictory identity event."""
+    from .semantic_cast import _detail
+    rows=gs.get('annotations', [])
+    _need(type(rows) is list and len(rows)<=512)
+    for row in rows:
+        _need(type(row) is dict and type(row.get('type')) is list)
+        if not set(row['type']) & {'AnnotationType_ObjectIdChanged','AnnotationType_ZoneTransfer','AnnotationType_AbilityInstanceCreated'}:
+            continue
+        first._positive(row['affectorId'])
+        _need(type(row['affectedIds']) is list)
+        for ident in row['affectedIds']:first._positive(ident)
+        refs=[row['affectorId'],*row['affectedIds']]
+        if 'AnnotationType_ObjectIdChanged' in row['type']:
+            details=_detail(row);_keys(details,('orig_id','new_id'))
+            for ident in details.values():first._positive(ident)
+            refs.extend(details.values())
+        _need(not any(ident in tracked for ident in refs))
+
+
 class RevisionStage:
-    def __init__(self, reducer):
+    def __init__(self, reducer, *, include_completions=False):
         self.reducer = reducer
+        self.include_completions = include_completions
+        self.record_ordinal = 0
         self.reset()
 
     def reset(self):
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
         self.cached = self.prepared = self.pending = self.active = None
         self.terminal = None; self.client_submit_observed = False; self.age = 0
+        self.completion_context = self.historical_completion = None
         self.suppressed = False
 
     def _invalidate_record(self):
@@ -103,8 +126,10 @@ class RevisionStage:
 
     def prepare(self, record, active_first):
         from .decision_consumer import _bounded_json
+        self.record_ordinal += 1
         self.suppressed = False
         self.prepared = self.terminal = None; self.client_submit_observed = False
+        self.historical_completion = None
         if self.pending is not None:
             self.age += 1
             if self.age > 64: self.reset()
@@ -117,6 +142,20 @@ class RevisionStage:
         if type(payload) is not dict:
             gre = record.get('greToClientEvent')
             messages = gre.get('greToClientMessages') if type(gre) is dict else None
+            if self.include_completions and type(messages) is list:
+                if len(messages) > 256: self._invalidate_record(); return
+                state_ids = set()
+                for message in messages:
+                    if (type(message) is dict and (self.pending is not None or self.active is not None) and
+                            type(message.get('msgId')) is int and
+                            (self.reducer.match, self.reducer.game, message['msgId']) in self.reducer.consumed):
+                        self._invalidate_record(); return
+                    gs = message.get('gameStateMessage') if type(message) is dict else None
+                    if type(gs) is not dict: continue
+                    ident = gs.get('gameStateId')
+                    if type(ident) is not int or ident <= 0 or ident in state_ids:
+                        self._invalidate_record(); return
+                    state_ids.add(ident)
             if type(messages) is list and any(type(m) is dict and type(m.get('gameStateMessage')) is dict and
                     history._same(m['gameStateMessage'].get('gameStateId'), self.reducer.version) for m in messages):
                 # Identical Diff retransmissions are silent reducer no-ops;
@@ -132,10 +171,32 @@ class RevisionStage:
                     _keys(payload, ('type', 'respId', 'gameStateId'))
                     _need(request is not None and type(payload['respId']) is int and type(payload['gameStateId']) is int)
                     terminal = {'before': copy.deepcopy(request), 'payload': copy.deepcopy(payload), 'scope': first._scope(self.reducer)}
+                    if self.include_completions:
+                        context = self.completion_context
+                        _need(context is not None and all(history._same(_signature(self.reducer, i), signature)
+                            for i, signature in context['signatures'].items()))
+                        terminal['completion_context'] = copy.deepcopy(context)
                     self.reset(); self.terminal = terminal; return
                 self.reset(); return
-            _need(active_first is not None and self.cached is not None and self.pending is None)
+            _need(self.cached is not None and self.pending is None)
             request = _current_verified_raw_request(self.reducer, self.cached['message'])
+            generic = self.cached.get('card_first') if self.include_completions else None
+            if generic is not None:
+                _need(request is not None and history._same(generic['binding'], first._binding(self.reducer, request)))
+                update, reply = _selection(payload, generic['binding'], generic['constraints'])
+                ident = reply['entries'][0]['object_ref']; source = generic['constraints']['source_object_ref']
+                _need(targets.check_final_set(generic['constraints'], {'source_object_ref': source,
+                    'target_idx': generic['constraints']['target_idx'], 'object_refs': [ident]})[0] == 'verified_known_constraints')
+                signatures = {i: _signature(self.reducer, i) for i in (source, ident)}
+                _need(all(history._same(signature, generic['signatures'][i]) for i, signature in signatures.items()))
+                prepared = {'before': copy.deepcopy(request), 'payload': copy.deepcopy(payload),
+                    'scope': first._scope(self.reducer), 'card_first': copy.deepcopy(generic),
+                    'selection_update': update, 'reply': reply, 'signatures': signatures,
+                    'selected_target_identity': _target_identity(self.reducer, ident),
+                    'frozen_shadow': copy.deepcopy(self.cached.get('frozen_shadow')),
+                    'update_record': self.record_ordinal}
+                self.reset(); self.prepared = prepared; return
+            _need(active_first is not None)
             _need(request is not None and history._same(active_first, request.get(first.PRIVATE)) and
                 history._same(active_first['binding'], first._binding(self.reducer, request)))
             update, reply = _selection(payload, active_first['binding'], active_first['child_observation']['constraints'])
@@ -145,6 +206,9 @@ class RevisionStage:
                 'scope': first._scope(self.reducer), 'first_child': copy.deepcopy(active_first),
                 'selection_update': update, 'reply': reply, 'signatures': signatures,
                 'selected_target_identity': _target_identity(self.reducer, ident)}
+            if self.include_completions:
+                prepared.update(frozen_shadow=copy.deepcopy(self.cached.get('frozen_shadow')),
+                    update_record=self.record_ordinal)
             self.reset(); self.prepared = prepared
         except (ValueError, TypeError, KeyError, IndexError, RecursionError):
             self._invalidate_record()
@@ -160,6 +224,24 @@ class RevisionStage:
         if terminal is not None:
             self.client_submit_observed = (first._scope(r) == terminal['scope'] and
                 _paired_terminal_submit(r, terminal['before'], terminal['payload']))
+            if self.include_completions and self.client_submit_observed:
+                self.historical_completion = {**terminal['completion_context'],
+                    'terminal_record': self.record_ordinal, 'terminal_request_consumed': True,
+                    'status': 'historical_reviewed_target_set_submitted',
+                    'current': False, 'server_acceptance_verified': False, 'complete_legality_verified': False,
+                    'read_only': True, **EXECUTION}
+
+    def freeze_shadow(self, binding, ref, decision, selected):
+        """One prior-current policy observation in this existing bounded stage."""
+        if not self.include_completions: return
+        request = _current_verified_raw_request(self.reducer, self.cached['message']) if self.cached else None
+        if request is None or not history._same(first._binding(self.reducer, request), binding): return
+        self.cached['frozen_shadow'] = {'binding': copy.deepcopy(binding), 'snapshot_ref': copy.deepcopy(ref),
+            'decision': copy.deepcopy(decision), 'selected_option': copy.deepcopy(selected),
+            'record_ordinal': self.record_ordinal}
+        if self.completion_context is not None and history._same(self.completion_context['revised_request_binding'], binding):
+            self.completion_context['revised_snapshot_ref'] = copy.deepcopy(ref)
+            self.completion_context['revised_frozen_record'] = self.record_ordinal
 
     def observe(self, event, details, active_first):
         r = self.reducer
@@ -175,8 +257,10 @@ class RevisionStage:
                 if details['kind'] != 'diff': self._invalidate_record(); return
                 if self.pending is None: return
                 saved = self.pending; gs = details['message']
+                old_binding = saved['card_first']['binding'] if 'card_first' in saved else saved['first_child']['binding']
                 _need('intervening_diff_count' not in saved and first._scope(r) == saved['scope'] and
-                    history._same(gs['prevGameStateId'], saved['first_child']['binding']['game_state_id']))
+                    history._same(gs['prevGameStateId'], old_binding['game_state_id']))
+                if self.include_completions:_no_identity_migration(gs,saved['signatures'])
                 _need(all(history._same(_signature(r, i), signature) for i, signature in saved['signatures'].items()))
                 saved['intervening_diff_count'] = 1; saved['state_id'] = r.version
                 return
@@ -185,22 +269,68 @@ class RevisionStage:
             _need(request is not None and not details['is_retransmission'])
             if active_first is not None:
                 self.reset(); self.cached = {'message': copy.deepcopy(message)}; return
+            if self.include_completions and self.pending is None:
+                # An independently authenticated complete current Select slice
+                # can start Card history without claiming a Cast parent origin.
+                visible = history._public(r, LiteralRefs(), ())['objects']
+                observation = first._observe_target_fields(message, visible, r.seat, allow_absent_prompts=True)
+                constraints = observation['constraints']; source = r.objects[constraints['source_object_ref']]
+                _need(source['type'] == 'GameObjectType_Card' and source['ownerSeatId'] == source['controllerSeatId'] == r.seat and
+                    r.zones[source['zoneId']]['type'] == 'ZoneType_Stack' and
+                    all(type(constraints[k]) is int and constraints[k] == 1 for k in ('min_targets','max_targets')) and
+                    constraints['selected_count'] is None and constraints['entries'] and
+                    all(row['legal_action'] == targets.SELECT for row in constraints['entries']) and
+                    history._same(constraints, request.get('_request_parameters')))
+                first._positive(source['grpId'])
+                _need(all(type(source[k]) is int for k in ('ownerSeatId','controllerSeatId')))
+                _signature(r, source['instanceId'])
+                signatures = {i: _signature(r, i) for i in [source['instanceId'],
+                    *[row['object_ref'] for row in constraints['entries']]]}
+                from .decision_consumer import _bounded_json
+                _bounded_json(list(signatures.values()))
+                self.reset(); self.cached = {'message': copy.deepcopy(message),
+                    'card_first': {'binding': first._binding(r, request), 'constraints': constraints, 'signatures': signatures}}
+                return
             saved = self.pending; self.pending = None
             _need(saved is not None and saved.get('intervening_diff_count') == 1 and
                 first._scope(r) == saved['scope'] and request['game_state_id'] == saved['state_id'])
             _need(all(history._same(_signature(r, i), signature) for i, signature in saved['signatures'].items()))
             visible = history._public(r, LiteralRefs(), ())['objects']
-            observation = _observe_revised(message, visible, r.seat)
-            old = saved['first_child']['child_observation']['constraints']; current = observation['constraints']
+            card = 'card_first' in saved
+            if card:
+                observation = first._observe_target_fields(message, visible, r.seat, allow_absent_prompts=True)
+                current = observation['constraints']
+                _need(all(type(current[k]) is int and current[k] == 1 for k in ('min_targets','max_targets','selected_count')) and
+                    len(current['entries']) == 1 and current['entries'][0]['legal_action'] == targets.UNSELECT and
+                    r.objects[current['source_object_ref']]['type'] == 'GameObjectType_Card')
+                old = saved['card_first']['constraints']
+            else:
+                observation = _observe_revised(message, visible, r.seat)
+                old = saved['first_child']['child_observation']['constraints']; current = observation['constraints']
             _need(history._revision_binding_matches(old, current) and history._selection_revision_matches(saved['reply'], current) and
                 history._same(current, request.get('_request_parameters')))
             value = {'schema_version': PROVENANCE, 'binding': first._binding(r, request),
-                'first_child': saved['first_child'], 'selection_update': saved['selection_update'],
+                'first_child': saved.get('first_child'), 'selection_update': saved['selection_update'],
                 'revised_observation': observation, 'selected_target_identity': saved['selected_target_identity'],
                 'intervening_diff_count': 1}
-            stack = r.document(include_decision_state=True)['current']['_public_stack']
-            _need(_selected_check(current, visible, r.seat, stack) == 'verified_known_constraints')
-            self.active = value; self.cached = {'message': copy.deepcopy(message)}; request[PRIVATE] = copy.deepcopy(value)
+            if not card:
+                stack = r.document(include_decision_state=True)['current']['_public_stack']
+                _need(_selected_check(current, visible, r.seat, stack) == 'verified_known_constraints')
+            else:
+                # This is producer-owned historical Card evidence only. It is
+                # never serialized as the Ability-only State14 sidecar.
+                value['schema_version'] = 'mtgaplayer.historical-card-target-revision.v1'
+            self.active = value; self.cached = {'message': copy.deepcopy(message)}
+            if not card: request[PRIVATE] = copy.deepcopy(value)
+            if self.include_completions:
+                self.completion_context = {'first_request_binding': copy.deepcopy(saved['selection_update']['request_binding']),
+                    'revised_request_binding': first._binding(r, request), 'selected_object_refs': targets.literal_selected(current),
+                    'source_object_ref': current['source_object_ref'], 'target_idx': current['target_idx'],
+                    'first_constraints': copy.deepcopy(old),
+                    'source_kind': 'Card' if card else 'Ability', 'signatures': copy.deepcopy(saved['signatures']),
+                    'selected_target_identity': copy.deepcopy(saved['selected_target_identity']),
+                    'frozen_shadow': copy.deepcopy(saved.get('frozen_shadow')), 'update_record': saved['update_record'],
+                    'revised_record': self.record_ordinal, 'intervening_diff_count': 1}
         except (ValueError, TypeError, KeyError, IndexError, RecursionError):
             self._invalidate_record()
 

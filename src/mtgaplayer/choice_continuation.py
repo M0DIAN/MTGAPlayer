@@ -51,17 +51,19 @@ def _prompt(value, *, number=False):
             -(2**31) <= parameter['numberValue'] < 2**31)
 
 
-def _observe_target_fields(message, visible, seat):
+def _observe_target_fields(message, visible, seat, *, allow_absent_prompts=False):
     """Validate every witnessed field before using the existing target projector."""
     _need(type(message) is dict and not set(message) - {'type', 'msgId', 'gameStateId', 'systemSeatIds',
         'prompt', 'selectTargetsReq', 'allowCancel', 'allowUndo'} and message['type'] == 'GREMessageType_SelectTargetsReq')
-    _prompt(message['prompt'])
+    if not allow_absent_prompts or 'prompt' in message: _prompt(message['prompt'])
     body = message['selectTargetsReq']; _keys(body, ('sourceId', 'abilityGrpId', 'targets'))
     _need(type(body['targets']) is list and len(body['targets']) == 1)
     slot = body['targets'][0]
-    _need(type(slot) is dict and {'targetIdx', 'targets', 'prompt', 'targetingAbilityGrpId', 'targetingPlayer'} <= slot.keys() and
+    required = {'targetIdx', 'targets', 'targetingAbilityGrpId', 'targetingPlayer'}
+    if not allow_absent_prompts: required.add('prompt')
+    _need(type(slot) is dict and required <= slot.keys() and
         not set(slot) - {'targetIdx', 'targets', 'prompt', 'targetingAbilityGrpId', 'targetingPlayer', 'minTargets', 'maxTargets', 'selectedTargets'})
-    _prompt(slot['prompt'], number=True)
+    if not allow_absent_prompts or 'prompt' in slot: _prompt(slot['prompt'], number=True)
     for key in ('sourceId', 'abilityGrpId'): _positive(body[key])
     for key in ('targetIdx', 'targetingAbilityGrpId'): _positive(slot[key])
     for key in ('minTargets', 'maxTargets', 'selectedTargets'):
@@ -74,7 +76,7 @@ def _observe_target_fields(message, visible, seat):
         _need(entry['legalAction'] in (targets.SELECT, targets.UNSELECT) and
             ('highlight' not in entry or type(entry['highlight']) is str and len(entry['highlight']) <= 128))
     observed = {'constraints': targets.project_request(message, visible, seat, LiteralRefs(), ()),
-        'envelope_prompt': copy.deepcopy(message['prompt']), 'slot_prompt': copy.deepcopy(slot['prompt']),
+        'envelope_prompt': copy.deepcopy(message.get('prompt')), 'slot_prompt': copy.deepcopy(slot.get('prompt')),
         'target_entries': copy.deepcopy(slot['targets']),
         'field_presence': {key: key in slot for key in ('minTargets', 'maxTargets', 'selectedTargets')}}
     observed['field_presence']['allowUndo'] = 'allowUndo' in message
@@ -115,16 +117,18 @@ def _raw_child(observation, binding):
 
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
-    def __init__(self, reducer, *, include_revision=False, include_cast=False):
+    def __init__(self, reducer, *, include_revision=False, include_cast=False, include_target_completions=False):
         self.reducer = reducer
+        self.include_target_completions = include_target_completions
+        self.completion_work_ns = 0
         self.cast = None
         if include_cast:
             from .cast_continuation import CastStage
             self.cast = CastStage(reducer)
         self.revision = None
-        if include_revision:
+        if include_revision or include_target_completions:
             from .target_revision import RevisionStage
-            self.revision = RevisionStage(reducer)
+            self.revision = RevisionStage(reducer, include_completions=include_target_completions)
         self.reset()
 
     def reset(self):
@@ -143,7 +147,7 @@ class StageObserver:
 
     def prepare(self, record):
         if self.cast is not None: self.cast.prepare(record)
-        if self.revision is not None: self.revision.prepare(record, self.active)
+        if self.revision is not None: self._revise(self.revision.prepare, record, self.active)
         from .decision_consumer import _bounded_json
         self.prepared = None
         if self.pending is not None:
@@ -208,7 +212,15 @@ class StageObserver:
             self.pending = prepared; self.cached = None; self.age = 0
         elif prepared is not None:
             self._clear()
-        if self.revision is not None: self.revision.after_apply()
+        if self.revision is not None: self._revise(self.revision.after_apply)
+
+    def _revise(self, method, *args):
+        if not self.include_target_completions:
+            method(*args); return
+        import time
+        start = time.perf_counter_ns()
+        method(*args)
+        self.completion_work_ns += time.perf_counter_ns() - start
 
     @staticmethod
     def _source_signature(source):
@@ -217,7 +229,7 @@ class StageObserver:
     def observe(self, event, details):
         if self.cast is not None: self.cast.observe(event, details)
         self._observe_first(event, details)
-        if self.revision is not None: self.revision.observe(event, details, self.active)
+        if self.revision is not None: self._revise(self.revision.observe, event, details, self.active)
 
     def _observe_first(self, event, details):
         r = self.reducer

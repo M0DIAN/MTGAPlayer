@@ -250,3 +250,10 @@ proved. Preserve prompt routing as an independent evidence prerequisite rather
 than predicting preference gains from clearing it. Other request families
 (38 unsupported,30 classified) and target-set stages (26 target abstentions)
 remain measurable independent work. Counts alone do not estimate repair yield.
+
+MP73 adds explicit `--target-stage-completions` on this same pipeline. It freezes
+the existing policy before response evidence, reuses bounded RevisionStage for
+strict update→independent revision→consumed header-only Submit, and exports
+aggregates only. Original default comparison/rates remain unchanged. See
+[target-stage-completions.md](target-stage-completions.md) for Card/Ability
+boundaries, request/submission/episode denominators and the28-request census.

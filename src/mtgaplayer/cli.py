@@ -75,9 +75,10 @@ def _observe_tap(reducer):
     return tap
 
 
-def _observe_continuation(reducer, *, include_revision=False, include_cast=False):
+def _observe_continuation(reducer, *, include_revision=False, include_cast=False, include_target_completions=False):
     from .choice_continuation import StageObserver
-    stage = StageObserver(reducer, include_revision=include_revision, include_cast=include_cast)
+    stage = StageObserver(reducer, include_revision=include_revision, include_cast=include_cast,
+        include_target_completions=include_target_completions)
     previous = reducer.observer
     def observe(event, details):
         stage.observe(event, details)
@@ -559,6 +560,7 @@ def main(argv=None):
     history.add_argument('--complex-action-intents', action='store_true', help='aggregate finite current-stage Cast/Activate evidence; no policy change')
     history.add_argument('--protocol-evidence', action='store_true', help='finite Prompt route predicates and FloatMana representation; requires --actions-available-gates')
     history.add_argument('--current-cost-stages', action='store_true', help='aggregate finite current PayCosts evidence; no payment solver or policy change')
+    history.add_argument('--target-stage-completions', action='store_true', help='historical target update/revision/Submit comparison; no current permission or policy change')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -707,7 +709,8 @@ def main(argv=None):
         try:
             result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records,
                 actions_available_gates=args.actions_available_gates, complex_action_intents=args.complex_action_intents,
-                protocol_evidence=args.protocol_evidence, current_cost_stages=args.current_cost_stages)
+                protocol_evidence=args.protocol_evidence, current_cost_stages=args.current_cost_stages,
+                target_stage_completions=args.target_stage_completions)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):

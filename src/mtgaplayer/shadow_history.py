@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -50,6 +50,10 @@ class _Evaluation:
         self.diagnostics = Counter(); self.timings = {name:[] for name in STAGES}
         self.timing_counts = Counter()
         self.action_gates = None
+        self.target_completions = None
+        if target_stage_completions:
+            from .target_stage_completions import TargetStageCompletions
+            self.target_completions=TargetStageCompletions();self.timings['target_stage_completions'] = []
         self.cost_stages = Counter() if current_cost_stages else None
         self.prior_complex_context = None  # Count-only history, never current authority.
         if current_cost_stages:self.timings['current_cost_stage'] = []
@@ -65,7 +69,7 @@ class _Evaluation:
             include_cast_target_members=True, include_cast_activate_associations=True, include_multi_slot_cast=True)
         self.reducer.reset(1)
         self.combat = _observe_combat(self.reducer); self.tap = _observe_tap(self.reducer)
-        self.stage = _observe_continuation(self.reducer, include_cast=True)
+        self.stage = _observe_continuation(self.reducer, include_cast=True, include_target_completions=target_stage_completions)
         previous = self.reducer.observer
         def observe(event, details):
             if self.cost_stages is not None and (event == 'continuity_error' or
@@ -97,6 +101,7 @@ class _Evaluation:
         document=r.document(include_frontier_rows=True,include_decision_state=True)
         if partial:
             document['current']={'valid':False,'actionable':False};document['error']='partial_raw_record_waiting'
+            if self.target_completions is not None:self.stage.reset()
         document['source']={'format':'player-log-gre-v1','generation':r.generation,'byte_offset':self.offset,
             'mode':'watch','phase':'append','partial_record':partial,'stopped':False,
             'input_sent':False,'executor_connected':False}
@@ -136,6 +141,8 @@ class _Evaluation:
         self.timed('current_decision_options',time.perf_counter_ns()-start)
         start=time.perf_counter_ns();decision=self.consumer.shadow_decision()
         self.timed('shadow_policy_api',time.perf_counter_ns()-start)
+        if self.target_completions is not None and kind=='select_targets':
+            self.target_completions.freeze(request,options,decision,self.stage.revision)
         if self.cost_stages is not None and kind == 'pay_costs':
             from .current_cost_stage import assess_current_cost_stage, MANA_PROFILE
             from .semantic_effect_cost import PROFILE as NONMANA_PROFILE
@@ -274,6 +281,7 @@ class _Evaluation:
 
     def apply(self, record):
         self.ordinal += 1;self._consumed_this_record=False
+        work_before=self.stage.completion_work_ns+(self.target_completions.elapsed_ns if self.target_completions else 0)
         before=copy.deepcopy(_current_verified_request(self.reducer));saved=self.frozen
         self.tap.prepare(record);self.stage.prepare(record)
         start=time.perf_counter_ns();self.reducer.apply(record);self.stage.after_apply()
@@ -281,6 +289,9 @@ class _Evaluation:
         start=time.perf_counter_ns()
         payload=record.get('payload') if type(record) is dict else None
         mixed=type(record) is dict and any(k in record for k in ('authenticateResponse','greToClientEvent','matchGameRoomStateChangedEvent'))
+        if self.target_completions is not None:
+            self.target_completions.response(self.reducer,before,payload,mixed)
+            self.target_completions.completed(self.stage.revision.historical_completion)
         self.compare(before,saved,payload,mixed)
         self.timed('evaluation_bookkeeping',time.perf_counter_ns()-start)
         # Existing Publisher/Consumer revoke after every record, not only at requests.
@@ -288,11 +299,13 @@ class _Evaluation:
         current=_current_verified_request(self.reducer)
         if self.frozen is not None and (current is None or _identity(current)!=self.frozen['token'] or self.reducer.error):
             self.frozen=None
+        if self.target_completions is not None:
+            self.timed('target_stage_completions',self.stage.completion_work_ns+self.target_completions.elapsed_ns-work_before)
 
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
                             actions_available_gates=False, complex_action_intents=False, protocol_evidence=False,
-                            current_cost_stages=False, _on_freeze=None):
+                            current_cost_stages=False, target_stage_completions=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
@@ -301,7 +314,8 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
     if type(protocol_evidence) is not bool or protocol_evidence and not actions_available_gates:
         raise ValueError('protocol_evidence_requires_actions_available_gates')
     if type(current_cost_stages) is not bool:raise ValueError('invalid_current_cost_stages_flag')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(target_stage_completions) is not bool:raise ValueError('invalid_target_stage_completions_flag')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -368,6 +382,7 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'timing_scope':'same-process offline; nested stages overlap; shadow API includes cached MP65/currentness checks; not MTGA latency',
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
     if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
+    if evaluation.target_completions is not None:result['target_stage_completions']=evaluation.target_completions.report()
     if evaluation.cost_stages is not None:
         c=evaluation.cost_stages
         result['current_cost_stage_evidence']={
