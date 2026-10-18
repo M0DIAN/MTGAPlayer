@@ -2043,3 +2043,34 @@ doctor, independent review and required PR/main CI remain separate mandatory
 delivery gates. See docs/current-cost-stage.md and its safe source receipt.
 Historical qualification failure root cause remains unknown. input_sent=false;
 P10=NOT_RUN.
+
+MP73 Verified Target Selection Stage Completion (base136edab6483c53f383a8f89f11381d9f07eafd72,
+tree5540a55492d7c423ad15ebdae4aef339fa6d4f98): authenticated both existing owner
+originals and the same164 distinct own requests. Existing schema4/10 historical
+submission recognition is retained; new value is frozen-policy/full-set
+comparison through one strict update, typed Diff, independently current revision
+and consumed terminal Submit. Reused RevisionStage.client_submit_observed with
+bounded optional context; independent public Stack Card slice never enters the
+Ability-only State14 field. No new State/Event, reducer, solver or default policy.
+Actual28 targets split4 supported current Select domains (2 unique/2 competing),
+12 supported selected-only requests and12 unprojected requests. Raw census of
+the latter shows10 Select lists and2 Unselect lists, all one nonempty slot with
+integer min/max; these remain unverified semantic domains. Old17 primary reasons
+are not17 competitions:12 unprojected+3 Card selected-only+2 competitions.
+Four strict updates/revisions produce4 historical submitted sets (3 Card,1
+Ability);2 frozen preferences compare, both agree.14 terminal headers include10
+without reviewed linked episodes; unlinked episode count=null. Two uncomparable
+episodes use only the4 supported first-stage attempts as denominator. All164
+complete options/policy and2 previous full history reports match excluding
+version/timing metadata. Original preferences remain2/164. Public106 freezes
+before107;110 is necessary for terminal proof. Owner Equip1422/1424/1425/1426
+retains preference/expired/abstain/expired. Review caught and repaired Card
+bounding, same-record Diff retransmission and bounded-linear batching; direct
+counterproofs also cover consumed-request retransmissions and identity migration.
+Added-only ms(n1433/n1490),p50/p95/p99/max: .0053/.6188/2.4650/3.9756 and
+.0042/.4965/2.1128/4.7857. These are nested offline costs, not MTGA latency.
+Final exact-HEAD full/focused/doctor, independent review and actual required
+Linux/Windows PR/main CI remain separate delivery gates. See
+docs/target-stage-completions.md and docs/evidence/mp73-target-stages.safe.json.
+Historical Windows qualification cause remains UNKNOWN. input_sent=false;
+P10=NOT_RUN.
