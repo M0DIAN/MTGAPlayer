@@ -36,6 +36,8 @@ class ActionsAvailableGates:
         self.conditions = {k:Counter() for k in CONDITIONS}
         self.overlap = Counter(); self.categories = Counter(); self.coverage = Counter()
         self.prompt = Counter(); self.unknown_field_requests = Counter()
+        self.row_gaps = {k:Counter() for k in ('structurally_unreviewed',
+            'source_visibility_unverified', 'source_card_identity_unknown')}
         self.inventory_valid_requests = self.overlap_omitted = 0
 
     def _fields(self, value, scope):
@@ -97,6 +99,13 @@ class ActionsAvailableGates:
             types = {r['engine_action_type'] for r in rows}
             for name in ('ActionType_Cast','ActionType_Activate','ActionType_Play'):
                 if name in types:self.categories[name] += 1
+            predicates = {'structurally_unreviewed':lambda r:not r['structurally_interpreted'],
+                'source_visibility_unverified':lambda r:r['source_link_status'] not in ('visible_unique','not_applicable'),
+                'source_card_identity_unknown':lambda r:r['source_link_status']!='not_applicable' and
+                    r.get('source_card_identity_agreement') is None}
+            for name, predicate in predicates.items():
+                for kind in {r['engine_action_type'] for r in rows if predicate(r)}:
+                    self.row_gaps[name][kind] += 1
             facts.update(complex_cast_or_activate=bool(types & {'ActionType_Cast','ActionType_Activate'}),
                 non_simple_actions=bool(types-{'ActionType_Pass','ActionType_Play'}),
                 multiple_active_rows=len(rows)>1,
@@ -135,6 +144,9 @@ class ActionsAvailableGates:
             'multiple_competing_actions':tri(self.conditions['multiple_active_rows']),
             'competition_scope':'multiple offered active rows, not multiple verified complete legal actions',
             'structurally_unreviewed_requests':tri(self.conditions['structurally_unreviewed']),
+            'row_gap_categories':{'unit':'requests with at least one row of given engine type; overlapping, not causal; only established inventories',
+                'inventory_unknown_requests':self.observed-self.inventory_valid_requests,
+                'conditions':{k:dict(sorted(v.items())) for k,v in self.row_gaps.items()}},
             'reviewed_candidate_coverage':{'unit':'requests with returned locally verified options; kinds kept separate',
                 **dict(sorted(self.coverage.items())), 'complete_legal_candidate_count':None,
                 'legal_domain_complete':None},

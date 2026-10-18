@@ -36,6 +36,9 @@ class ActionsAvailableGateTests(unittest.TestCase):
         self.assertEqual(gates['unknown_request_field_presence']['unknown_request_fields_present']['false'],1)
         self.assertEqual(gates['complex_action_presence']['ActionType_Cast']['true'],1)
         self.assertEqual(gates['structurally_unreviewed_requests']['true'],1)
+        self.assertEqual(gates['row_gap_categories']['conditions']['structurally_unreviewed'],{'ActionType_FloatMana':1})
+        self.assertEqual(gates['row_gap_categories']['conditions']['source_visibility_unverified'],{'ActionType_FloatMana':1})
+        self.assertEqual(gates['row_gap_categories']['inventory_unknown_requests'],0)
         self.assertEqual(gates['reviewed_candidate_coverage']['requests_with_local_kind.parent_cast_member_probe'],1)
         self.assertIsNone(gates['reviewed_candidate_coverage']['complete_legal_candidate_count'])
         opts=frozen[0][2]['options'];self.assertEqual(len(opts),16)
@@ -108,6 +111,7 @@ class ActionsAvailableGateTests(unittest.TestCase):
         self.assertEqual(g['actions_available_observed'],1)
         self.assertEqual(g['complex_action_presence']['ActionType_Cast'],{'true':0,'false':0,'unknown':1})
         self.assertEqual(g['overlapping_gate_counts']['structurally_unreviewed']['unknown'],1)
+        self.assertEqual(g['row_gap_categories']['inventory_unknown_requests'],1)
         self.assertIsNone(g['reviewed_candidate_coverage']['complete_legal_candidate_count'])
 
     def test_retransmission_consumption_partial_and_wrong_seat_keep_same_denominator(self):

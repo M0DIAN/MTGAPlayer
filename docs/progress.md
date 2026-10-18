@@ -1929,6 +1929,9 @@ Static removal of only the field argument reaches the existing complex gate
 74 times. These are overlapping observations, not a causal repair benefit.
 70 requests have unreviewed structure,69 unknown source visibility/identity,
 20 have local reviewed options; complete legal candidate totals remain null.
+The69 source unknowns are all FloatMana, not Cast; structure-category counts
+FloatMana69/Cast40/Activate4 overlap into70. The report preserves these types
+so summary unknowns cannot be misattributed to Cast object identity.
 
 The existing historical evaluator gains only explicit --actions-available-gates.
 It consumes the same frozen request/options/policy, reuses strict helpers and

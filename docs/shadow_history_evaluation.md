@@ -193,6 +193,13 @@ source-card disagreement was observed;69 requests have unknown identity, which
 is different from a contradiction. Continuity errors before acceptance remain
 in the parent report and are outside this accepted-request denominator.
 
+`row_gap_categories` keeps the affected engine types explicit. All69 source
+visibility/card-identity unknown cases are FloatMana rows; they are not69 Cast
+source failures and do not prove that FloatMana ought to join a card at all.
+Unreviewed structure occurs in FloatMana69, Cast40 and Activate4 requests;
+these overlap into70 requests. A missing FloatMana interpretation cannot be
+silently repaired by guessing an object reference or dropping the row.
+
 Only reviewed fixed field names and type classes are exported. All74 messages
 have `prompt: object` containing exactly a nonzero uint32 `promptId`, with
 `parameters` absent; the existing MP61 `_prompt` checker supplies this structural
@@ -234,9 +241,10 @@ MTGA latency or a three-second qualification.
 
 Measured next priorities are no longer a field-only repair ranked by74 first
 reasons. First establish finite complete Cast/Activate proposal evidence
-(source, effect/target set, payment and future-stage boundaries);70 structural
-and69 identity gaps overlap74 complex requests, while20 already have partial
-local evidence. Then establish choice-relevant effect/utility evidence for
+(effect/target set, payment and future-stage boundaries); Cast structure is
+unreviewed in40 requests, while20 have partial local evidence of separate kinds.
+FloatMana69 is a distinct structure/source-applicability gap, not evidence of
+broken Cast identity. Then establish choice-relevant effect/utility evidence for
 competition; all74 retain tactical unknowns even if prompt semantics are later
 proved. Preserve prompt routing as an independent evidence prerequisite rather
 than predicting preference gains from clearing it. Other request families
