@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -50,6 +50,8 @@ class _Evaluation:
         self.diagnostics = Counter(); self.timings = {name:[] for name in STAGES}
         self.timing_counts = Counter()
         self.action_gates = None
+        self.intent_counts = Counter() if complex_action_intents else None
+        if complex_action_intents: self.timings['complex_action_intents_cached_api'] = []
         if actions_available_gates:
             from .actions_available_gates import ActionsAvailableGates
             self.action_gates = ActionsAvailableGates()
@@ -127,6 +129,24 @@ class _Evaluation:
         self.timed('current_decision_options',time.perf_counter_ns()-start)
         start=time.perf_counter_ns();decision=self.consumer.shadow_decision()
         self.timed('shadow_policy_api',time.perf_counter_ns()-start)
+        if self.intent_counts is not None:
+            start=time.perf_counter_ns()
+            enriched=self.consumer.current_decision_options(include_complex_intents=True)
+            # Optional evidence failure must not rewrite MP68's default policy
+            # statistics or frozen comparison option. Keep its original view.
+            options['complex_action_intents']=enriched['complex_action_intents']
+            self.timed('complex_action_intents_cached_api',time.perf_counter_ns()-start)
+            if kind == 'actions_available':
+                # Authenticated inventory, not MP65's possibly withheld/limited rows.
+                inventory=request.get('action_inventory')
+                if type(inventory) is dict:
+                    self.intent_counts['observed_complex_action_rows'] += sum(row['count']
+                        for row in inventory['types'] if row['action_type'] in ('ActionType_Cast','ActionType_Activate'))
+                else:self.intent_counts['inventory_unknown_requests'] += 1
+                if enriched['request_binding'] is None:self.intent_counts['intent_evidence_unavailable_requests'] += 1
+                for name in ('returned_parent_rows','reviewed_target_rows',
+                             'predictive_payment_association_rows','finite_stage_intent_rows'):
+                    self.intent_counts[name] += options['complex_action_intents']['coverage'][name]
         start=time.perf_counter_ns();status=decision['status']
         if options['status'] not in ('partial','unsupported'):
             counts['invalid_or_incomplete'] += 1
@@ -228,12 +248,13 @@ class _Evaluation:
 
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
-                            actions_available_gates=False, _on_freeze=None):
+                            actions_available_gates=False, complex_action_intents=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
     if type(actions_available_gates) is not bool:raise ValueError('invalid_actions_available_gates_flag')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(complex_action_intents) is not bool:raise ValueError('invalid_complex_action_intents_flag')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -300,4 +321,19 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'timing_scope':'same-process offline; nested stages overlap; shadow API includes cached MP65/currentness checks; not MTGA latency',
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
     if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
+    if evaluation.intent_counts is not None:
+        c=evaluation.intent_counts
+        observed=c['observed_complex_action_rows'] if not c['inventory_unknown_requests'] else None
+        result['complex_action_intent_coverage']={
+            'unit':'original active Cast/Activate action row, at first accepted request; overlapping evidence counts',
+            'observed_complex_action_rows':observed,
+            **{name:c[name] for name in ('returned_parent_rows','reviewed_target_rows',
+                'predictive_payment_association_rows','finite_stage_intent_rows','inventory_unknown_requests',
+                'intent_evidence_unavailable_requests')},
+            'rows_without_reviewed_target_members':observed-c['reviewed_target_rows'] if observed is not None else None,
+            'rows_without_reviewed_payment_association':observed-c['predictive_payment_association_rows'] if observed is not None else None,
+            'complete_target_constraints_unverified_rows':observed,
+            'complete_payment_unverified_rows':observed,
+            'full_legal_complex_actions':None,
+            'policy_evaluated_before_intent_assembly':True}
     return result

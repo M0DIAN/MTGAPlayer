@@ -76,7 +76,7 @@ def _context(state):
         'historical_parent_current': False, 'raw_source_reauthenticated': False}
 
 
-def _build(state, ref, limit):
+def _build(state, ref, limit, intent_evidence=None):
     _validate_state(state)
     binding = state['binding']
     if binding['request_id'] is None: return _unknown('current_request_not_observed')
@@ -182,6 +182,10 @@ def _build(state, ref, limit):
                     'proposed_activate_target_member': 'parent_activate_member_probe',
                     'proposed_discard_selection': 'discard_selection_probe', 'proposed_cost_selection': 'cost_selection'}
                 kind = next(v for k, v in kinds.items() if k in proposal)
+                if kind == 'parent_cast_member_probe' and intent_evidence is not None:
+                    # Retain the generator's checked witness before MP65's legacy
+                    # proposal adaptation. No second enumeration on opt-in reads.
+                    intent_evidence.append(copy.deepcopy(item))
                 proposal_scope = scope
                 if label == 'known_candidates_v2':
                     from .semantic_targets import SCOPE as TARGET_SCOPE
@@ -226,7 +230,7 @@ def _build(state, ref, limit):
     return result
 
 
-def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS):
+def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS, include_complex_intents=False):
     """Owner-thread current/ref/lease gate, one bounded cached collection per ref.
 
     Cache is data only. Every read rechecks currentness, including cache hits;
@@ -234,19 +238,33 @@ def assess_current_decision_options(consumer, *, limit=MAX_OPTIONS):
     """
     if type(limit) is not int or not 1 <= limit <= MAX_OPTIONS:
         raise ValueError('invalid_current_decision_options_limit')
+    if type(include_complex_intents) is not bool:
+        raise ValueError('invalid_complex_action_intents_flag')
     def evaluate(state, *, source_snapshot_ref):
         key = (source_snapshot_ref, limit)
         cached = consumer._decision_options_cache
         if cached is not None and cached[0] == key:
-            return copy.deepcopy(cached[1])
-        try:
-            result = _build(state, source_snapshot_ref, limit)
-        except (ValueError, TypeError, KeyError, IndexError, StopIteration, RecursionError, UnicodeError, OverflowError):
-            return _unknown('current_options_evidence_invalid_or_output_limit')
-        consumer._decision_options_cache = (copy.deepcopy(key), copy.deepcopy(result))
+            result, retained = copy.deepcopy(cached[1:])
+        else:
+            retained = []
+            try:
+                result = _build(state, source_snapshot_ref, limit, retained)
+            except (ValueError, TypeError, KeyError, IndexError, StopIteration, RecursionError, UnicodeError, OverflowError):
+                return _unknown('current_options_evidence_invalid_or_output_limit')
+            consumer._decision_options_cache = (copy.deepcopy(key), copy.deepcopy(result), retained)
+        if include_complex_intents:
+            from .action_intents import assemble
+            try:
+                result['complex_action_intents'] = assemble(state, result, retained)
+                _bounded_json(result)
+            except (ValueError, TypeError, KeyError, IndexError, RecursionError, UnicodeError, OverflowError):
+                return _unknown('complex_intent_evidence_invalid_or_output_limit')
         return result
-    if not isinstance(consumer, DecisionConsumer): return _unknown('requires_current_consumer')
-    result = _assess_current_report(consumer, evaluate, _unknown)
+    result = (_assess_current_report(consumer, evaluate, _unknown) if isinstance(consumer, DecisionConsumer)
+        else _unknown('requires_current_consumer'))
     if result['source_snapshot_ref'] is None:
-        consumer._decision_options_cache = None
+        if isinstance(consumer, DecisionConsumer): consumer._decision_options_cache = None
+    if include_complex_intents and 'complex_action_intents' not in result:
+        from .action_intents import empty
+        result['complex_action_intents'] = empty(result['reason'])
     return result

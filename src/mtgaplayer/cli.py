@@ -556,6 +556,7 @@ def main(argv=None):
     history.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
     history.add_argument('--max-records', type=int, default=100000)
     history.add_argument('--actions-available-gates', action='store_true', help='aggregate concurrent research gates; does not change policy')
+    history.add_argument('--complex-action-intents', action='store_true', help='aggregate finite current-stage Cast/Activate evidence; no policy change')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -652,6 +653,8 @@ def main(argv=None):
                                  help='deterministic current research preference or abstention; no input')
     consumer_parser.add_argument('--current-decision-options', action='store_true',
                                  help='unified current request research options; no execution authority')
+    consumer_parser.add_argument('--complex-action-intents', action='store_true',
+                                 help='include finite stage intents in --current-decision-options; never a future plan')
     consumer_parser.add_argument('--current-cast-continuation', action='store_true',
                                  help='read-only current Cast first-child report (State15)')
     consumer_parser.add_argument('--current-target-revision', action='store_true',
@@ -701,7 +704,7 @@ def main(argv=None):
         from .shadow_history import evaluate_shadow_history
         try:
             result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records,
-                actions_available_gates=args.actions_available_gates)
+                actions_available_gates=args.actions_available_gates, complex_action_intents=args.complex_action_intents)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
@@ -795,7 +798,7 @@ def main(argv=None):
                               current_target_revision=args.current_target_revision,
                               current_cast_continuation=args.current_cast_continuation,
                               current_decision_options=args.current_decision_options,
-                              shadow_decision=args.shadow_decision)
+                              shadow_decision=args.shadow_decision, complex_action_intents=args.complex_action_intents)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
