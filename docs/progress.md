@@ -2066,9 +2066,10 @@ version/timing metadata. Original preferences remain2/164. Public106 freezes
 before107;110 is necessary for terminal proof. Owner Equip1422/1424/1425/1426
 retains preference/expired/abstain/expired. Review caught and repaired Card
 bounding, same-record Diff retransmission and bounded-linear batching; direct
-counterproofs also cover consumed-request retransmissions and identity migration.
-Added-only ms(n1433/n1490),p50/p95/p99/max: .0053/.6188/2.4650/3.9756 and
-.0042/.4965/2.1128/4.7857. These are nested offline costs, not MTGA latency.
+counterproofs also cover same-episode consumed target-request retransmissions
+both before and after the independent revision, plus identity migration.
+Added-only ms(n1433/n1490),p50/p95/p99/max: .0053/.6123/2.4781/3.9805 and
+.0044/.4957/2.0907/4.4066. These are nested offline costs, not MTGA latency.
 Final exact-HEAD full/focused/doctor, independent review and actual required
 Linux/Windows PR/main CI remain separate delivery gates. See
 docs/target-stage-completions.md and docs/evidence/mp73-target-stages.safe.json.

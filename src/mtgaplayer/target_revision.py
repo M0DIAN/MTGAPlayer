@@ -146,7 +146,7 @@ class RevisionStage:
                 if len(messages) > 256: self._invalidate_record(); return
                 state_ids = set()
                 for message in messages:
-                    if (type(message) is dict and self.pending is not None and
+                    if (type(message) is dict and (self.pending is not None or self.active is not None) and
                             type(message.get('msgId')) is int and
                             (self.reducer.match, self.reducer.game, message['msgId']) in self.reducer.consumed):
                         self._invalidate_record(); return

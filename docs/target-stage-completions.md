@@ -128,7 +128,7 @@ three header fields and must consume that revised request in the same scope.
 Wrong slots, duplicate/deleted/replaced targets, mixed Select/Unselect, wrong
 response/header/seat, typed predecessor confusion, source type changes,
 contradictory migrations, duplicate Diff (including same-record batching),
-consumed-request retransmission, gaps, Full/reset, partial, Cancel/Undo, scope
+same-episode consumed target-request retransmission, gaps, Full/reset, partial, Cancel/Undo, scope
 changes and unfinished EOF withhold comparison. The new batch check is bounded
 to256 messages and linear with typed state-ID membership. A completed historical
 count never resurrects a current request or preference.
@@ -144,8 +144,8 @@ plus the new classification/comparison, not a repeated whole-pipeline benchmark:
 
 | Source | n records | p50 ms | p95 ms | p99 ms | max ms |
 |---|---:|---:|---:|---:|---:|
-| Frozen Equip |1433|0.0053|0.6188|2.4650|3.9756|
-| Existing player |1490|0.0042|0.4965|2.1128|4.7857|
+| Frozen Equip |1433|0.0053|0.6123|2.4781|3.9805|
+| Existing player |1490|0.0044|0.4957|2.0907|4.4066|
 
 These nested same-process offline timings overlap existing stages; they are not
 actual MTGA latency or a three-second qualification. Data stays bounded to one

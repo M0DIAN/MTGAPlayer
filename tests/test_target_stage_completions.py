@@ -171,9 +171,13 @@ class TargetStageCompletionTests(unittest.TestCase):
                 self.absent(rows)
 
     def test_synthetic_retransmitted_consumed_or_competing_stage(self):
-        for index, position in ((105, 106), (105, 107), (108, 109), (105, 108)):
+        for index, position in ((105, 106), (105, 107), (108, 109), (105, 108), (105, 109)):
             with self.subTest(index=index, position=position):
                 rows = self.real_rows(); rows.insert(position, copy.deepcopy(rows[index])); self.absent(rows)
+        rows = self.equip_rows()
+        first_request = copy.deepcopy(rows[4])
+        rows.insert(len(rows)-1, first_request)
+        self.absent(rows)
 
     def test_missing_terminal_and_unfinished_eof_are_uncomparable(self):
         for cutoff in (106, 107, 108, 109):
