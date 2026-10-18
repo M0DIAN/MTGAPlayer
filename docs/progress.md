@@ -1828,3 +1828,32 @@ delivery gates. Their actual identities and results are recorded on the MP65
 PR and handoff. The historical Windows qualification failure is retained and
 unexplained; no test weakening, timeout change or claimed repair is included.
 Complete legality remains unimplemented. input_sent=false; P10=NOT_RUN.
+
+## MP66 deterministic shadow decision policy (2026-10-18)
+
+Accepted base is c5598d8f955064d9c271df0150e223ee5cbdd927. Counter-audit confirms
+Advisor already owns the unique Play heuristic; MP66 reuses it without changing
+its rules or defaults. The new explicit Consumer shadow_decision API/CLI consumes
+MP65 options in the same owner flow and uses the existing final ref/lease gate.
+Only a complete, untruncated unique reviewed final-target-set proposal adds a
+new research preference. Probes, associations, selected literals and lone combat
+members cannot substitute for it. There is no retained shadow preference cache,
+new state engine, parser, solver, State/Event version or runtime dependency.
+
+Direct controls cover retained Cast cutoffs, independent Equip14/15 stages,
+existing Play position/order checks, competing Cast/Activate rows, SelectN,
+Discard/combat, omitted/truncated sources, unknown totals, stable repeated input,
+lease expiry and invalidation during computation. An initial synthetic event
+control used stopped subscription metadata for non-stop revocations; the strict
+Consumer rejected it. Correcting that test envelope preserves the original
+protocol checks; no production check is relaxed.
+
+The small offline measurement follows controlled public-log appends through
+the production watcher/Publisher, Consumer, MP65, shadow policy and flushed JSON
+readback, with distinct history, incremental, whole API and pure policy timing.
+Full Python3.11 tests, complete old-interface comparisons including MP65,
+Windows doctor, original frozen Equip cutoffs, exact-HEAD independent review,
+Linux/Windows head/PR CI and natural main CI are final delivery gates recorded
+on the PR. Historical qualification failure remains unexplained, not repaired
+by same-SHA retries or this task. Complete legality and optimality are not
+implemented. input_sent=false; P10=NOT_RUN.
