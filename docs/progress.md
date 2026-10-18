@@ -1799,3 +1799,32 @@ natural CI are separate final gates, recorded on PR81 with their actual run/
 attempt/checkout identities. Historical qualification failure remains retained
 and unexplained; no weakening, timeout change or claimed repair is included.
 Complete legality remains unimplemented. input_sent=false; P10=NOT_RUN.
+
+## MP65 unified current decision options (2026-10-18)
+
+Base main is f64fa9abb97cc086ccee13babb9bf0d49ae06db0. Counter-audit found
+Advisor inventory, Candidates v2–v6 and the Consumer current gate reusable;
+their distinct domains and SelectTargets gaps require only a thin opt-in
+adapter. Consumer gains current_decision_options and the matching CLI flag.
+No Reducer, parser, solver, State/Event version or runtime dependency is added.
+One current state feeds existing checks with a final ref/lease gate; a bounded
+one-entry data cache is invalidated with the Consumer. Returned local checks
+never grant complete legality, execution or input authority.
+
+Twelve focused controls cover the retained Cast cutoffs, portable Equip stages,
+SelectN, Discard, action rows, combat, bounds, cache and invalidation. Independent
+preflight found two compatibility gaps: v15's common v13 Equip first-stage
+context and the existing v9 Activate relation profile. Both receive direct
+regressions and reuse existing implementations. The owner verifies the frozen
+7,718,945-byte Equip original against SHA256
+6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07.
+Separate v14/v15 raw-watch paths pass16 cutoff checks before later records;
+consumption revokes options, while a later new request can offer fresh options.
+
+Final full Python3.11 tests, complete legacy return-value comparisons, formal
+schemas, Windows doctor, measured cold/warm API overhead, independent exact
+HEAD/tree review, head/PR CI and post-merge natural main CI remain separate
+delivery gates. Their actual identities and results are recorded on the MP65
+PR and handoff. The historical Windows qualification failure is retained and
+unexplained; no test weakening, timeout change or claimed repair is included.
+Complete legality remains unimplemented. input_sent=false; P10=NOT_RUN.
