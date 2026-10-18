@@ -264,3 +264,10 @@ target side observation after the unchanged policy freeze. See
 [current-target-coverage.md](current-target-coverage.md) for the4 newly reviewed
 requests/7 local proposals,8 remaining unknown requests, strict currentness gates
 and why4 new paired updates do not establish new historical episodes.
+
+MP75 adds `--current-cost-stages --mana-requirement-match` to this same pipeline.
+It freezes current single-color amount/descriptor identity comparisons before
+future responses; old reports and policy are unchanged. See
+[mana-requirement-consistency.md](mana-requirement-consistency.md) for separate
+request/requirement/solution units, conservative refusal and unknown payment
+legality.

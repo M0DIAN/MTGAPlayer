@@ -137,3 +137,8 @@ estimating their implementation value. The12-request investigation is not a
 prediction of policy-coverage improvement.
 
 `input_sent=false`; `P10=NOT_RUN`.
+
+MP75 adds an explicit `mana_requirement_match=True` side report and historical
+`--mana-requirement-match` flag. It compares a single concrete requirement to a
+single predictive unit without changing this MP72 default structural contract.
+See [mana-requirement-consistency.md](mana-requirement-consistency.md).

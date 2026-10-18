@@ -571,10 +571,12 @@ class RawReducer:
             self.observer(event, details)
 
     def _interrupt_current_target(self):
-        # Bounded private witness for opt-in current-target evidence only.
+        # Bounded private witnesses for opt-in current-target/cost evidence.
         # Legacy currentness, public documents and policy remain unchanged.
         if self.request is not None and self.request['type'] == 'GREMessageType_SelectTargetsReq':
             self.request['_target_evidence_interrupted'] = True
+        if self.request is not None and self.request['type'] == 'GREMessageType_PayCostsReq':
+            self.request['_cost_evidence_interrupted'] = True
 
     def _request_ended(self, disposition):
         if self.observer is not None and self.request is not None:
@@ -678,6 +680,10 @@ class RawReducer:
                 if len(hits) == 1 and type(hits[0]) is int and hits[0] in (1, 2):
                     self.room_seat = hits[0]
         payload = entry.get('payload')
+        if ('payload' in entry and self.request is not None and
+                self.request['type'] == 'GREMessageType_PayCostsReq' and
+                not (type(payload) is dict and payload.get('type') == 'ClientMessageType_UIMessage')):
+            self._interrupt_current_target()
         if 'payload' in entry and self.request is not None and self.request['type'] == 'GREMessageType_SelectTargetsReq':
             typ = payload.get('type') if type(payload) is dict else None
             paired_header = (type(payload) is dict and type(payload.get('respId')) is int and
@@ -832,6 +838,8 @@ class RawReducer:
                     self._request_ended('superseded')
                 target_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
                     self.request['id'] == msg_id and self.request.get('_target_evidence_interrupted') is True))
+                cost_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
+                    self.request['id'] == msg_id and self.request.get('_cost_evidence_interrupted') is True))
                 self.request = {'id': msg_id, 'type': message['type'],
                                 '_continuity_verified': prior is None or bool(self.request and
                                     self.request['id'] == msg_id and
@@ -845,6 +853,8 @@ class RawReducer:
                                 **_request_semantics(message)}
                 if message['type'] == 'GREMessageType_SelectTargetsReq' and target_interrupted:
                     self.request['_target_evidence_interrupted'] = True
+                if message['type'] == 'GREMessageType_PayCostsReq' and cost_interrupted:
+                    self.request['_cost_evidence_interrupted'] = True
                 if self._include_request_parameters:
                     from .request_parameters import project
                     current_objects = self._current()['objects']
@@ -1099,6 +1109,7 @@ class RawReducer:
                     hidden[label] = hidden.get(label, 0) + 1
         request = copy.deepcopy(self.request)
         if request: request.pop('_target_evidence_interrupted', None)
+        if request: request.pop('_cost_evidence_interrupted', None)
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
             request.pop('_request_parameters', None)

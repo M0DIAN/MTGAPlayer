@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False, current_target_coverage=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False, current_target_coverage=False, mana_requirement_match=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -57,6 +57,7 @@ class _Evaluation:
             from .target_stage_completions import TargetStageCompletions
             self.target_completions=TargetStageCompletions();self.timings['target_stage_completions'] = []
         self.cost_stages = Counter() if current_cost_stages else None
+        self.mana_matches = Counter() if mana_requirement_match else None
         self.prior_complex_context = None  # Count-only history, never current authority.
         if current_cost_stages:self.timings['current_cost_stage'] = []
         self.intent_counts = Counter() if complex_action_intents else None
@@ -166,7 +167,8 @@ class _Evaluation:
             from .current_cost_stage import assess_current_cost_stage, MANA_PROFILE
             from .semantic_effect_cost import PROFILE as NONMANA_PROFILE
             cost_start=time.perf_counter_ns()
-            stage=assess_current_cost_stage(self.consumer,self.reducer,details['message'])
+            stage=assess_current_cost_stage(self.consumer,self.reducer,details['message'],
+                mana_requirement_match=self.mana_matches is not None)
             self.timed('current_cost_stage',time.perf_counter_ns()-cost_start)
             c=self.cost_stages;c['pay_costs_requests_observed'] += 1
             profile=stage['cost_request_profile']
@@ -180,6 +182,15 @@ class _Evaluation:
                 c['observed_mana_requirements'] += len(stage['mana_requirements'])
                 c['observed_payment_action_rows'] += len(stage['payment_actions'])
                 c['observed_predictive_auto_tap_solutions'] += len(stage['predictive_auto_tap_solutions'])
+                if self.mana_matches is not None:
+                    from .current_cost_stage import MATCHED, UNSUPPORTED_MATCH_SHAPES
+                    match=stage['mana_requirement_match'];m=self.mana_matches
+                    m['reviewed_amount_matches' if match['status']==MATCHED else
+                        'reviewed_contradictions' if match['status']=='violated_known_constraints' else
+                        'unsupported_combination_shapes' if match['reason'] in UNSUPPORTED_MATCH_SHAPES else
+                        'unreviewed_identity_or_continuity'] += 1
+            elif self.mana_matches is not None and profile!=NONMANA_PROFILE:
+                self.mana_matches['unreviewed_cost_stage_requests'] += 1
             if self.prior_complex_context is not None and self.prior_complex_context==token[:4]:
                 c['cost_requests_with_prior_paired_complex_context'] += 1
         if self.intent_counts is not None:
@@ -339,7 +350,8 @@ class _Evaluation:
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
                             actions_available_gates=False, complex_action_intents=False, protocol_evidence=False,
-                            current_cost_stages=False, target_stage_completions=False, current_target_coverage=False, _on_freeze=None):
+                            current_cost_stages=False, target_stage_completions=False, current_target_coverage=False,
+                            mana_requirement_match=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
@@ -348,10 +360,12 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
     if type(protocol_evidence) is not bool or protocol_evidence and not actions_available_gates:
         raise ValueError('protocol_evidence_requires_actions_available_gates')
     if type(current_cost_stages) is not bool:raise ValueError('invalid_current_cost_stages_flag')
+    if type(mana_requirement_match) is not bool or mana_requirement_match and not current_cost_stages:
+        raise ValueError('mana_requirement_match_requires_current_cost_stages')
     if type(target_stage_completions) is not bool:raise ValueError('invalid_target_stage_completions_flag')
     if type(current_target_coverage) is not bool or current_target_coverage and not target_stage_completions:
         raise ValueError('current_target_coverage_requires_target_stage_completions')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions,current_target_coverage);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions,current_target_coverage,mana_requirement_match);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -446,6 +460,21 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
             'complete_payment_verified':None,'complete_legal_complex_actions':None,
             'scope':'finite current requirement/object and predictive action observations; prior context is temporal only',
             'policy_unchanged':True}
+    if evaluation.mana_matches is not None:
+        c=evaluation.cost_stages;m=evaluation.mana_matches
+        result['mana_requirement_consistency']={
+            'unit':'first accepted authenticated own PayCosts request; requirements, solutions and single-route comparisons are separate units',
+            'authenticated_requests':observed,
+            'pay_costs_requests':c['pay_costs_requests_observed'],
+            'reviewed_nonmana_requests':c['reviewed_nonmana_select_profile'],
+            'reviewed_mana_requests':c['reviewed_mana_payment_stage'],
+            'observed_mana_requirements':c['observed_mana_requirements'],
+            'observed_predictive_solutions':c['observed_predictive_auto_tap_solutions'],
+            **{k:m[k] for k in ('reviewed_amount_matches','reviewed_contradictions',
+                'unsupported_combination_shapes','unreviewed_identity_or_continuity','unreviewed_cost_stage_requests')},
+            'source_readiness_verified':None,'complete_payment_verified':None,'complete_action_legality_verified':None,
+            'historical_response_used_for_current_match':False,'policy_unchanged':True,
+            'other_payment_routes':'unknown','historical_only':True,'read_only':True,**EXECUTION}
     if evaluation.intent_counts is not None:
         c=evaluation.intent_counts
         observed=c['observed_complex_action_rows'] if not c['inventory_unknown_requests'] else None
