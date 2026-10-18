@@ -207,4 +207,14 @@ class ShadowHistoryTests(unittest.TestCase):
             self.assertIsNone(report['unknown_full_legal_action_count'])
 
 
+    def test_non_integer_member_slot_cannot_be_counted_as_unique_history(self):
+        rows=[json.loads(line) for line in (FIXTURES/'player_log_single_target.jsonl').read_text(encoding='utf8').splitlines()]
+        for idx in (True,1.0,'1'):
+            changed=copy.deepcopy(rows)
+            changed[106]['payload']['selectTargetsResp']['target']['targetIdx']=idx
+            report=self.run_rows(changed)
+            self.assertEqual(report['historical_comparison']['historical_choices_uniquely_matched'],1)
+            self.assertEqual(report['historical_comparison']['comparable_policy_preferences'],0)
+
+
 if __name__=='__main__':unittest.main()

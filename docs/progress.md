@@ -1905,9 +1905,12 @@ Public Cast and original Equip cutoff chains are separate ordering controls.
 Independent preflight found non-string response types, a partial-only source,
 growth beyond initial size and an optional null inventory could break bounds or
 safe handling. Direct regressions cover all four; finite source size and typed
-guards fix them without changing MP65/66. Early full runs during editing were
-not accepted as final gates. Latest content passed860 complete tests with stable
-source/test hashes; focused118 and final exact-version compatibility/review/CI
+guards fix them without changing MP65/66. A final direct countercheck also
+found legacy target-index equality could count boolean/float1 as integer1;
+the new statistic checks the decoded index type without changing the old helper.
+Early full runs during editing were not accepted as final gates. The earlier
+candidate passed860 complete tests with stable source/test hashes; the typed
+index revision receives fresh full/focused tests and exact-version compatibility/review/CI
 are recorded with actual identities in delivery receipts. See
 docs/shadow_history_evaluation.md for cohort denominators and measured priorities.
 

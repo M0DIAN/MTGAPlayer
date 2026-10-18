@@ -57,6 +57,8 @@ cannot stand for a complete final-set proposal; a SubmitTargets without a
 uniquely established full set is also uncomparable. `uncomparable` is paired
 submissions minus comparable preferences, not all requests. Agreement means
 historical identity agreement only, never legality, optimality or win rate.
+Member slot indices must be actual integers in this new statistic; legacy
+boolean/float equality with integer1 is not typed identity proof.
 
 ## Actual owner cohort
 

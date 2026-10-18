@@ -173,8 +173,11 @@ class _Evaluation:
             from .request_parameters import LiteralRefs
             params=before.get('_request_parameters')
             try:
-                response(payload,before,params,LiteralRefs(),())
-                unique=True;unit='member_update_not_final_set'
+                decoded=response(payload,before,params,LiteralRefs(),())
+                # Legacy helper equality permits bool/float == int. Keep its
+                # contract, but require typed GRE identity for this statistic.
+                unique=type(decoded['payload']['target_idx']) is int
+                if unique:unit='member_update_not_final_set'
             except (ValueError,KeyError,TypeError):pass
         self.choice_units[unit] += 1
         if unique:self.choices['historical_choices_uniquely_matched'] += 1
