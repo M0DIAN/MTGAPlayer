@@ -1,0 +1,57 @@
+{
+  "kind": "retained_scrubbed_real_fixture_not_private_original_authentication",
+  "base": "d94710558c954408f02bb66ff4264def6780670a",
+  "source": "tests/fixtures/player_log_single_target.jsonl",
+  "normalized_lf_records": 113,
+  "normalized_lf_bytes": 68174,
+  "normalized_lf_sha256": "723b6c4ba89a02874044afb1006ad7cf1507997cbc55436b6dc5ee75067a5b81",
+  "parent_request_only_prefix": {
+    "records": 103,
+    "bytes": 60858,
+    "sha256": "1616b632532286f5437c4675c814a25a6a902b40e0de67c19308b37cafaf0c9d",
+    "production_states": 100,
+    "genuine_full_record": 3,
+    "self_seat": 2,
+    "freeze_sha256": "18833ac7dfb899c520173cee64ee99fa47a609d34220288de27e7dac448c3523",
+    "frozen_before_actual_response_semantics": true
+  },
+  "first_child_prefix": {
+    "records": 106,
+    "bytes": 63699,
+    "sha256": "8787cab48fbfa46d5a74c499b42583f8d28ad58b4aeaf4e160f38e0405a5c82b",
+    "baseline_freeze_sha256": "462a51431108849058aa4169855064a2f2a820274c90e1f859a044ad2124562a",
+    "product_freeze_sha256": "c73d2d7863460b661ea2ecf23a344e1f7a1ad5898739bece1ecdeacde229d765",
+    "frozen_before_107plus_semantics": true,
+    "actual_selected_position": 3,
+    "parent_consumed_same_apply": true,
+    "stack_kind": "GameObjectType_Card",
+    "fresh_current_request": 10102,
+    "current_state": 101,
+    "four_existing_singleton_proposals": 4
+  },
+  "separate_lifecycle": {
+    "first_child_freeze_sha256": "462a51431108849058aa4169855064a2f2a820274c90e1f859a044ad2124562a",
+    "selected_member": 1262,
+    "select_consumed_same_poll": true,
+    "revised_request": 10104,
+    "revised_state": 102,
+    "revised_min_max_selected": [
+      1,
+      1,
+      1
+    ],
+    "terminal_header_only_paired_after_consumption": true,
+    "old_current_never_revived_through_record": 113,
+    "future_backfill": false,
+    "product_changes": false
+  },
+  "private_original_reauthenticated": false,
+  "future_result_used_for_initial_constraints": false,
+  "all_additional_mutations_and_transport_are_synthetic": true,
+  "execution": {
+    "input_sent": false,
+    "LIVE_MTGA": "NOT_RUN",
+    "P10": "NOT_RUN"
+  },
+  "independent_review_boundary": "Reviewers can inspect the entire public retained scrubbed fixture and reproduce producer/Consumer behavior; it does not authenticate a withheld private original."
+}

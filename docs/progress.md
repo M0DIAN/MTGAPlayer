@@ -1663,3 +1663,43 @@ Consumer behavior. Windows doctor is read-only, exits0, input_sent=false.
 Python3.11.16 full unittest passes761 tests in110.145s. Exact-candidate independent
 review is a delivery gate recorded with the Draft PR, alongside hosted head/merge Linux and Windows
 tested SHA/tree. No merge, new game, MTGA input or latency claim; P10 NOT_RUN.
+
+## MP64 — actual Cast to four-member current first target request (2026-10-18)
+
+Independent branch from accepted main d947105; MP63/#79 remains separate Draft
+and unmerged. Pre-implementation production evidence authenticates the retained
+scrubbed fixture's own seat/Full/Diff/request chain, not a private original log.
+The103 parent state/report is frozen before104, and106 child before107+.
+Actual104 uniquely matches original Cast position3 and consumes10100 in the
+same apply. Diff105 explicitly migrates Hand1255 through ObjectIdChanged and
+CastSpell to public Stack Card1264. Old1255 moves to Limbo, not deletion.
+Fresh106/10102 has its own1/1 bounds and four ordered offered Select members.
+Separately107 consumes it,109 is a fresh1/1/1 Unselect request,110 terminal
+Submit consumes that request;111–113 never restore the old refs.
+
+Existing MP59 parent probes, MP38 target validation and Candidate2 enumeration
+already cover their request-local portions. Only the missing cross-request
+provenance is added, subordinate to the same StageObserver/RawReducer. Opt-in
+State/Event15 adds nullable Cast/Card context;14 stays reserved for unmerged
+MP63. Each current proposal uses its child's own Consumer binding/ref/lease.
+No second reducer, validator, rules engine, response encoder or input path.
+Four offered singleton proposals do not establish full target-domain, complete
+legality, payment/readiness, causation or acceptance. Every execution flag false.
+
+Fifteen focused tests pass, including real prefix cutoffs, same-poll consumption,
+four existing singleton validations, a single actual-record watch→Publisher→
+Consumer/JSONL chain, strict row/identity/transfer/member refusals, duplicates,
+mixed-record rearming, a genuinely accepted Full with four default candidates,
+pending partial-poll completion, reset, refs/lease/history/stop and races. All
+mutations and transport clocks are synthetic; the real source fixture is intact.
+Formal development-only schema validation passes28 resources,10 real prefix
+states,40 synthetic events and8 discriminating invalid-state controls.
+
+Python3.11.16 full unittest passes776 tests in109.180s. Windows doctor exits0,
+input_sent=false, LIVE_MTGA NOT_RUN. Isolated accepted-tree/candidate processes
+compare1,773 complete directly affected old values: all equal, sources stable.
+Coverage includes State/Event1–13, Candidate2–6, Advisor, default replay/watch,
+old continuation and Consumer transport at nine Cast boundary prefixes. Old
+fixtures and schemas remain unchanged. Exact-final independent review and hosted
+head/synthetic-merge Linux/Windows CI are delivery gates recorded with the PR.
+No merge, MTGA operation, new match, P10 or latency claim; P10 remains NOT_RUN.

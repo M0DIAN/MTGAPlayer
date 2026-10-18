@@ -615,3 +615,14 @@ SelectTargets child. For a current leased view use
 The parent remains consumed; submitting the child clears its context. Existing
 target membership/count validation is reused. Full legality, payability and all
 execution flags remain false. See [the evidence and limits](docs/current-choice-continuation.md).
+
+## MP64 opt-in Cast continuation
+
+`mtgaplayer replay <prefix> --format player-log --decision-state-version 15 --current-cast-continuation`
+observes the actual consumed Cast, explicit Hand→public Stack Card ID transfer
+and separately current four-member first target request. It reuses Candidate v2
+for four request-local singleton proposals. For append transport, use
+`watch <Player.log> --decision-events --decision-state-version 15` piped into
+`consume-events --current-cast-continuation`. All execution/input flags stay false.
+State/Event14 remains reserved for separate unmerged MP63; old versions/defaults
+are unchanged. See [the contract and evidence boundaries](docs/current-cast-continuation.md).

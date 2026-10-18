@@ -109,20 +109,27 @@ def _raw_child(observation, binding):
 
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
-    def __init__(self, reducer):
+    def __init__(self, reducer, *, include_cast=False):
         self.reducer = reducer
+        self.cast = None
+        if include_cast:
+            from .cast_continuation import CastStage
+            self.cast = CastStage(reducer)
         self.reset()
 
     def reset(self):
+        if self.cast is not None: self.cast.reset()
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
         self.cached = self.prepared = self.pending = self.active = None
         self.age = 0
 
     def _clear(self):
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
-        self.reset()
+        self.cached = self.prepared = self.pending = self.active = None
+        self.age = 0
 
     def prepare(self, record):
+        if self.cast is not None: self.cast.prepare(record)
         from .decision_consumer import _bounded_json
         self.prepared = None
         if self.pending is not None:
@@ -180,6 +187,7 @@ class StageObserver:
             self._clear()
 
     def after_apply(self):
+        if self.cast is not None: self.cast.after_apply()
         prepared = self.prepared; self.prepared = None
         if (prepared is not None and _scope(self.reducer) == prepared['scope'] and self.reducer.request is None and
                 _paired_response(self.reducer, prepared['request'], prepared['payload'], 'ClientMessageType_PerformActionResp')):
@@ -192,6 +200,7 @@ class StageObserver:
         return {k: source.get(k) for k in ('instanceId', 'grpId', 'type', 'zoneId', 'visibility', 'ownerSeatId', 'controllerSeatId')}
 
     def observe(self, event, details):
+        if self.cast is not None: self.cast.observe(event, details)
         r = self.reducer
         if event in ('continuity_error', 'unsupported_broadcast_request'): self._clear(); return
         if event == 'request_ended':
