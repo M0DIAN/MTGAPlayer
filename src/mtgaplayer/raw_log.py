@@ -504,16 +504,42 @@ class RawFramer:
 
 
 class RawFollower:
-    def __init__(self, path, max_history_bytes=64 * 1024 * 1024):
+    def __init__(self, path, max_history_bytes=64 * 1024 * 1024, *, byte_observer=None,
+                 max_poll_bytes=None):
+        if max_poll_bytes is not None and (type(max_poll_bytes) is not int or not 1 <= max_poll_bytes <= 16*1024*1024):
+            raise ValueError('invalid_raw_poll_byte_limit')
         self.path = Path(path)
         self.max_history_bytes = max_history_bytes
+        self.byte_observer, self.max_poll_bytes = byte_observer, max_poll_bytes
+        self.byte_observer_error = None
         self.identity = None
         self.offset = self.generation = 0
         self.prefix = self.anchor = b''
         self.anchor_start = 0
         self.framer = RawFramer()
 
+    def _bytes(self, method, *args):
+        # Optional evidence I/O must never change the production reducer path.
+        if self.byte_observer is not None:
+            try:
+                getattr(self.byte_observer, method)(*args)
+            except Exception as exc:
+                self.byte_observer_error = {'error_type': type(exc).__name__,
+                    'errno': getattr(exc, 'errno', None)}
+                try:self.byte_observer.failed()
+                except Exception:pass
+                self.byte_observer = None
+
     def poll(self):
+        try:return self._poll()
+        except (OSError, ValueError) as exc:
+            if self.byte_observer is not None:
+                self._bytes('failed')
+                self.byte_observer_error={'error_type':type(exc).__name__, 'errno':getattr(exc,'errno',None)}
+                self.byte_observer=None
+            raise
+
+    def _poll(self):
         with self.path.open('rb') as stream:
             stat = os.fstat(stream.fileno())
             identity = (stat.st_dev, stat.st_ino) if stat.st_ino else (stat.st_ctime_ns,)
@@ -531,10 +557,14 @@ class RawFollower:
             stream.seek(self.offset)
             records = []
             remaining = stat.st_size - self.offset
+            self._bytes('begin', {'generation': self.generation, 'identity': list(identity),
+                'reset': reset, 'byte_start': self.offset, 'source_size': stat.st_size})
+            if self.max_poll_bytes is not None:remaining = min(remaining, self.max_poll_bytes)
             while remaining:
                 chunk = stream.read(min(65536, remaining))
                 if not chunk:
                     break
+                self._bytes('write', self.offset, chunk)
                 records.extend(self.framer.feed(chunk))
                 self.offset += len(chunk)
                 remaining -= len(chunk)
@@ -543,6 +573,11 @@ class RawFollower:
             self.anchor_start = max(0, self.offset - 64)
             stream.seek(self.anchor_start)
             self.anchor = stream.read(self.offset - self.anchor_start)
+            final = os.fstat(stream.fileno())
+            self._bytes('end', {'byte_end': self.offset, 'source_size': stat.st_size,
+                'source_size_after': final.st_size, 'source_changed_during_poll':
+                    (stat.st_size, stat.st_mtime_ns) != (final.st_size, final.st_mtime_ns),
+                'partial_record': self.framer.partial, 'framing_errors': self.framer.errors})
         return reset, records
 
 

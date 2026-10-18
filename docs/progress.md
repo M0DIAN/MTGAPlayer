@@ -2160,3 +2160,20 @@ options/policy and both complete legacyhistoryreports unchanged. Direct17PASS;
 emptyoutput P2 independently closed. Actual newhelperonly n2ms
 p50/p95/p99/max=.1983/.2030/.2030/.2030; no realMTGA latency claim. Regenerated
 safe receipt is bound to this repaired runtime. FinalexactHEAD gates pending.
+
+MP77 local raw evidence archive implementation in progress on accepted
+b561fa8b3434841a6a2d7b2c14535dda3bca61f0. Confirmed Collector defaults retain
+reserialized records only. Explicit RawFollower byte observer now writes
+immutable raw segments with fsynced bytes/atomic committed metadata, bounded
+polls, generation/range hashes, private-directory checks and OS single-writer
+lock. Resume verifies all committed ranges and full source prefix; stop hashes
+the complete current prefix/EOF. Rotation and unobserved pause gaps remain
+explicit; old generations and crash orphans are preserved. Archive I/O failures
+are isolated from Reducer state. Direct18 archive controls PASS, including
+independent counterproof repairs for failed-Git privacy checks and stale closed
+writers touching a resumed writer's metadata. Owner acceptance of retained
+MP76 snapshots preserves 3,882,223/382,841 bytes, both exact SHA256 values and
+existing historical-analysis outputs. These samples still contain no AutoTap
+response. Final exactHEAD focused/full3.11, doctor, independent review and
+actual PR/main CI are pending separate delivery gates.
+See docs/local-raw-archive.md. input_sent=false; P10=NOT_RUN.
