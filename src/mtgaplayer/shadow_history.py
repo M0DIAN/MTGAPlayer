@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -54,8 +54,9 @@ class _Evaluation:
         if complex_action_intents: self.timings['complex_action_intents_cached_api'] = []
         if actions_available_gates:
             from .actions_available_gates import ActionsAvailableGates
-            self.action_gates = ActionsAvailableGates()
+            self.action_gates = ActionsAvailableGates(protocol_evidence)
             self.timings['actions_available_gate_analysis'] = []
+            if protocol_evidence:self.timings['actions_available_protocol_evidence'] = []
         self.reducer = RawReducer(include_state_messages=True, include_request_parameters=True,
             include_targeted_activate=True, include_current_discard=True, include_target_payment_relation=True,
             include_cast_target_members=True, include_cast_activate_associations=True, include_multi_slot_cast=True)
@@ -181,6 +182,8 @@ class _Evaluation:
             self.action_gates.observe(details['message'],request,options,decision,
                 view['decision_state'],view['current_snapshot_ref'])
             self.timed('actions_available_gate_analysis',time.perf_counter_ns()-gate_start)
+            if self.action_gates.protocol is not None:
+                self.timed('actions_available_protocol_evidence',self.action_gates.protocol_elapsed_ns)
         if self.on_freeze is not None:self.on_freeze(self.ordinal,copy.deepcopy(request),copy.deepcopy(options),copy.deepcopy(decision))
         self.timed('evaluation_bookkeeping',time.perf_counter_ns()-start)
 
@@ -248,13 +251,15 @@ class _Evaluation:
 
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
-                            actions_available_gates=False, complex_action_intents=False, _on_freeze=None):
+                            actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
     if type(actions_available_gates) is not bool:raise ValueError('invalid_actions_available_gates_flag')
     if type(complex_action_intents) is not bool:raise ValueError('invalid_complex_action_intents_flag')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(protocol_evidence) is not bool or protocol_evidence and not actions_available_gates:
+        raise ValueError('protocol_evidence_requires_actions_available_gates')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())

@@ -1983,3 +1983,34 @@ docs/finite-action-intents.md. Final exact-candidate independent review and
 actual PR/main CI remain mandatory separate gates. Historical Windows
 qualification failure root cause remains unknown; this task does not claim
 to fix it. input_sent=false; P10=NOT_RUN.
+
+MP71 Prompt routing/FloatMana evidence (base d7b7cc07d84f12f04079c68a394676c0c172b035,
+treef4b51eb6bb859c7a679b4fb3715f2f601548c890): proved MP69 only reports shape/gap
+counts and MP70 omits FloatMana; reused the existing strict semantic_cast.action
+checker rather than adding another parser. Rehashed62 retained MP61 texts and
+critical IL/public descriptor references without new decompilation/DLL access.
+Explicit historical --actions-available-gates --protocol-evidence reuses the
+same accepted-request freeze, checked inventory, MP65/policy and Consumer ref.
+It adds named static CannotTakeAction/OpeningHand/all-resolution-Cast predicate
+results and strict FloatMana source-field absence observations. Final runtime
+route/Loop/roundtrip/assets and general Prompt meaning remain unknown. Explicit
+No/Abort spelling uses the pinned public descriptor; installed JSON attributes
+were not separately recovered. A retained FloatMana type-selection helper is
+static evidence only, not proof it ran or that sources are globally inapplicable.
+Owner hashes and1402 prefix were checked before successor semantics. Same164
+requests/74 ActionsAvailable: each reviewed predicate excluded74 times;69
+FloatMana rows in69 requests all strict bare, no explicit source fields or
+other shapes. Applicability verified count=null, unknown69. Complex rows489,
+finite parents16, complete legality=null, preferences2/164 unchanged. All164
+frozen options/policy and old reports match.507 functional compatibility
+comparisons plus48/8 focused final addenda PASS;12 direct tests PASS, including
+typed request1 vs true/1.0 and unavailable inventory totals null/route unknown.
+Final exact-HEAD full Python3.11/focused/doctor, independent review and actual
+Linux/Windows PR/main CI remain separate mandatory gates. Added-only overhead
+(n40/n34), p50/p95/p99/max ms: .1055/.1216/.1703/.1703 and
+.1007/.1168/.1240/.1240. No real MTGA latency claim. Next evidence priority is
+complete Cast/Activate target/cost constraints, with the12 unsupported PayCosts
+requests a possible linked cost-stage slice, before effect-backed tactical
+ranking. General Prompt/runtime and FloatMana applicability remain evidence
+gaps, not repaired gameplay failures. Historical Windows qualification cause
+remains unknown. See docs/prompt-float-evidence.md. input_sent=false; P10=NOT_RUN.

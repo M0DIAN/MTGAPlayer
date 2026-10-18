@@ -4,9 +4,12 @@ Conditions overlap; a static next gate is not a legality/cause assessment.
 Only fixed reviewed field names and scalar type classes leave this module.
 """
 from collections import Counter
+import copy
+import time
 
 from .decision_advisor import _extract_actions, _graph_issue, _preference, SIMPLE_TYPE_POLICY
 from .cast_activate_associations import _prompt
+from .decision_consumer import EXECUTION
 
 VERSION = 'mtgaplayer.actions-available-gate-analysis.v1'
 REQUEST = 'GREMessageType_ActionsAvailableReq'
@@ -20,6 +23,111 @@ CONDITIONS = ('unknown_request_fields', 'complex_cast_or_activate', 'non_simple_
     'tactical_basis_unverified', 'source_visibility_unverified',
     'source_card_identity_disagreement', 'source_card_identity_unknown',
     'current_binding_problem', 'graph_conflict')
+PROTOCOL_VERSION = 'mtgaplayer.actions-protocol-observation.v1'
+ROUTES = ('cannot_take_action', 'opening_hand', 'all_resolution_casts')
+
+
+def _and(values):
+    return False if False in values else True if all(v is True for v in values) else None
+
+
+def _protocol_observation(message, request, options, decision, state, ref, rows):
+    """Ephemeral facts at the existing authenticated historical freeze only.
+
+    This consumes the existing inventory, not a second parser or currentness
+    authority. A detached historical result never grants a live opportunity.
+    Static predicates refer only to the MP61 inspected build, not running UI.
+    """
+    from .cast_target_members import _equal
+    from .semantic_cast import action
+    from .request_parameters import LiteralRefs
+    from .semantic_samples import IDS, BOOLS, PARAMS
+    from .raw_log import _OBSERVED_ACTION_TYPES
+    result = {'schema_version': PROTOCOL_VERSION, 'status': 'insufficient_evidence',
+        'scope': 'frozen_authenticated_historical_request_only',
+        'request_binding': None, 'source_snapshot_ref': None, 'active_action_rows': None,
+        'prompt_structure_verified': False, 'prompt_parameters_present': None,
+        'finite_route_predicates_checked': False, 'reviewed_routes': dict.fromkeys(ROUTES),
+        'cannot_take_action_inputs': None, 'general_prompt_semantics_unknown': True,
+        'loop_roundtrip_assets_unknown': True, 'runtime_route_observed': False,
+        'final_route': None, 'float_mana_rows': None, 'unclassified_action_rows': None,
+        'complete_legality_verified': False, 'response_encoding_verified': False,
+        'execution_ready': False, 'read_only': True, **EXECUTION}
+    if state is None or type(rows) is not list or type(ref) is not dict:return result
+    binding=state['binding']; legacy=request.get('binding'); body=message.get('actionsAvailableReq')
+    expected={'generation':binding['source_generation'], **{k:binding[k] for k in
+        ('match','game','game_state_id','self_seat')}, 'ownership_verified':True}
+    if (not _equal(legacy,expected) or request.get('current') is not True or
+        request.get('_continuity_verified') is not True or request['type'] != REQUEST or
+        binding['request_type'] != REQUEST or message.get('type') != REQUEST or
+        not _equal(options['request_binding'],binding) or not _equal(decision['request_binding'],binding) or
+        not _equal(ref,options['source_snapshot_ref']) or not _equal(ref,decision['source_snapshot_ref']) or
+        not _equal(ref.get('binding'),binding) or
+        type(message.get('msgId')) is not int or not _equal(message['msgId'],binding['request_id']) or
+        type(request['id']) is not int or not _equal(request['id'],binding['request_id']) or
+        type(message.get('gameStateId')) is not int or not _equal(message['gameStateId'],binding['game_state_id']) or
+        not _equal(message.get('systemSeatIds'),[binding['self_seat']]) or
+        type(body) is not dict or type(body.get('actions')) is not list):return result
+    actions=body['actions']; inventory=request.get('action_inventory')
+    if (type(inventory) is not dict or type(inventory.get('offered_count')) is not int or
+        not 0 <= len(rows) <= 256 or len(rows) != len(actions) or len(rows) != inventory['offered_count']):return result
+    # Reconcile to the checked original inventory; never filter or deduplicate.
+    for position,(raw,row) in enumerate(zip(actions,rows)):
+        if type(raw) is not dict or type(row['list_position']) is not int or row['list_position'] != position:return result
+        typ=raw.get('actionType')
+        label=typ if type(typ) is str and typ in _OBSERVED_ACTION_TYPES else '_unrecognized_action_type'
+        if row['engine_action_type'] != label:return result
+    result.update(status='observed',request_binding=copy.deepcopy(binding),source_snapshot_ref=copy.deepcopy(ref),
+        active_action_rows=len(rows),finite_route_predicates_checked=True,
+        unclassified_action_rows=sum(r['engine_action_type']=='_unrecognized_action_type' for r in rows))
+    prompt=message.get('prompt')
+    result['prompt_parameters_present']='parameters' in prompt if type(prompt) is dict else None
+    try:_prompt(prompt)
+    except (ValueError,TypeError,KeyError):pass
+    else:result['prompt_structure_verified']=True
+    # Unknown cancellation/resolving inputs stay unknown; no proto-default guess.
+    cancel=message.get('allowCancel')
+    cancel_no=True if type(cancel) is str and cancel=='AllowCancel_No' else (
+        False if type(cancel) is str and cancel=='AllowCancel_Abort' else None)
+    inactive=inventory['inactive_count']
+    prompt_match=prompt['promptId']==1134 if result['prompt_structure_verified'] else None
+    inputs={'inactive_positive':inactive>0 if type(inactive) is int else None,
+        'cancellation_is_no':cancel_no, 'active_count_is_one':len(rows)==1,
+        'sole_action_is_pass':len(rows)==1 and rows[0]['engine_action_type']=='ActionType_Pass',
+        'resolving_card_present':None, 'prompt_matches_reviewed_constant':prompt_match}
+    # OR with an unobserved resolving-card input is true only when prompt matches.
+    resolving_or_prompt=True if prompt_match is True else None
+    result['cannot_take_action_inputs']=inputs
+    result['reviewed_routes']['cannot_take_action']=_and([
+        inputs[k] for k in ('inactive_positive','cancellation_is_no','active_count_is_one','sole_action_is_pass')
+    ]+[resolving_or_prompt])
+    opening=any(type(a.get('actionType')) is str and a['actionType']=='ActionType_OpeningHandAction' for a in actions)
+    result['reviewed_routes']['opening_hand']=True if opening else (
+        False if inventory['type_labels_complete'] is True else None)
+    # These known types fail ActionExtensions.IsCastAction in the inspected code.
+    # Absence of such a counterexample does not establish resolution context.
+    if any(r['engine_action_type'] in ('ActionType_Activate','ActionType_Activate_Mana',
+        'ActionType_FloatMana','ActionType_Play') for r in rows):
+        result['reviewed_routes']['all_resolution_casts']=False
+    floats=[]; whitelisted={'actionType',*IDS,*BOOLS,*PARAMS}
+    for position,raw in enumerate(actions):
+        if type(raw.get('actionType')) is not str or raw['actionType']!='ActionType_FloatMana':continue
+        strict=False
+        try:action(raw,LiteralRefs(),())
+        except (ValueError,TypeError,KeyError):pass
+        else:strict=True
+        provided=sorted(k for k in IDS if k in raw)
+        floats.append({'list_position':position,'strict_bare_literal_verified':strict,
+            'provided_fields':sorted(k for k in raw if k in whitelisted),
+            'unreviewed_fields_present':bool(set(raw)-whitelisted),
+            'field_types':{k:_type(raw[k]) for k in sorted(set(raw)&whitelisted)},
+            'provided_source_fields':provided,'absent_source_fields':sorted(set(IDS)-set(provided)),
+            'source_reference_status':'not_supplied' if not provided else 'explicit_fields_observed',
+            'source_applicability':None,'action_semantics_verified':False,
+            'payment_legality_verified':False,'response_encoding_verified':False,
+            'complete_legality_verified':False,'execution_ready':False, **EXECUTION})
+    result['float_mana_rows']=floats
+    return result
 
 
 def _type(value):
@@ -28,7 +136,11 @@ def _type(value):
 
 
 class ActionsAvailableGates:
-    def __init__(self):
+    def __init__(self, protocol_evidence=False):
+        if type(protocol_evidence) is not bool:raise ValueError('invalid_protocol_evidence_flag')
+        self.protocol = Counter() if protocol_evidence else None
+        self.protocol_routes = {k:Counter() for k in ROUTES} if protocol_evidence else None
+        self.protocol_types = Counter(); self.protocol_elapsed_ns=0
         self.observed = 0
         self.primary = Counter(); self.static = Counter(); self.fields = Counter()
         self.presence = {k:Counter() for k in ('other_payload_fields_present',
@@ -90,6 +202,7 @@ class ActionsAvailableGates:
         # No existing field enumerates complete legal Cast/Activate proposals.
         # Unknown is not zero and never turns membership into a full action.
         facts['complete_legal_candidate_missing'] = None
+        rows=None
         try:
             rows = _extract_actions(state); issue = _graph_issue(state, rows)
         except (ValueError, TypeError, KeyError, IndexError):
@@ -120,6 +233,11 @@ class ActionsAvailableGates:
                     len([o for o in options['options'] if o['kind']=='engine_action'])==len(rows) else None)
             _, reason = _preference(rows, SIMPLE_TYPE_POLICY, True, issue, False)
             self.static[reason or 'research_preference_under_static_assumptions'] += 1
+        if self.protocol is not None:
+            start=time.perf_counter_ns()
+            observation=_protocol_observation(message,request,options,decision,state,ref,rows)
+            self._protocol_counts(observation)
+            self.protocol_elapsed_ns=time.perf_counter_ns()-start
         for name, value in facts.items():
             self.conditions[name]['true' if value is True else 'false' if value is False else 'unknown'] += 1
         # At most 2**14 distinct fixed masks; input already capped by history.
@@ -129,7 +247,7 @@ class ActionsAvailableGates:
 
     def report(self):
         tri = lambda counts: {k:counts[k] for k in ('true','false','unknown')}
-        return {'schema_version':VERSION, 'actions_available_observed':self.observed,
+        result = {'schema_version':VERSION, 'actions_available_observed':self.observed,
             'unit':'distinct authenticated current own ActionsAvailable request at first acceptance',
             'primary_refusal_distribution':dict(sorted(self.primary.items())),
             'unknown_request_field_presence':{k:tri(v) for k,v in self.presence.items()},
@@ -165,3 +283,47 @@ class ActionsAvailableGates:
             'conditions_are_not_causal_attribution':True,'default_policy_changed':False,
             'continuity_scope':'accepted authenticated current requests only; prior rejected states are outside this denominator; parent diagnostics retain continuity errors',
             'complete_legality_verified':False,'read_only':True,'input_sent':False}
+        if self.protocol is not None:result['protocol_evidence']=self._protocol_report()
+        return result
+
+    def _protocol_counts(self, observation):
+        counts=self.protocol
+        if observation['status']!='observed':
+            counts['evidence_unavailable_requests']+=1
+            for route in self.protocol_routes.values():route['unknown']+=1
+            return
+        counts['authenticated_inventory_requests']+=1
+        counts['prompt_structure_verified_requests']+=observation['prompt_structure_verified']
+        finite=False
+        for name,value in observation['reviewed_routes'].items():
+            self.protocol_routes[name]['excluded' if value is False else 'eligible' if value is True else 'unknown']+=1
+            finite |= value is not None
+        counts['requests_with_finite_route_predicate_result']+=finite
+        counts['unclassified_action_rows']+=observation['unclassified_action_rows']
+        rows=observation['float_mana_rows']; counts['float_mana_affected_requests']+=bool(rows)
+        counts['float_mana_offered_rows']+=len(rows)
+        for row in rows:
+            counts['float_mana_strict_bare_literals' if row['strict_bare_literal_verified'] else 'float_mana_other_observed_shapes']+=1
+            counts['float_mana_rows_with_explicit_source_fields']+=bool(row['provided_source_fields'])
+            for field,typ in row['field_types'].items():self.protocol_types[(field,typ)]+=1
+
+    def _protocol_report(self):
+        c=self.protocol;unknown=c['evidence_unavailable_requests']
+        return {'schema_version':PROTOCOL_VERSION,'unit':'requests except explicitly labelled active-row counts',
+            'actions_available_requests':self.observed,
+            **{k:c[k] for k in ('authenticated_inventory_requests','evidence_unavailable_requests',
+                'prompt_structure_verified_requests','requests_with_finite_route_predicate_result')},
+            **{k:c[k] if not unknown else None for k in ('float_mana_offered_rows','float_mana_strict_bare_literals',
+                'float_mana_other_observed_shapes','float_mana_rows_with_explicit_source_fields',
+                'float_mana_affected_requests','unclassified_action_rows')},
+            'float_mana_source_applicability_verified_rows':None,
+            'float_mana_source_applicability_unknown_rows':c['float_mana_offered_rows'] if not unknown else None,
+            'float_mana_field_types':[{'field':k,'type':t,'rows':v} for (k,t),v in sorted(self.protocol_types.items())],
+            'reviewed_route_predicates':{name:{k:counts[k] for k in ('excluded','eligible','unknown')}
+                for name,counts in self.protocol_routes.items()},
+            'prompt_general_routing_unknown_requests':self.observed,
+            'runtime_route_observed':False,'final_route':None,'source_applicability':None,
+            'reference_scope':'MP61 inspected build0.1.14517.1329972 and pinned public descriptor; static predicates, not running UI',
+            'source_reference_absence_does_not_prove_non_applicability':True,
+            'complete_legality_verified':False,'response_encoding_verified':False,'execution_ready':False,
+            'default_policy_changed':False,'read_only':True,**EXECUTION}
