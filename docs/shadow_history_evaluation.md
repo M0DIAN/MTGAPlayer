@@ -231,8 +231,8 @@ Actual opt-in diagnostic overhead (ms), one bounded measurement per source:
 
 | Source | n requests | p50 | p95 | p99 | max |
 |---|---:|---:|---:|---:|---:|
-| Frozen Equip |40|1.0465|1.6387|7.9798|7.9798|
-| Existing player |34|0.7112|1.7635|2.2144|2.2144|
+| Frozen Equip |40|0.9893|1.6306|8.7216|8.7216|
+| Existing player |34|0.6823|1.7135|1.9992|1.9992|
 
 The stage includes reading the detached current view and checking existing
 rows, not a second reducer or full-file read. Existing outer timing stages
