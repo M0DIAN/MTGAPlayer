@@ -1,0 +1,41 @@
+{
+  "schema_version": "mtgaplayer.mp71-protocol-gate-receipt.v1",
+  "scope": "finite_static_route_predicates_and_bare_float_representation_only",
+  "reference_build_as_recorded": "0.1.14517.1329972",
+  "prior_receipt": "mp61-client-prompt-gate.json",
+  "existing_recovery_manifest_sha256": "b04ae93c584893f7425ace86aec5055de8596f38db996c5e5389e79bf43cd9ad",
+  "existing_recovered_texts_rehashed": 62,
+  "new_decompilation": false,
+  "current_binary_authentication_performed": false,
+  "public_reference_commit": "45f27866c5dfd5891fc101c00e611a36254d2f49",
+  "public_enum_descriptor": {
+    "path": "analysis/action-inventory/actions.json",
+    "sha256": "52c2e3074d3487526c1266746b0adb3f846a175fcbabb7f15090051de65d6301",
+    "git_blob": "67ee1165147d21a8cf34c901348be164ff14eeb9",
+    "AllowCancel_No": 3,
+    "AllowCancel_Abort": 2,
+    "installed_json_enum_attributes_independently_recovered": false
+  },
+  "retained_installed_methods": [
+    {"name": "TranslatesToCannotTakeActionWorkflow", "token": 100700683, "il_sha256": "c3268941f9b985b58c6de37ffb338da2fac88a05f0f515c9d593573a6276a591"},
+    {"name": "DoesHaveOpeningHandActions", "token": 100700681, "il_sha256": "0f9703a2ee4869a384a01dd803b8f498f205b75648d7c02d5e804a2ec3c344aa"},
+    {"name": "AllActionsAreResolutionCasts", "token": 100700671, "il_sha256": "004f1aa84b8588dca0127826fe2ca59ae91ebfadde344d5a5c934f8412c250e1"},
+    {"name": "IsResolutionCastAction", "token": 100700672, "il_sha256": "4ee61e80568df6567d7d6328b3fd157153992aee70586c96765e5e417b689b32"}
+  ],
+  "cannot_take_action_predicate": "inactive_count>0 AND cancellation=No AND active_count=1 AND sole_type=Pass AND (resolving_card_present OR prompt_id=1134)",
+  "resolution_exclusion_scope": "known Activate, Activate_Mana, FloatMana or Play fails ActionExtensions.IsCastAction; absence does not prove resolution context",
+  "float_selection_reference": {
+    "path": "analysis/arena-request-catalog-20261010/ui-sources/ActionsAvailableWorkflow.cs",
+    "public_sha256": "28bf159e1cc2c65c39e01da9fc90c71399af452e7919237d47ad191ddaa58483",
+    "public_git_blob": "349869120b30b0bf204e3c4ecc2f0bc36b32179b",
+    "retained_installed_normalized_lf_sha256": "69da44806b82dfde7e81ec5e87ff9c57ba9d6dd3f5b7b7b46f355f8f4b5e3845",
+    "selection_method_sha256": "b2db491de194e3673dfa307cc9fec97a0467a15c43a365ecead09bb16b1310eb",
+    "fact": "One inspected helper selects the first current offered action matching FloatMana type and passes that original action onward without a source join.",
+    "runtime_path_observed_for_record103": false,
+    "global_source_not_applicable_proven": false
+  },
+  "public_prefix103_sha256": "2d9ca57684b3375b1e98510c91cbcbbe884ae9fa4ade548f71e4d8f217d6eeb6",
+  "not_proven": ["general_prompt_semantics", "Loop_roundtrip_assets", "final_runtime_route", "global_FloatMana_source_applicability", "response_encoding", "complete_payment", "complete_legality", "server_acceptance"],
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

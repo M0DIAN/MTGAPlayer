@@ -557,6 +557,7 @@ def main(argv=None):
     history.add_argument('--max-records', type=int, default=100000)
     history.add_argument('--actions-available-gates', action='store_true', help='aggregate concurrent research gates; does not change policy')
     history.add_argument('--complex-action-intents', action='store_true', help='aggregate finite current-stage Cast/Activate evidence; no policy change')
+    history.add_argument('--protocol-evidence', action='store_true', help='finite Prompt route predicates and FloatMana representation; requires --actions-available-gates')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -704,7 +705,8 @@ def main(argv=None):
         from .shadow_history import evaluate_shadow_history
         try:
             result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records,
-                actions_available_gates=args.actions_available_gates, complex_action_intents=args.complex_action_intents)
+                actions_available_gates=args.actions_available_gates, complex_action_intents=args.complex_action_intents,
+                protocol_evidence=args.protocol_evidence)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
