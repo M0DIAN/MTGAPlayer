@@ -1955,3 +1955,31 @@ from its failing assertion; the temporary report was also removed. Exact child
 scenario/root cause is unknown. A narrow follow-up retains stdout in that same
 unchanged exit-code assertion; no timeout, assertion, policy or product gate is
 relaxed. The failed run remains evidence, not a claimed repaired historical flake.
+
+MP70 finite Cast/Activate action intents (base c69a5c3ae432e9b532d3c5409dfc31dada524003,
+tree0dee70d751db73920f8d111d2ffff6059bc593fc): first proved the MP65 adapter
+discarded checked Cast payment witnesses and kept Activate associations apart.
+An explicit include_complex_intents/--complex-action-intents view now retains
+those existing checked results in the same bounded Consumer cache, grouping
+by original action position. No new parser, generator, rule solver, ledger or
+State/Event version. Defaults and MP66 remain unchanged. Child intents use
+their own current proposals plus existing noncurrent-parent sidecars; revised
+selected literals do not prove final submit, and Cast109 borrows no106 domain.
+The real103 parent prefix and owner-authenticated1402 prefix were frozen before
+future response semantics; actual Cast and owner Equip State14 append chains
+verify consumption and independent child/revised bindings. Owner originals
+remain local; independent reviewers use public fixtures and safe receipts.
+The same164 requests/74 ActionsAvailable expose489 complex original rows;
+16 have reviewed member/predictive associations and finite parent structures.
+473 lack those associations; all489 lack complete target/payment legality.
+Complete legal complex actions=null; research preferences remain2/164.
+Local final Python3.11 tests885 PASS, focused162 PASS, Windows doctor PASS.
+Independent default compatibility:6060 full returns,104 actual CLI outputs,
+28 final affected-history returns all equal. Added failure isolation preserves
+MP68 statistics if optional assembly fails. Added-only measurement150 samples:
+assembly p50/p95/p99/max=.0906/.7688/1.0018/1.0491ms; cached opt-in Consumer
+API1.1282/6.7606/7.0295/10.0746ms. No MTGA timing claim. See
+docs/finite-action-intents.md. Final exact-candidate independent review and
+actual PR/main CI remain mandatory separate gates. Historical Windows
+qualification failure root cause remains unknown; this task does not claim
+to fix it. input_sent=false; P10=NOT_RUN.

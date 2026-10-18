@@ -512,10 +512,10 @@ class DecisionConsumer:
             self._clear('CLOSED', 'unexpected_eof' if reason == 'eof' else reason)
         return self.current_view()
 
-    def current_decision_options(self, *, limit=64):
+    def current_decision_options(self, *, limit=64, include_complex_intents=False):
         """Explicit read-only unified current options on this owner thread."""
         from .decision_options import assess_current_decision_options
-        return assess_current_decision_options(self, limit=limit)
+        return assess_current_decision_options(self, limit=limit, include_complex_intents=include_complex_intents)
 
     def shadow_decision(self, *, policy_version='deterministic_shadow.v1'):
         """Explicit current research policy; never grants input authority."""
@@ -646,7 +646,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                    prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
                    known_choice_candidates=False, known_choice_candidates_version=2,
                    activate_target_payment_relation=False, payment_source_untap_witness=False, current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False,
-                   current_decision_options=False, shadow_decision=False):
+                   current_decision_options=False, shadow_decision=False, complex_action_intents=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -657,6 +657,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
     Opt-in advice/static context is computed on this core thread with this
     Consumer and an already-prepared rules snapshot; never an execution grant.
     """
+    if type(complex_action_intents) is not bool or complex_action_intents and not current_decision_options:
+        raise ValueError('complex_action_intents_requires_current_decision_options')
     if (not 0 < tick_seconds <= 1 or type(queue_capacity) is not int or not 1 <= queue_capacity <= 1024
             or type(output_queue_capacity) is not int or not 1 <= output_queue_capacity <= 1024
             or not 0 < output_grace_seconds <= 1):
@@ -795,7 +797,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         if current_cast_continuation:
             cast_continuation = assess_current_cast(consumer)
         if current_decision_options:
-            options = consumer.current_decision_options()
+            options = consumer.current_decision_options(include_complex_intents=complex_action_intents)
         if shadow_decision:
             shadow = consumer.shadow_decision()
         view = consumer.current_view()
@@ -846,7 +848,7 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             if current_cast_continuation:
                 cast_continuation = assess_current_cast(consumer)
             if current_decision_options:
-                options = consumer.current_decision_options()
+                options = consumer.current_decision_options(include_complex_intents=complex_action_intents)
             if shadow_decision:
                 shadow = consumer.shadow_decision()
             view = consumer.current_view()
