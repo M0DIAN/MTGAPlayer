@@ -257,6 +257,8 @@ def _state(value, binding):
             _action_key(node['action_key'])
             _list(node['constraints'], 4096)
             _require(all(type(v) is dict for v in node['constraints']))
+        from .multi_slot_cast import checked_observations
+        checked_observations(graph, projection, value['visible_objects'], binding)
     has_request = binding['request_id'] is not None
     _require((value['status'] == STATUSES[0]) == has_request)
     if not has_request:

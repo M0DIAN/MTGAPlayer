@@ -85,10 +85,10 @@ CURRENT_PROFILE='current_public_activate_target_member'
 CURRENT_SCOPE='current_request_activate_target_member_consistency'
 
 
-def public_battlefield_refs(reducer):
+def public_battlefield_refs(reducer, visible_objects=None):
     """Strict raw public object AND agreeing unique public BF membership."""
     result=[]
-    for obj in reducer.document()['current'].get('objects',[]):
+    for obj in (reducer.document()['current'].get('objects',[]) if visible_objects is None else visible_objects):
         ref=obj['id'];raw=reducer.objects.get(ref,{})
         zone=reducer.zones.get(raw.get('zoneId'),{})
         memberships=[z for z in reducer.zones.values()

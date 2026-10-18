@@ -1857,3 +1857,30 @@ Linux/Windows head/PR CI and natural main CI are final delivery gates recorded
 on the PR. Historical qualification failure remains unexplained, not repaired
 by same-SHA retries or this task. Complete legality and optimality are not
 implemented. input_sent=false; P10=NOT_RUN.
+
+## MP67 current multi-slot Cast evidence (2026-10-18)
+
+Accepted base638d32263dc8f19dbd9590f8361a1c2c5ef5b9c5. A strictly bounded
+records1–103 gate passed before reading any successor: one Full, 99 Diff,
+state100/seat2/request10100, eight active/two inactive, Cast position2,
+source1245/group86855/facet284/Red1 and ordered slots2→[1243],1→[1243].
+Current source/member catalog IDs are null. Group stays an action literal;
+overlap and absent autoTap do not prove combination legality or payment.
+
+The existing decoder already supports the literal, but old Graph groups lack
+member refs. An explicit default-off additive versioned Graph observation now
+preserves independent slots and verified current public membership. MP65
+annotates the original engine row; no proposal, Cartesian expansion, new
+State/Event version, rules engine or input authority. MP66 still abstains.
+The same accepted RawReducer request supplies all data; old single-slot checks
+and Candidate2–6 stay strict. See docs/current_multi_slot_cast.md for bounds.
+
+Direct real-prefix and labeled synthetic controls cover identity, order,
+visibility, missing/duplicate slots, payment inventions, current invalidation
+and the actual position3 successor without borrowing it for position2. The
+first CLI watch smoke used interval0, rejected by existing positive CLI bounds;
+using0.001 fixes the test input without changing any product gate. Final
+compatibility, schemas, full tests, frozen original Equip, doctor, independent
+review, head/PR CI and natural main CI remain separate actual delivery gates.
+Historical Windows qualification failure remains unexplained, not claimed
+repaired by a later pass. input_sent=false; P10=NOT_RUN.
