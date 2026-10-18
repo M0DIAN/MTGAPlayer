@@ -1,0 +1,131 @@
+{
+  "schema_version": "mtgaplayer.current-search-portable-evidence.v1",
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "authentication_envelope_retained": false,
+  "future_response_used_for_request": false,
+  "samples": [
+    {
+      "source_alias": "new_player",
+      "source_sha256": "f4881c042ff40c8685a9f116a90a329e6a19f8533775ce65183842715bfbbc61",
+      "request_record": 287,
+      "request_projection": {
+        "profile": "observed_single_own_library_search",
+        "source_object_ref": 19,
+        "searched_zone": {
+          "zone_ref": 1,
+          "type": "ZoneType_Library",
+          "owner": 1,
+          "visibility": "Visibility_Hidden"
+        },
+        "items_to_search_count": 47,
+        "items_sought": [
+          {
+            "search_item_ref": 1,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 2,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 3,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 4,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 5,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 6,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 7,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 8,
+            "visibility": "request_identifier_only"
+          }
+        ],
+        "max_find": 1,
+        "min_find": null,
+        "allow_fail_to_find": "AllowFailToFind_Any",
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo": null,
+        "fail_to_find_semantics": null
+      },
+      "source_object_type": "GameObjectType_Ability",
+      "visible_source": {
+        "object_ref": 19,
+        "zone": "ZoneType_Stack",
+        "owner": 1,
+        "controller": 1
+      }
+    },
+    {
+      "source_alias": "new_player",
+      "source_sha256": "f4881c042ff40c8685a9f116a90a329e6a19f8533775ce65183842715bfbbc61",
+      "request_record": 441,
+      "request_projection": {
+        "profile": "observed_single_own_library_search",
+        "source_object_ref": 25,
+        "searched_zone": {
+          "zone_ref": 1,
+          "type": "ZoneType_Library",
+          "owner": 1,
+          "visibility": "Visibility_Hidden"
+        },
+        "items_to_search_count": 45,
+        "items_sought": [
+          {
+            "search_item_ref": 1,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 2,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 3,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 4,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 5,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 6,
+            "visibility": "request_identifier_only"
+          },
+          {
+            "search_item_ref": 7,
+            "visibility": "request_identifier_only"
+          }
+        ],
+        "max_find": 1,
+        "min_find": null,
+        "allow_fail_to_find": "AllowFailToFind_Any",
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo": null,
+        "fail_to_find_semantics": null
+      },
+      "source_object_type": "GameObjectType_Ability",
+      "visible_source": {
+        "object_ref": 25,
+        "zone": "ZoneType_Stack",
+        "owner": 1,
+        "controller": 1
+      }
+    }
+  ]
+}
