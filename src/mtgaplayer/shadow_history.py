@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -50,6 +50,9 @@ class _Evaluation:
         self.diagnostics = Counter(); self.timings = {name:[] for name in STAGES}
         self.timing_counts = Counter()
         self.action_gates = None
+        self.cost_stages = Counter() if current_cost_stages else None
+        self.prior_complex_context = None  # Count-only history, never current authority.
+        if current_cost_stages:self.timings['current_cost_stage'] = []
         self.intent_counts = Counter() if complex_action_intents else None
         if complex_action_intents: self.timings['complex_action_intents_cached_api'] = []
         if actions_available_gates:
@@ -65,6 +68,9 @@ class _Evaluation:
         self.stage = _observe_continuation(self.reducer, include_cast=True)
         previous = self.reducer.observer
         def observe(event, details):
+            if self.cost_stages is not None and (event == 'continuity_error' or
+                    event == 'state_accepted' and details['kind'] == 'full'):
+                self.prior_complex_context = None
             previous(event, details)
             if event == 'request_accepted': self.freeze(details)
             elif event == 'request_ended': self.end(details['request'])
@@ -130,6 +136,26 @@ class _Evaluation:
         self.timed('current_decision_options',time.perf_counter_ns()-start)
         start=time.perf_counter_ns();decision=self.consumer.shadow_decision()
         self.timed('shadow_policy_api',time.perf_counter_ns()-start)
+        if self.cost_stages is not None and kind == 'pay_costs':
+            from .current_cost_stage import assess_current_cost_stage, MANA_PROFILE
+            from .semantic_effect_cost import PROFILE as NONMANA_PROFILE
+            cost_start=time.perf_counter_ns()
+            stage=assess_current_cost_stage(self.consumer,self.reducer,details['message'])
+            self.timed('current_cost_stage',time.perf_counter_ns()-cost_start)
+            c=self.cost_stages;c['pay_costs_requests_observed'] += 1
+            profile=stage['cost_request_profile']
+            c['reviewed_nonmana_select_profile' if profile==NONMANA_PROFILE else
+              'reviewed_mana_payment_stage' if profile==MANA_PROFILE else 'unreviewed_cost_shape'] += 1
+            if profile==NONMANA_PROFILE:
+                c['local_cost_candidates_observed_requests'] += 1
+                c['local_cost_candidate_memberships'] += len(stage['local_candidates'])
+            else:c['local_cost_candidates_unknown_requests'] += 1
+            if profile==MANA_PROFILE:
+                c['observed_mana_requirements'] += len(stage['mana_requirements'])
+                c['observed_payment_action_rows'] += len(stage['payment_actions'])
+                c['observed_predictive_auto_tap_solutions'] += len(stage['predictive_auto_tap_solutions'])
+            if self.prior_complex_context is not None and self.prior_complex_context==token[:4]:
+                c['cost_requests_with_prior_paired_complex_context'] += 1
         if self.intent_counts is not None:
             start=time.perf_counter_ns()
             enriched=self.consumer.current_decision_options(include_complex_intents=True)
@@ -189,6 +215,20 @@ class _Evaluation:
 
     def compare(self, before, saved, payload, mixed):
         if mixed or before is None or type(payload) is not dict:return
+        if self.cost_stages is not None:
+            c=self.cost_stages
+            if before['type']=='GREMessageType_ActionsAvailableReq' and _paired_response(self.reducer,before,payload):
+                typ,result,*_=_complex_classify(before,payload)
+                if result=='unique' and typ in ('ActionType_Cast','ActionType_Activate'):
+                    c['prior_paired_complex_submissions_observed'] += 1
+                    self.prior_complex_context=_identity(before)[:4]
+            if before['type']=='GREMessageType_PayCostsReq' and payload.get('type') in (
+                    'ClientMessageType_EffectCostResp','ClientMessageType_PerformActionResp',
+                    'ClientMessageType_SelectNResp','ClientMessageType_PerformAutoTapActionsResp') and _paired_response(
+                        self.reducer,before,payload,expected_type=payload['type']):
+                c['historically_paired_cost_responses'] += 1
+                c['paired_effect_cost_responses' if payload['type']=='ClientMessageType_EffectCostResp' else
+                  'paired_other_cost_child_responses'] += 1
         paired=_paired_response(self.reducer,before,payload) or _paired_terminal_submit(self.reducer,before,payload)
         if not paired:
             typ=payload.get('type')
@@ -251,7 +291,8 @@ class _Evaluation:
 
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
-                            actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, _on_freeze=None):
+                            actions_available_gates=False, complex_action_intents=False, protocol_evidence=False,
+                            current_cost_stages=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
@@ -259,7 +300,8 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
     if type(complex_action_intents) is not bool:raise ValueError('invalid_complex_action_intents_flag')
     if type(protocol_evidence) is not bool or protocol_evidence and not actions_available_gates:
         raise ValueError('protocol_evidence_requires_actions_available_gates')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(current_cost_stages) is not bool:raise ValueError('invalid_current_cost_stages_flag')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -326,6 +368,21 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'timing_scope':'same-process offline; nested stages overlap; shadow API includes cached MP65/currentness checks; not MTGA latency',
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
     if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
+    if evaluation.cost_stages is not None:
+        c=evaluation.cost_stages
+        result['current_cost_stage_evidence']={
+            'unit':'unique authenticated current PayCosts request, first accepted observation; rows counted separately',
+            **{key:c[key] for key in ('pay_costs_requests_observed','reviewed_nonmana_select_profile',
+                'reviewed_mana_payment_stage','unreviewed_cost_shape','local_cost_candidates_observed_requests',
+                'local_cost_candidates_unknown_requests','local_cost_candidate_memberships','observed_mana_requirements',
+                'observed_payment_action_rows','observed_predictive_auto_tap_solutions',
+                'historically_paired_cost_responses','paired_effect_cost_responses','paired_other_cost_child_responses',
+                'prior_paired_complex_submissions_observed','cost_requests_with_prior_paired_complex_context')},
+            'strictly_associated_parent_cost_stages':0,'explicit_parent_cost_link_verified':False,
+            'causal_relationship_unverified_requests':c['pay_costs_requests_observed'],
+            'complete_payment_verified':None,'complete_legal_complex_actions':None,
+            'scope':'finite current requirement/object and predictive action observations; prior context is temporal only',
+            'policy_unchanged':True}
     if evaluation.intent_counts is not None:
         c=evaluation.intent_counts
         observed=c['observed_complex_action_rows'] if not c['inventory_unknown_requests'] else None

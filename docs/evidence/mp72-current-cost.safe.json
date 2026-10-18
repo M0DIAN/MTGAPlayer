@@ -1,0 +1,157 @@
+{
+  "scope": "bounded owner-local historical study plus portable public projections; no input",
+  "base_main": "12c55236696d70f6d2bc9e2f1b20b160650a341e",
+  "base_tree": "c4036b50a7a8df064be168bbb045b258a7bcf4ff",
+  "source_receipts": [
+    {
+      "source_sha256": "6bab453be2830750af3983a70ce4843f747252ef950e1e4ced628785d7cfac07",
+      "bytes": 7718945,
+      "records": 1433,
+      "authenticated_requests": 80,
+      "cost_stage_counts": {
+        "unit": "unique authenticated current PayCosts request, first accepted observation; rows counted separately",
+        "pay_costs_requests_observed": 6,
+        "reviewed_nonmana_select_profile": 6,
+        "reviewed_mana_payment_stage": 0,
+        "unreviewed_cost_shape": 0,
+        "local_cost_candidates_observed_requests": 6,
+        "local_cost_candidates_unknown_requests": 0,
+        "local_cost_candidate_memberships": 17,
+        "observed_mana_requirements": 0,
+        "observed_payment_action_rows": 0,
+        "observed_predictive_auto_tap_solutions": 0,
+        "historically_paired_cost_responses": 5,
+        "paired_effect_cost_responses": 5,
+        "paired_other_cost_child_responses": 0,
+        "prior_paired_complex_submissions_observed": 17,
+        "cost_requests_with_prior_paired_complex_context": 6,
+        "strictly_associated_parent_cost_stages": 0,
+        "explicit_parent_cost_link_verified": false,
+        "causal_relationship_unverified_requests": 6,
+        "complete_payment_verified": null,
+        "complete_legal_complex_actions": null,
+        "scope": "finite current requirement/object and predictive action observations; prior context is temporal only",
+        "policy_unchanged": true
+      },
+      "added_stage_latency_ms": {
+        "sample_count": 6,
+        "p50_ms": 1.1245,
+        "p95_ms": 2.1451,
+        "p99_ms": 2.1451,
+        "max_ms": 2.1451,
+        "observed_samples": 6,
+        "sample_limit": 20000,
+        "sample_basis": "first_bounded_samples",
+        "truncated": false
+      }
+    },
+    {
+      "source_sha256": "b5b9d4cb013bb6e82c42070c9d238e5a2121ac1f15106bb5beb4aae2977974ca",
+      "bytes": 6566716,
+      "records": 1490,
+      "authenticated_requests": 84,
+      "cost_stage_counts": {
+        "unit": "unique authenticated current PayCosts request, first accepted observation; rows counted separately",
+        "pay_costs_requests_observed": 6,
+        "reviewed_nonmana_select_profile": 4,
+        "reviewed_mana_payment_stage": 2,
+        "unreviewed_cost_shape": 0,
+        "local_cost_candidates_observed_requests": 4,
+        "local_cost_candidates_unknown_requests": 2,
+        "local_cost_candidate_memberships": 31,
+        "observed_mana_requirements": 2,
+        "observed_payment_action_rows": 20,
+        "observed_predictive_auto_tap_solutions": 2,
+        "historically_paired_cost_responses": 4,
+        "paired_effect_cost_responses": 3,
+        "paired_other_cost_child_responses": 1,
+        "prior_paired_complex_submissions_observed": 9,
+        "cost_requests_with_prior_paired_complex_context": 3,
+        "strictly_associated_parent_cost_stages": 0,
+        "explicit_parent_cost_link_verified": false,
+        "causal_relationship_unverified_requests": 6,
+        "complete_payment_verified": null,
+        "complete_legal_complex_actions": null,
+        "scope": "finite current requirement/object and predictive action observations; prior context is temporal only",
+        "policy_unchanged": true
+      },
+      "added_stage_latency_ms": {
+        "sample_count": 6,
+        "p50_ms": 1.5825,
+        "p95_ms": 2.7979,
+        "p99_ms": 2.7979,
+        "max_ms": 2.7979,
+        "observed_samples": 6,
+        "sample_limit": 20000,
+        "sample_basis": "first_bounded_samples",
+        "truncated": false
+      }
+    }
+  ],
+  "runtime_sha256": {
+    "current_cost_stage.py": "3975747db68b70bb8ea04ccb9fe1f8a27a782d9d3d4accb2dcad6bf19315b915",
+    "cli.py": "a480daec70b994217a55f57fa9efdf385a763fa1c2f0aceb20b60a25315f9b22",
+    "shadow_history.py": "7fe6770112fdc0f042c78ed58c9b9645f57fdb18b03064ec3ce6c479f9d6a18e"
+  },
+  "public_client_reference": {
+    "repository": "ettrue124/ArcaneForge",
+    "commit": "45f27866c5dfd5891fc101c00e611a36254d2f49",
+    "directory": "analysis/arena-request-catalog-20261010",
+    "text_sha256": {
+      "Full-list.md": "269add51ef7b4fe0647e91eef344f74414cca1fee42526f91e1ea0a2c0a820df",
+      "handler-sources/GreClient.Rules.PayCostsRequestTranslator.cs": "8ff119001e99a764a223870ad76070bdf0c7259c1f09c2f46e98cc05a6f54d21",
+      "handler-sources/GreClient.Rules.PayCostsRequest.cs": "61c6c8116a73630809ffec4ae6f5edefb9eb6366feb22b84e512b9e2047550fc",
+      "handler-sources/GreClient.Rules.ActionsAvailableRequest.cs": "da4a44da72f15cd6f888524212d64c917e6d95438e12c34b7c73f928995ed9ae",
+      "ui-sources/Wotc.Mtga.DuelScene.Interactions.PayCostWorkflow.cs": "2839d1b7e94237abbe912772293e75d412d037a4c164da0b837e2e18aad2f3a0"
+    },
+    "object_ref_use_lines": [
+      61,
+      63,
+      66
+    ],
+    "child_forwarding_types": [
+      "PerformActionResp",
+      "SelectNResp",
+      "EffectCostResp",
+      "PerformAutoTapActionsResp"
+    ],
+    "new_extraction": false,
+    "runtime_route_verified": false
+  },
+  "portable_fixture_sha256": "16b7893c66c7fe0ca1cad83d99bdae8c429ab6af1981d75302506bdfc0debbf3",
+  "owner_freeze_cutoffs": [
+    {
+      "record": 630,
+      "bytes_read_through_current_request": 3296913
+    },
+    {
+      "record": 668,
+      "bytes_read_through_current_request": 3396037
+    }
+  ],
+  "authenticated_requests": 164,
+  "pay_costs_requests": 12,
+  "existing_local_cost_requests": 10,
+  "existing_local_candidate_memberships": 48,
+  "new_current_mana_stage_requests": 2,
+  "new_mana_payment_candidate_total": null,
+  "paired_cost_submissions": 9,
+  "paired_effect_cost_submissions": 8,
+  "paired_auto_tap_submissions": 1,
+  "strict_parent_cost_links": 0,
+  "cost_requests_with_temporal_prior_complex_context": 9,
+  "causal_relationship_unverified_requests": 12,
+  "complete_payment_verified": null,
+  "complete_legal_complex_actions": null,
+  "research_preferences_before_after": [
+    2,
+    2
+  ],
+  "all_164_frozen_options_and_policy_equal_with_optin": true,
+  "two_complete_legacy_history_reports_equal_except_versions_timing": true,
+  "private_original_authenticated_by_owner": true,
+  "private_original_authenticated_by_independent_reviewer": false,
+  "owner_analysis_safe_sha256": "cf8bd143781d544fdbcfa473e86ea068fcae7e295d95cefd81518c4a9746a49b",
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}
