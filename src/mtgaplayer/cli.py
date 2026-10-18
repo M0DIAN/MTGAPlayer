@@ -551,6 +551,10 @@ def main(argv=None):
     from .decision_advisor import EVIDENCE_POLICY, SIMPLE_TYPE_POLICY
     parser = argparse.ArgumentParser(prog='mtgaplayer')
     sub = parser.add_subparsers(dest='command', required=True)
+    history = sub.add_parser('evaluate-shadow-history', help='bounded offline historical shadow evaluation; never live input')
+    history.add_argument('input', type=Path)
+    history.add_argument('--max-history-bytes', type=int, default=64 * 1024 * 1024)
+    history.add_argument('--max-records', type=int, default=100000)
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -692,6 +696,15 @@ def main(argv=None):
     bench.add_argument('--duration', type=float, default=90)
     bench.add_argument('--scenario', choices=['normal', 'reorder', 'unsupported', 'target-disappear'], default='normal')
     args = parser.parse_args(argv)
+    if args.command == 'evaluate-shadow-history':
+        from .shadow_history import evaluate_shadow_history
+        try:
+            result = evaluate_shadow_history(args.input,max_history_bytes=args.max_history_bytes,max_records=args.max_records)
+            print(json.dumps(result,ensure_ascii=False))
+            return 0 if result['source']['complete'] else 1
+        except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
+            print(json.dumps({'error':'historical_evaluation_io_or_contract_error','read_only':True,'input_sent':False,'P10':'NOT_RUN'}))
+            return 1
     if args.command in ('export-semantic-samples', 'replay-semantic-samples'):
         from .semantic_samples import export_samples, load_and_replay, SampleError
         try:
