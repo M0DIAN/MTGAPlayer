@@ -637,3 +637,14 @@ for four request-local singleton proposals. For append transport, use
 `consume-events --current-cast-continuation`. All execution/input flags stay false.
 State/Event14 and15 are parallel extensions of13, each with its own nullable
 continuation field. Old versions/defaults are unchanged. See [the contract and evidence boundaries](docs/current-cast-continuation.md).
+
+## MP65 opt-in current decision options
+
+`consume-events --current-decision-options` exposes one current request/ref/lease
+bound view of existing Advisor inventory, Candidates v2–v6 local checks, visible
+state and unknown constraints. The Python entry point is
+`DecisionConsumer.current_decision_options(limit=64)`. Offered actions, parent
+member probes, final target sets and selected literal probes retain separate
+meanings and source coverage. State14 and15 keep their parallel contexts; no
+State/Event16 is added. Defaults remain unchanged and all legality, execution
+and input flags stay false. See [the contract and local measurement scope](docs/current-decision-options.md).

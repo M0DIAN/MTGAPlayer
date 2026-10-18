@@ -628,6 +628,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
+    consumer_parser.add_argument('--current-decision-options', action='store_true',
+                                 help='unified current request research options; no execution authority')
     consumer_parser.add_argument('--current-cast-continuation', action='store_true',
                                  help='read-only current Cast first-child report (State15)')
     consumer_parser.add_argument('--current-target-revision', action='store_true',
@@ -759,7 +761,8 @@ def main(argv=None):
                               payment_source_untap_witness=args.payment_source_untap_witness,
                               current_choice_continuation=args.current_choice_continuation,
                               current_target_revision=args.current_target_revision,
-                              current_cast_continuation=args.current_cast_continuation)
+                              current_cast_continuation=args.current_cast_continuation,
+                              current_decision_options=args.current_decision_options)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,

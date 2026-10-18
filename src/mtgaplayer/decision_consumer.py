@@ -415,6 +415,7 @@ class DecisionConsumer:
         self._new_request = False
         self._stopped = False
         self._stopping = False
+        self._decision_options_cache = None
         self._started = self._now()
 
     def _now(self):
@@ -427,6 +428,7 @@ class DecisionConsumer:
 
     def _clear(self, status, reason):
         self._ref = self._state = None
+        self._decision_options_cache = None
         self._new_request = False
         self._status, self._reason = status, reason
 
@@ -507,6 +509,11 @@ class DecisionConsumer:
         if self._status not in ('CLOSED', 'PROTOCOL_ERROR', 'STALE'):
             self._clear('CLOSED', 'unexpected_eof' if reason == 'eof' else reason)
         return self.current_view()
+
+    def current_decision_options(self, *, limit=64):
+        """Explicit read-only unified current options on this owner thread."""
+        from .decision_options import assess_current_decision_options
+        return assess_current_decision_options(self, limit=limit)
 
     def current_view(self):
         now = self._now()
@@ -631,7 +638,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                    output_queue_capacity=64, output_grace_seconds=.75, *, advice_policy=None,
                    prepared_rules=None, rules_error=None, observed_changes=False, choice_proposal=None,
                    known_choice_candidates=False, known_choice_candidates_version=2,
-                   activate_target_payment_relation=False, payment_source_untap_witness=False, current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False):
+                   activate_target_payment_relation=False, payment_source_untap_witness=False, current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False,
+                   current_decision_options=False):
     """One-shot JSONL adapter with bounded independent input/output workers.
 
     Input ordering is strict; overflow quarantines rather than skipping events.
@@ -690,6 +698,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
         raise ValueError('invalid_current_target_revision_option')
     if current_target_revision:
         from .target_revision import assess_current_revision
+    if type(current_decision_options) is not bool:
+        raise ValueError('invalid_current_decision_options_option')
     consumer = consumer if consumer is not None else DecisionConsumer()
     if type(observed_changes) is not bool:
         raise ValueError('invalid_observed_changes_option')
@@ -775,6 +785,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             revision = assess_current_revision(consumer)
         if current_cast_continuation:
             cast_continuation = assess_current_cast(consumer)
+        if current_decision_options:
+            options = consumer.current_decision_options()
         view = consumer.current_view()
         sidecars = ([advice] if advice_policy is not None else []) + ([context] if rules_enabled else [])
         if changes_observer is not None:
@@ -793,6 +805,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             sidecars.append(revision)
         if current_cast_continuation:
             sidecars.append(cast_continuation)
+        if current_decision_options:
+            sidecars.append(options)
         if any(sidecar['source_snapshot_ref'] is not None and
                (view['consumer_status'] != 'OBSERVING' or
                 sidecar['source_snapshot_ref'] != view['current_snapshot_ref']) for sidecar in sidecars):
@@ -818,6 +832,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
                 revision = assess_current_revision(consumer)
             if current_cast_continuation:
                 cast_continuation = assess_current_cast(consumer)
+            if current_decision_options:
+                options = consumer.current_decision_options()
             view = consumer.current_view()
         # Default diagnostics retain their exact prior status-only fields.
         value = {k: view[k] for k in ('consumer_status', 'last_sequence',
@@ -842,6 +858,8 @@ def consume_events(stream, emit, consumer=None, tick_seconds=.05, queue_capacity
             value['current_target_revision'] = revision
         if current_cast_continuation:
             value['current_cast_continuation'] = cast_continuation
+        if current_decision_options:
+            value['current_decision_options'] = options
         return value
 
     try:
