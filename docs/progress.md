@@ -2014,3 +2014,32 @@ requests a possible linked cost-stage slice, before effect-backed tactical
 ranking. General Prompt/runtime and FloatMana applicability remain evidence
 gaps, not repaired gameplay failures. Historical Windows qualification cause
 remains unknown. See docs/prompt-float-evidence.md. input_sent=false; P10=NOT_RUN.
+
+MP72 Current PayCosts Stage Evidence (base12c55236696d70f6d2bc9e2f1b20b160650a341e,
+treec4036b50a7a8df064be168bbb045b258a7bcf4ff): authenticated both retained owner
+sources and the same164-request cohort.12 PayCosts split10 existing strict
+nonmana1/1 requests (48 MP65/Candidate2 local memberships) and2 distinct mana
+stages. Their MP66 unsupported status remains a missing policy branch; the two
+mana shapes additionally lack a reviewed complete payment candidate domain.
+Retained public client ObjectId highlight usage supports the narrow current
+requirement/object association, not a mana producer or prior Cast identity.
+Reused existing amount/action/autoTap/visibility checks and shared Consumer
+before/after ref/lease gate in an explicit owner-thread current-cost API.
+Original raw digest/current binding are checked twice; visible identity must
+agree with the same reducer. No new State/Event, solver or default projection.
+The historical --current-cost-stages opt-in reports bounded aggregates only.
+Two genuine current projections retain20 ordered payment rows and2 predictive
+autoTap solutions. No new mana choice or payment-complete claim is made.
+Nine cost submissions pair:8 EffectCost and1 PerformAutoTap. Nine earlier paired
+complex contexts are temporal only; verified explicit parent links remain0,
+causal relations unknown12, full-payment/full-action counts null. All164 frozen
+options/policy and2 complete old history returns remain equal except version/
+timing metadata; research preferences stay2/164.200 focused tests PASS, including
+currentness/consumption/typed identity/partial/reset/conflict/expiry counterproofs
+and the independently found empty-authoritative-visible-projection regression.
+Added-only ms(n6/n6),p50/p95/p99/max:1.1245/2.1451/2.1451/2.1451 and
+1.5825/2.7979/2.7979/2.7979. Actual final HEAD/tree full Python3.11, Windows
+doctor, independent review and required PR/main CI remain separate mandatory
+delivery gates. See docs/current-cost-stage.md and its safe source receipt.
+Historical qualification failure root cause remains unknown. input_sent=false;
+P10=NOT_RUN.

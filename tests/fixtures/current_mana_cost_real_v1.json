@@ -1,0 +1,1276 @@
+{
+  "schema_version": "mtgaplayer.portable-current-mana-cost.v1",
+  "origin": "owner_authenticated_real_current_projection",
+  "raw_source_auth_revalidated_by_portable_replay": false,
+  "complete_payment_verified": false,
+  "samples": [
+    {
+      "self_seat": 2,
+      "visible_objects": [
+        {
+          "card_id": 92360,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1002
+        },
+        {
+          "card_id": 92359,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1003
+        },
+        {
+          "card_id": 96843,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1004
+        },
+        {
+          "card_id": 92360,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1005
+        },
+        {
+          "card_id": 95072,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1006
+        },
+        {
+          "card_id": 92359,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1007
+        },
+        {
+          "card_id": 103460,
+          "zone": "ZoneType_Stack",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1001
+        }
+      ],
+      "projection": {
+        "mana_requirements": [
+          {
+            "list_position": 0,
+            "amount": {
+              "color": [
+                "ManaColor_Black"
+              ],
+              "count": 1
+            },
+            "associated_object_ref": 1001,
+            "associated_object_rule_role": "unknown"
+          }
+        ],
+        "payment_actions": [
+          {
+            "list_position": 0,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1002,
+                "grpId": 92360,
+                "facetId": 281,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1001
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1001,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1002,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 1,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1002,
+                "grpId": 92360,
+                "facetId": 281,
+                "abilityGrpId": 174570,
+                "uniqueAbilityId": 1002
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1002,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1002,
+                    "abilityGrpId": 174570,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Black",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 2,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1003,
+                "grpId": 92359,
+                "facetId": 288,
+                "abilityGrpId": 1001,
+                "uniqueAbilityId": 1003
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_White",
+                        "count": 1,
+                        "manaId": 1003,
+                        "srcInstanceId": 1003,
+                        "abilityGrpId": 1001,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1003,
+                    "abilityGrpId": 1001,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_White",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 3,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1003,
+                "grpId": 92359,
+                "facetId": 288,
+                "abilityGrpId": 174569,
+                "uniqueAbilityId": 1004
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1004,
+                        "srcInstanceId": 1003,
+                        "abilityGrpId": 174569,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1003,
+                    "abilityGrpId": 174569,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 4,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1004,
+                "grpId": 96843,
+                "facetId": 296,
+                "abilityGrpId": 1004,
+                "uniqueAbilityId": 1005
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Red",
+                        "count": 1,
+                        "manaId": 1005,
+                        "srcInstanceId": 1004,
+                        "abilityGrpId": 1004,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1004,
+                    "abilityGrpId": 1004,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Red",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 5,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1005,
+                "grpId": 92360,
+                "facetId": 310,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1006
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1006,
+                        "srcInstanceId": 1005,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1005,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 6,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1005,
+                "grpId": 92360,
+                "facetId": 310,
+                "abilityGrpId": 174570,
+                "uniqueAbilityId": 1007
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1007,
+                        "srcInstanceId": 1005,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1005,
+                    "abilityGrpId": 174570,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Black",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 7,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1006,
+                "grpId": 95072,
+                "facetId": 325,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1008
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1008,
+                        "srcInstanceId": 1006,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1006,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 8,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1007,
+                "grpId": 92359,
+                "facetId": 345,
+                "abilityGrpId": 1001,
+                "uniqueAbilityId": 1009
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_White",
+                        "count": 1,
+                        "manaId": 1009,
+                        "srcInstanceId": 1007,
+                        "abilityGrpId": 1001,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1007,
+                    "abilityGrpId": 1001,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_White",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 9,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1007,
+                "grpId": 92359,
+                "facetId": 345,
+                "abilityGrpId": 174569,
+                "uniqueAbilityId": 1010
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1010,
+                        "srcInstanceId": 1007,
+                        "abilityGrpId": 174569,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1007,
+                    "abilityGrpId": 174569,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "predictive_auto_tap_solutions": [
+          {
+            "list_position": 0,
+            "solution": {
+              "autoTapActions": [
+                {
+                  "instanceId": 1002,
+                  "abilityGrpId": 174570,
+                  "manaPaymentOption": {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1002,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "current_payment_action_positions": [
+              1
+            ],
+            "payment_completed_verified": false
+          }
+        ]
+      }
+    },
+    {
+      "self_seat": 2,
+      "visible_objects": [
+        {
+          "card_id": 92360,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1002
+        },
+        {
+          "card_id": 92359,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1003
+        },
+        {
+          "card_id": 96843,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1004
+        },
+        {
+          "card_id": 92360,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1005
+        },
+        {
+          "card_id": 95072,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1006
+        },
+        {
+          "card_id": 92359,
+          "zone": "ZoneType_Battlefield",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1007
+        },
+        {
+          "card_id": 103460,
+          "zone": "ZoneType_Stack",
+          "owner_seat": 2,
+          "controller_seat": 2,
+          "instance_id": 1001
+        }
+      ],
+      "projection": {
+        "mana_requirements": [
+          {
+            "list_position": 0,
+            "amount": {
+              "color": [
+                "ManaColor_Black"
+              ],
+              "count": 1
+            },
+            "associated_object_ref": 1001,
+            "associated_object_rule_role": "unknown"
+          }
+        ],
+        "payment_actions": [
+          {
+            "list_position": 0,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1002,
+                "grpId": 92360,
+                "facetId": 281,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1001
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1001,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1002,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 1,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1002,
+                "grpId": 92360,
+                "facetId": 281,
+                "abilityGrpId": 174570,
+                "uniqueAbilityId": 1002
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1002,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1002,
+                    "abilityGrpId": 174570,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Black",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 2,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1003,
+                "grpId": 92359,
+                "facetId": 288,
+                "abilityGrpId": 1001,
+                "uniqueAbilityId": 1003
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_White",
+                        "count": 1,
+                        "manaId": 1003,
+                        "srcInstanceId": 1003,
+                        "abilityGrpId": 1001,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1003,
+                    "abilityGrpId": 1001,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_White",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 3,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1003,
+                "grpId": 92359,
+                "facetId": 288,
+                "abilityGrpId": 174569,
+                "uniqueAbilityId": 1004
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1004,
+                        "srcInstanceId": 1003,
+                        "abilityGrpId": 174569,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1003,
+                    "abilityGrpId": 174569,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 4,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1004,
+                "grpId": 96843,
+                "facetId": 296,
+                "abilityGrpId": 1004,
+                "uniqueAbilityId": 1005
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Red",
+                        "count": 1,
+                        "manaId": 1005,
+                        "srcInstanceId": 1004,
+                        "abilityGrpId": 1004,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1004,
+                    "abilityGrpId": 1004,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Red",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 5,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1005,
+                "grpId": 92360,
+                "facetId": 310,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1006
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1006,
+                        "srcInstanceId": 1005,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1005,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 6,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1005,
+                "grpId": 92360,
+                "facetId": 310,
+                "abilityGrpId": 174570,
+                "uniqueAbilityId": 1007
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1007,
+                        "srcInstanceId": 1005,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1005,
+                    "abilityGrpId": 174570,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Black",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 7,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1006,
+                "grpId": 95072,
+                "facetId": 325,
+                "abilityGrpId": 1002,
+                "uniqueAbilityId": 1008
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1008,
+                        "srcInstanceId": 1006,
+                        "abilityGrpId": 1002,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1006,
+                    "abilityGrpId": 1002,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 8,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1007,
+                "grpId": 92359,
+                "facetId": 345,
+                "abilityGrpId": 1001,
+                "uniqueAbilityId": 1009
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_White",
+                        "count": 1,
+                        "manaId": 1009,
+                        "srcInstanceId": 1007,
+                        "abilityGrpId": 1001,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1007,
+                    "abilityGrpId": 1001,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_White",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "list_position": 9,
+            "action": {
+              "action_type": "ActionType_Activate_Mana",
+              "identifier_refs": {
+                "instanceId": 1007,
+                "grpId": 92359,
+                "facetId": 345,
+                "abilityGrpId": 174569,
+                "uniqueAbilityId": 1010
+              },
+              "flags": {
+                "isBatchable": true
+              },
+              "observed_empty_parameters": [],
+              "parameters": {
+                "manaPaymentOptions": [
+                  {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Blue",
+                        "count": 1,
+                        "manaId": 1010,
+                        "srcInstanceId": 1007,
+                        "abilityGrpId": 174569,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "manaSelections": [
+                  {
+                    "instanceId": 1007,
+                    "abilityGrpId": 174569,
+                    "options": [
+                      {
+                        "mana": [
+                          {
+                            "color": "ManaColor_Blue",
+                            "count": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "predictive_auto_tap_solutions": [
+          {
+            "list_position": 0,
+            "solution": {
+              "autoTapActions": [
+                {
+                  "instanceId": 1002,
+                  "abilityGrpId": 174570,
+                  "manaPaymentOption": {
+                    "mana": [
+                      {
+                        "color": "ManaColor_Black",
+                        "count": 1,
+                        "manaId": 1002,
+                        "srcInstanceId": 1002,
+                        "abilityGrpId": 174570,
+                        "specs": [
+                          {
+                            "type": "ManaSpecType_Predictive"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "current_payment_action_positions": [
+              1
+            ],
+            "payment_completed_verified": false
+          }
+        ]
+      }
+    }
+  ]
+}
