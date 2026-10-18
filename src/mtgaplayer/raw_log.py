@@ -570,6 +570,12 @@ class RawReducer:
         if self.observer is not None:
             self.observer(event, details)
 
+    def _interrupt_current_target(self):
+        # Bounded private witness for opt-in current-target evidence only.
+        # Legacy currentness, public documents and policy remain unchanged.
+        if self.request is not None and self.request['type'] == 'GREMessageType_SelectTargetsReq':
+            self.request['_target_evidence_interrupted'] = True
+
     def _request_ended(self, disposition):
         if self.observer is not None and self.request is not None:
             self._observe('request_ended', request=self.request,
@@ -597,9 +603,12 @@ class RawReducer:
         self.request_ids = {}
         self.superseded = set()
         self.submitted = None
+        self._target_record_mixed = False
+        self._target_state_continuity_verified = False
         self.unsupported_broadcast_requests = 0
 
     def _invalidate(self, reason):
+        self._target_state_continuity_verified = False
         if self.request:
             self.request['_continuity_verified'] = False
         if self.observer is not None:
@@ -620,6 +629,7 @@ class RawReducer:
         self._invalidate(reason)
 
     def _boundary(self, match, game=None):
+        self._target_state_continuity_verified = False
         if self.match is not None and self.game is not None:
             self.retired.add((self.match, self.game))
         self.match, self.game = match, game
@@ -639,6 +649,9 @@ class RawReducer:
         self.error = 'await_full_baseline'
 
     def apply(self, entry):
+        self._target_record_mixed = (isinstance(entry, dict) and len(set(entry) & {
+            'payload', 'authenticateResponse', 'matchGameRoomStateChangedEvent', 'greToClientEvent'}) > 1)
+        if self._target_record_mixed: self._interrupt_current_target()
         if entry is None:
             self._invalidate('malformed_raw_record')
             return
@@ -665,6 +678,15 @@ class RawReducer:
                 if len(hits) == 1 and type(hits[0]) is int and hits[0] in (1, 2):
                     self.room_seat = hits[0]
         payload = entry.get('payload')
+        if 'payload' in entry and self.request is not None and self.request['type'] == 'GREMessageType_SelectTargetsReq':
+            typ = payload.get('type') if type(payload) is dict else None
+            paired_header = (type(payload) is dict and type(payload.get('respId')) is int and
+                type(payload.get('gameStateId')) is int and payload['respId'] == self.request['id'] and
+                payload['gameStateId'] == self.request['game_state_id'])
+            if not (typ == 'ClientMessageType_UIMessage' or paired_header and
+                    (typ == 'ClientMessageType_SelectTargetsResp' or typ == 'ClientMessageType_SubmitTargetsReq' and
+                     set(payload) == {'type', 'respId', 'gameStateId'})):
+                self._interrupt_current_target()
         response = (isinstance(payload, dict) and isinstance(payload.get('type'), str) and
                     payload['type'].startswith('ClientMessageType_') and
                     payload['type'].endswith('Resp') and _id(payload.get('respId')))
@@ -772,6 +794,7 @@ class RawReducer:
             if isinstance(recipients, list) and any(
                     _seat(seat) and seat == self.room_seat for seat in recipients):
                 self.unsupported_broadcast_requests += 1
+                self._interrupt_current_target()
                 if self.observer is not None:
                     self._observe('unsupported_broadcast_request')
             return  # Broadcast and other-seat prompts are not own requests.
@@ -807,6 +830,8 @@ class RawReducer:
                 if self.request and self.request['id'] != msg_id:
                     self.superseded.add(self.request['id'])
                     self._request_ended('superseded')
+                target_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
+                    self.request['id'] == msg_id and self.request.get('_target_evidence_interrupted') is True))
                 self.request = {'id': msg_id, 'type': message['type'],
                                 '_continuity_verified': prior is None or bool(self.request and
                                     self.request['id'] == msg_id and
@@ -818,6 +843,8 @@ class RawReducer:
                                             'self_seat': self.seat,
                                             'ownership_verified': True},
                                 **_request_semantics(message)}
+                if message['type'] == 'GREMessageType_SelectTargetsReq' and target_interrupted:
+                    self.request['_target_evidence_interrupted'] = True
                 if self._include_request_parameters:
                     from .request_parameters import project
                     current_objects = self._current()['objects']
@@ -854,6 +881,8 @@ class RawReducer:
                                   is_retransmission=prior is not None)
 
     def _state(self, gs, timestamp):
+        if isinstance(gs, dict) and gs.get('type') == 'GameStateType_Full':
+            self._interrupt_current_target()
         if not isinstance(gs, dict) or gs.get('type') not in ('GameStateType_Full', 'GameStateType_Diff'):
             self._invalidate('unsupported_game_state')
             return
@@ -902,6 +931,7 @@ class RawReducer:
                 self._invalidate('conflicting_duplicate_state')
             elif not self.conflict and self.error in ('malformed_raw_record', 'state_gap_or_missing_full'):
                 self.error = None  # identical retransmit repairs continuity, never freshness
+                self._target_state_continuity_verified = True
                 if self.observer is not None:
                     self._observe('state_accepted', kind='full_retransmit',
                                   baseline='recovered')
@@ -1010,7 +1040,11 @@ class RawReducer:
             return
         baseline = ('acquired' if self.version is None else
                     'recovered' if self.error is not None else 'none') if full else 'none'
+        # Separate opt-in evidence witness; retain legacy state acceptance.
+        typed_continuity = (full or self._target_state_continuity_verified is True and
+            type(gs.get('prevGameStateId')) is int and gs['prevGameStateId'] == self.version)
         self.objects, self.zones, self.players = objects, zones, players
+        self._target_state_continuity_verified = typed_continuity
         self.turn, self.game_info = turn, game_info
         self.version = version
         self.accepted_digest = digest
@@ -1064,6 +1098,7 @@ class RawReducer:
                     label = f'{owner if owner in (1, 2) else "unknown"}:{kind}'
                     hidden[label] = hidden.get(label, 0) + 1
         request = copy.deepcopy(self.request)
+        if request: request.pop('_target_evidence_interrupted', None)
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
             request.pop('_request_parameters', None)

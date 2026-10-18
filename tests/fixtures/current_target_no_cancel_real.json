@@ -1,0 +1,390 @@
+{
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "scope": "four current frozen finite request/object projections; not raw log replay authentication",
+  "redactions": [
+    "typed identifier aliases",
+    "request/state/seat aliases",
+    "prompt string and number parameter redaction",
+    "unrelated objects and fields omitted"
+  ],
+  "cases": [
+    {
+      "message": {
+        "type": "GREMessageType_SelectTargetsReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 500,
+        "gameStateId": 10,
+        "prompt": {
+          "promptId": 10
+        },
+        "selectTargetsReq": {
+          "targets": [
+            {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 101,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                },
+                {
+                  "targetInstanceId": 102,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                }
+              ],
+              "minTargets": 1,
+              "maxTargets": 1,
+              "prompt": {
+                "promptId": 1575,
+                "parameters": [
+                  {
+                    "parameterName": "CardId",
+                    "type": "ParameterType_Number",
+                    "numberValue": 0
+                  }
+                ]
+              },
+              "targetingAbilityGrpId": 1000,
+              "targetingPlayer": 1
+            }
+          ],
+          "sourceId": 100,
+          "abilityGrpId": 1000
+        },
+        "allowCancel": "AllowCancel_No"
+      },
+      "objects": [
+        {
+          "instanceId": 100,
+          "grpId": 1000,
+          "type": "GameObjectType_Ability",
+          "parentId": 999,
+          "zoneId": 2000,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 1,
+          "controllerSeatId": 1
+        },
+        {
+          "instanceId": 101,
+          "grpId": 1001,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        },
+        {
+          "instanceId": 102,
+          "grpId": 1002,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        }
+      ],
+      "zones": [
+        {
+          "zoneId": 2000,
+          "type": "ZoneType_Stack",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            100
+          ]
+        },
+        {
+          "zoneId": 2001,
+          "type": "ZoneType_Battlefield",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            101,
+            102
+          ]
+        }
+      ]
+    },
+    {
+      "message": {
+        "type": "GREMessageType_SelectTargetsReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 500,
+        "gameStateId": 10,
+        "prompt": {
+          "promptId": 10
+        },
+        "selectTargetsReq": {
+          "targets": [
+            {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 101,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                },
+                {
+                  "targetInstanceId": 102,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                },
+                {
+                  "targetInstanceId": 103,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                }
+              ],
+              "minTargets": 1,
+              "maxTargets": 1,
+              "prompt": {
+                "promptId": 1575,
+                "parameters": [
+                  {
+                    "parameterName": "CardId",
+                    "type": "ParameterType_Number",
+                    "numberValue": 0
+                  }
+                ]
+              },
+              "targetingAbilityGrpId": 1000,
+              "targetingPlayer": 1
+            }
+          ],
+          "sourceId": 100,
+          "abilityGrpId": 1000
+        },
+        "allowCancel": "AllowCancel_No"
+      },
+      "objects": [
+        {
+          "instanceId": 100,
+          "grpId": 1000,
+          "type": "GameObjectType_Ability",
+          "parentId": 999,
+          "zoneId": 2000,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 1,
+          "controllerSeatId": 1
+        },
+        {
+          "instanceId": 101,
+          "grpId": 1001,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        },
+        {
+          "instanceId": 102,
+          "grpId": 1002,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        },
+        {
+          "instanceId": 103,
+          "grpId": 1003,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        }
+      ],
+      "zones": [
+        {
+          "zoneId": 2000,
+          "type": "ZoneType_Stack",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            100
+          ]
+        },
+        {
+          "zoneId": 2001,
+          "type": "ZoneType_Battlefield",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            101,
+            102,
+            103
+          ]
+        }
+      ]
+    },
+    {
+      "message": {
+        "type": "GREMessageType_SelectTargetsReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 500,
+        "gameStateId": 10,
+        "prompt": {
+          "promptId": 10
+        },
+        "selectTargetsReq": {
+          "targets": [
+            {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 101,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                }
+              ],
+              "minTargets": 1,
+              "maxTargets": 1,
+              "prompt": {
+                "promptId": 1575,
+                "parameters": [
+                  {
+                    "parameterName": "CardId",
+                    "type": "ParameterType_Number",
+                    "numberValue": 0
+                  }
+                ]
+              },
+              "targetingAbilityGrpId": 1000,
+              "targetingPlayer": 1
+            }
+          ],
+          "sourceId": 100,
+          "abilityGrpId": 1000
+        },
+        "allowCancel": "AllowCancel_No"
+      },
+      "objects": [
+        {
+          "instanceId": 100,
+          "grpId": 1000,
+          "type": "GameObjectType_Ability",
+          "parentId": 999,
+          "zoneId": 2000,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 1,
+          "controllerSeatId": 1
+        },
+        {
+          "instanceId": 101,
+          "grpId": 1001,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        }
+      ],
+      "zones": [
+        {
+          "zoneId": 2000,
+          "type": "ZoneType_Stack",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            100
+          ]
+        },
+        {
+          "zoneId": 2001,
+          "type": "ZoneType_Battlefield",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            101
+          ]
+        }
+      ]
+    },
+    {
+      "message": {
+        "type": "GREMessageType_SelectTargetsReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 500,
+        "gameStateId": 10,
+        "prompt": {
+          "promptId": 10
+        },
+        "selectTargetsReq": {
+          "targets": [
+            {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 101,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Tepid"
+                }
+              ],
+              "minTargets": 1,
+              "maxTargets": 1,
+              "prompt": {
+                "promptId": 1575,
+                "parameters": [
+                  {
+                    "parameterName": "CardId",
+                    "type": "ParameterType_Number",
+                    "numberValue": 0
+                  }
+                ]
+              },
+              "targetingAbilityGrpId": 1000,
+              "targetingPlayer": 1
+            }
+          ],
+          "sourceId": 100,
+          "abilityGrpId": 1000
+        },
+        "allowCancel": "AllowCancel_No"
+      },
+      "objects": [
+        {
+          "instanceId": 100,
+          "grpId": 1000,
+          "type": "GameObjectType_Ability",
+          "parentId": 999,
+          "zoneId": 2000,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 1,
+          "controllerSeatId": 1
+        },
+        {
+          "instanceId": 101,
+          "grpId": 1001,
+          "type": "GameObjectType_Card",
+          "zoneId": 2001,
+          "visibility": "Visibility_Public",
+          "ownerSeatId": 2,
+          "controllerSeatId": 2
+        }
+      ],
+      "zones": [
+        {
+          "zoneId": 2000,
+          "type": "ZoneType_Stack",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            100
+          ]
+        },
+        {
+          "zoneId": 2001,
+          "type": "ZoneType_Battlefield",
+          "visibility": "Visibility_Public",
+          "objectInstanceIds": [
+            101
+          ]
+        }
+      ]
+    }
+  ]
+}

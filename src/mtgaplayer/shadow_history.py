@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False, current_target_coverage=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -49,6 +49,8 @@ class _Evaluation:
         self.action_requests = Counter(); self.choices = Counter(); self.choice_units = Counter()
         self.diagnostics = Counter(); self.timings = {name:[] for name in STAGES}
         self.timing_counts = Counter()
+        self.target_coverage = Counter() if current_target_coverage else None
+        if current_target_coverage:self.timings['current_target_coverage'] = []
         self.action_gates = None
         self.target_completions = None
         if target_stage_completions:
@@ -102,6 +104,8 @@ class _Evaluation:
         if partial:
             document['current']={'valid':False,'actionable':False};document['error']='partial_raw_record_waiting'
             if self.target_completions is not None:self.stage.reset()
+            if self.target_coverage is not None and self.frozen is not None:
+                self.frozen['current_target_evidence']=None
         document['source']={'format':'player-log-gre-v1','generation':r.generation,'byte_offset':self.offset,
             'mode':'watch','phase':'append','partial_record':partial,'stopped':False,
             'input_sent':False,'executor_connected':False}
@@ -143,6 +147,21 @@ class _Evaluation:
         self.timed('shadow_policy_api',time.perf_counter_ns()-start)
         if self.target_completions is not None and kind=='select_targets':
             self.target_completions.freeze(request,options,decision,self.stage.revision)
+        current_target_evidence = None
+        if self.target_coverage is not None and kind=='select_targets':
+            c=self.target_coverage;c['target_requests_observed'] += 1
+            if request.get('_request_parameters') is not None:
+                c['existing_profile_supported'] += 1
+            else:
+                c['previously_unprojected_requests'] += 1;target_start=time.perf_counter_ns()
+                current_target_evidence=self.consumer.current_decision_options(
+                    current_target_context=(self.reducer,details['message']))['current_target_evidence']
+                self.timed('current_target_coverage',time.perf_counter_ns()-target_start)
+                if current_target_evidence['status']=='observed':
+                    c['newly_reviewed_current_requests'] += 1;c['newly_reviewed_select_domains'] += 1
+                    c['new_reviewed_proposals_returned'] += current_target_evidence['returned_proposals']
+                    c['new_proposal_domains_truncated'] += current_target_evidence['truncated']
+                else:c['still_unprojected_requests'] += 1
         if self.cost_stages is not None and kind == 'pay_costs':
             from .current_cost_stage import assess_current_cost_stage, MANA_PROFILE
             from .semantic_effect_cost import PROFILE as NONMANA_PROFILE
@@ -210,6 +229,7 @@ class _Evaluation:
         selected=[o for o in options['options'] if o['option_key']==decision['preferred_option_key']]
         self.frozen={'token':token,'ordinal':self.ordinal,'decision':copy.deepcopy(decision),
             'selected':copy.deepcopy(selected[0]) if len(selected)==1 else None}
+        if self.target_coverage is not None:self.frozen['current_target_evidence']=copy.deepcopy(current_target_evidence)
         if self.action_gates is not None and kind == 'actions_available':
             gate_start=time.perf_counter_ns();view=self.consumer.current_view()
             self.action_gates.observe(details['message'],request,options,decision,
@@ -222,6 +242,17 @@ class _Evaluation:
 
     def compare(self, before, saved, payload, mixed):
         if mixed or before is None or type(payload) is not dict:return
+        if (self.target_coverage is not None and saved is not None and saved['token']==_identity(before) and
+                saved['ordinal']<self.ordinal and before['type']=='GREMessageType_SelectTargetsReq' and
+                before.get('_target_evidence_interrupted') is not True and
+                _paired_response(self.reducer,before,payload)):
+            evidence=saved.get('current_target_evidence')
+            if evidence is not None and evidence['status']=='observed':
+                from .target_revision import _selection
+                from .choice_continuation import _binding
+                try:_selection(payload,_binding(self.reducer,before),evidence['target_constraints'])
+                except (ValueError,KeyError,TypeError):pass
+                else:self.target_coverage['paired_updates_newly_reviewable'] += 1
         if self.cost_stages is not None:
             c=self.cost_stages
             if before['type']=='GREMessageType_ActionsAvailableReq' and _paired_response(self.reducer,before,payload):
@@ -297,6 +328,9 @@ class _Evaluation:
         # Existing Publisher/Consumer revoke after every record, not only at requests.
         self.publish()
         current=_current_verified_request(self.reducer)
+        if (self.target_coverage is not None and current is not None and
+                current.get('_target_evidence_interrupted') is True and self.frozen is not None):
+            self.frozen['current_target_evidence']=None
         if self.frozen is not None and (current is None or _identity(current)!=self.frozen['token'] or self.reducer.error):
             self.frozen=None
         if self.target_completions is not None:
@@ -305,7 +339,7 @@ class _Evaluation:
 
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
                             actions_available_gates=False, complex_action_intents=False, protocol_evidence=False,
-                            current_cost_stages=False, target_stage_completions=False, _on_freeze=None):
+                            current_cost_stages=False, target_stage_completions=False, current_target_coverage=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
@@ -315,7 +349,9 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         raise ValueError('protocol_evidence_requires_actions_available_gates')
     if type(current_cost_stages) is not bool:raise ValueError('invalid_current_cost_stages_flag')
     if type(target_stage_completions) is not bool:raise ValueError('invalid_target_stage_completions_flag')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    if type(current_target_coverage) is not bool or current_target_coverage and not target_stage_completions:
+        raise ValueError('current_target_coverage_requires_target_stage_completions')
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions,current_target_coverage);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -383,6 +419,18 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
     if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
     if evaluation.target_completions is not None:result['target_stage_completions']=evaluation.target_completions.report()
+    if evaluation.target_coverage is not None:
+        c=evaluation.target_coverage;stages=evaluation.target_completions.report()
+        result['current_target_request_coverage']={
+            'unit':'unique authenticated request at first acceptance; proposals and paired submissions counted separately',
+            **{k:c[k] for k in ('target_requests_observed','existing_profile_supported','previously_unprojected_requests',
+                'newly_reviewed_current_requests','newly_reviewed_select_domains','newly_reviewed_selected_literals',
+                'new_reviewed_proposals_returned','new_proposal_domains_truncated','still_unprojected_requests','paired_updates_newly_reviewable')},
+            'strictly_linked_historical_completions':stages['historical_reviewed_target_sets_submitted'],
+            'comparable_frozen_preferences':stages['comparable_shadow_target_preferences'],
+            'new_current_evidence_implies_historical_completion':False,
+            'complete_target_legality':None,'default_policy_changed':False,
+            'historical_only':True,'read_only':True,**EXECUTION}
     if evaluation.cost_stages is not None:
         c=evaluation.cost_stages
         result['current_cost_stage_evidence']={
