@@ -2182,3 +2182,21 @@ Strict summary flag/count/status types and fixed error codes now fail closed;
 the direct negative suite includes these cases. Prior52feb4b full972 PASS is
 retained but cannot substitute the repaired exactHEAD's tests/review/CI.
 See docs/local-raw-archive.md. input_sent=false; P10=NOT_RUN.
+
+MP78 Current Search evidence on accepted8fe34cc/tree1923183: owner verified both
+unchanged MP76 snapshots and MP77 segment hashes, deduplicating identical bytes.
+New34-request source has two authenticated current Search requests287/441;
+unchanged v8 profile verifies47/45 unfiltered items and8/7 offered request-item
+references before strict later responses294/452. Other new source has no own
+requests. Old164 and2/164 remain prior accepted evidence, not newly combined or
+reauthenticated missing originals. Public request-only projections omit raw
+envelopes; synthetic auth/bootstrap tests are explicitly not real-current proof.
+Consumer.current_decision_options(current_search_context=...) adds bounded
+request/ref-bound opaque member observations, no complete proposals or policy
+change. Single Reducer private Search interruption witness and before/after
+source/zone/raw-digest/ref/lease checks reject lifecycle revival. Independent
+in-flight Ability group/parent mutation counterproof repaired fingerprint order.
+Actual complete34 default option/policy returns and both default history reports
+match base (versions/timings only normalized); raw data stay local. Final owner
+recheck, exactHEAD full3.11/doctor/review and actual PR/main CI remain separate
+delivery gates. See docs/current-search-evidence.md. input_sent=false; P10=NOT_RUN.

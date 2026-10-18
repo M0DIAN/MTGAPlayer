@@ -36,7 +36,7 @@ def _counter(): return dict.fromkeys(COUNTS, 0)
 
 
 class _Evaluation:
-    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False, current_target_coverage=False, mana_requirement_match=False):
+    def __init__(self, on_freeze=None, actions_available_gates=False, complex_action_intents=False, protocol_evidence=False, current_cost_stages=False, target_stage_completions=False, current_target_coverage=False, mana_requirement_match=False, current_search_evidence=False):
         from .cli import _observe_combat, _observe_tap, _observe_continuation
         self.ordinal = self.offset = 0; self.on_freeze = on_freeze
         self._consumed_this_record=False
@@ -58,6 +58,8 @@ class _Evaluation:
             self.target_completions=TargetStageCompletions();self.timings['target_stage_completions'] = []
         self.cost_stages = Counter() if current_cost_stages else None
         self.mana_matches = Counter() if mana_requirement_match else None
+        self.search_counts=Counter() if current_search_evidence else None
+        if current_search_evidence:self.timings['current_search_evidence']=[]
         self.prior_complex_context = None  # Count-only history, never current authority.
         if current_cost_stages:self.timings['current_cost_stage'] = []
         self.intent_counts = Counter() if complex_action_intents else None
@@ -107,6 +109,7 @@ class _Evaluation:
             if self.target_completions is not None:self.stage.reset()
             if self.target_coverage is not None and self.frozen is not None:
                 self.frozen['current_target_evidence']=None
+            if self.search_counts is not None and self.frozen is not None:self.frozen['current_search_evidence']=None
         document['source']={'format':'player-log-gre-v1','generation':r.generation,'byte_offset':self.offset,
             'mode':'watch','phase':'append','partial_record':partial,'stopped':False,
             'input_sent':False,'executor_connected':False}
@@ -240,6 +243,23 @@ class _Evaluation:
         selected=[o for o in options['options'] if o['option_key']==decision['preferred_option_key']]
         self.frozen={'token':token,'ordinal':self.ordinal,'decision':copy.deepcopy(decision),
             'selected':copy.deepcopy(selected[0]) if len(selected)==1 else None}
+        if self.search_counts is not None and request['type']=='GREMessageType_SearchReq':
+            cost_start=time.perf_counter_ns()
+            evidence=self.consumer.current_decision_options(
+                current_search_context=(self.reducer,details['message']))['current_search_evidence']
+            self.timed('current_search_evidence',time.perf_counter_ns()-cost_start)
+            c=self.search_counts;c['authenticated_search_requests']+=1
+            if evidence['status']=='observed':
+                c['reviewed_current_search_requests']+=1
+                c['offered_request_scoped_items']+=evidence['offered_item_count']
+                c['returned_request_scoped_members']+=evidence['returned_members']
+                c['truncated_member_domains']+=evidence['truncated']
+                raw=details['message']['searchReq']
+                # A single bounded frozen comparison context; never current authority.
+                self.frozen['current_search_evidence']={'payload':{'items_sought':copy.deepcopy(evidence['offered_search_item_refs'])},
+                    'context':{'items':{raw['itemsSought'][m['list_position']]:m['search_item_ref']
+                        for m in evidence['offered_search_item_refs']}}}
+            else:c['unsupported_current_search_requests']+=1
         if self.target_coverage is not None:self.frozen['current_target_evidence']=copy.deepcopy(current_target_evidence)
         if self.action_gates is not None and kind == 'actions_available':
             gate_start=time.perf_counter_ns();view=self.consumer.current_view()
@@ -253,6 +273,16 @@ class _Evaluation:
 
     def compare(self, before, saved, payload, mixed):
         if mixed or before is None or type(payload) is not dict:return
+        if (self.search_counts is not None and before['type']=='GREMessageType_SearchReq' and
+                _paired_response(self.reducer,before,payload,expected_type='ClientMessageType_SearchResp')):
+            c=self.search_counts;c['strictly_paired_search_responses']+=1
+            if (saved is not None and saved['token']==_identity(before) and saved['ordinal']<self.ordinal and
+                    before.get('_search_evidence_interrupted') is not True and saved.get('current_search_evidence') is not None):
+                from .semantic_search import project_response
+                try:project_response(payload,saved['current_search_evidence'],saved['current_search_evidence']['context'])
+                except (ValueError,KeyError,TypeError):c['unreviewed_selection_responses']+=1
+                else:c['historical_selected_item_matched']+=1
+            else:c['unreviewed_selection_responses']+=1
         if (self.target_coverage is not None and saved is not None and saved['token']==_identity(before) and
                 saved['ordinal']<self.ordinal and before['type']=='GREMessageType_SelectTargetsReq' and
                 before.get('_target_evidence_interrupted') is not True and
@@ -351,7 +381,7 @@ class _Evaluation:
 def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records=100000,
                             actions_available_gates=False, complex_action_intents=False, protocol_evidence=False,
                             current_cost_stages=False, target_stage_completions=False, current_target_coverage=False,
-                            mana_requirement_match=False, _on_freeze=None):
+                            mana_requirement_match=False, current_search_evidence=False, _on_freeze=None):
     """Explicit owner-selected file. Return aggregate history only, no raw trace."""
     if type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or type(max_records) is not int or not 1<=max_records<=100000:
         raise ValueError('invalid_historical_evaluation_bounds')
@@ -362,10 +392,11 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
     if type(current_cost_stages) is not bool:raise ValueError('invalid_current_cost_stages_flag')
     if type(mana_requirement_match) is not bool or mana_requirement_match and not current_cost_stages:
         raise ValueError('mana_requirement_match_requires_current_cost_stages')
+    if type(current_search_evidence) is not bool:raise ValueError('invalid_current_search_evidence_flag')
     if type(target_stage_completions) is not bool:raise ValueError('invalid_target_stage_completions_flag')
     if type(current_target_coverage) is not bool or current_target_coverage and not target_stage_completions:
         raise ValueError('current_target_coverage_requires_target_stage_completions')
-    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions,current_target_coverage,mana_requirement_match);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
+    evaluation=_Evaluation(_on_freeze,actions_available_gates,complex_action_intents,protocol_evidence,current_cost_stages,target_stage_completions,current_target_coverage,mana_requirement_match,current_search_evidence);framer=RawFramer();digest=hashlib.sha256();read_bytes=0;limited=False
     with Path(path).open('rb') as stream:
         import os
         initial=os.fstat(stream.fileno())
@@ -432,6 +463,16 @@ def evaluate_shadow_history(path, *, max_history_bytes=64*1024*1024, max_records
         'timing_scope':'same-process offline; nested stages overlap; shadow API includes cached MP65/currentness checks; not MTGA latency',
         'unknown_full_legal_action_count':None,'read_only':True,**EXECUTION,'P10':'NOT_RUN'}
     if evaluation.action_gates is not None:result['actions_available_gate_analysis']=evaluation.action_gates.report()
+    if evaluation.search_counts is not None:
+        c=evaluation.search_counts
+        result['current_search_request_evidence']={'unit':'first accepted authenticated own SearchReq; offered members and consumed submissions are separate units',
+            **{k:c[k] for k in ('authenticated_search_requests','reviewed_current_search_requests',
+                'offered_request_scoped_items','returned_request_scoped_members','truncated_member_domains',
+                'unsupported_current_search_requests','strictly_paired_search_responses',
+                'historical_selected_item_matched','unreviewed_selection_responses')},
+            'reviewed_complete_search_proposals':None,'minimum_find':None,'hidden_item_card_identity':None,
+            'complete_search_legality':None,'default_policy_changed':False,'historical_only':True,
+            'read_only':True,**EXECUTION}
     if evaluation.target_completions is not None:result['target_stage_completions']=evaluation.target_completions.report()
     if evaluation.target_coverage is not None:
         c=evaluation.target_coverage;stages=evaluation.target_completions.report()

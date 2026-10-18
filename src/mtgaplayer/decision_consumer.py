@@ -512,11 +512,12 @@ class DecisionConsumer:
             self._clear('CLOSED', 'unexpected_eof' if reason == 'eof' else reason)
         return self.current_view()
 
-    def current_decision_options(self, *, limit=64, include_complex_intents=False, current_target_context=None):
+    def current_decision_options(self, *, limit=64, include_complex_intents=False, current_target_context=None,
+                                 current_search_context=None):
         """Explicit read-only unified current options on this owner thread."""
         from .decision_options import assess_current_decision_options
         return assess_current_decision_options(self, limit=limit, include_complex_intents=include_complex_intents,
-            current_target_context=current_target_context)
+            current_target_context=current_target_context,current_search_context=current_search_context)
 
     def shadow_decision(self, *, policy_version='deterministic_shadow.v1'):
         """Explicit current research policy; never grants input authority."""
