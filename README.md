@@ -626,3 +626,14 @@ for the child-bound leased view. The revised request uses its own observed1/1/1
 Unselect literal and existing validation. A final header-only Submit revokes it;
 full Select domain, legality, payability and execution remain unverified.
 See [the evidence and contract](docs/current-target-revision.md).
+
+## MP64 opt-in Cast continuation
+
+`mtgaplayer replay <prefix> --format player-log --decision-state-version 15 --current-cast-continuation`
+observes the actual consumed Cast, explicit Hand→public Stack Card ID transfer
+and separately current four-member first target request. It reuses Candidate v2
+for four request-local singleton proposals. For append transport, use
+`watch <Player.log> --decision-events --decision-state-version 15` piped into
+`consume-events --current-cast-continuation`. All execution/input flags stay false.
+State/Event14 and15 are parallel extensions of13, each with its own nullable
+continuation field. Old versions/defaults are unchanged. See [the contract and evidence boundaries](docs/current-cast-continuation.md).

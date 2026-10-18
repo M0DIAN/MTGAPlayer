@@ -115,8 +115,12 @@ def _raw_child(observation, binding):
 
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
-    def __init__(self, reducer, *, include_revision=False):
+    def __init__(self, reducer, *, include_revision=False, include_cast=False):
         self.reducer = reducer
+        self.cast = None
+        if include_cast:
+            from .cast_continuation import CastStage
+            self.cast = CastStage(reducer)
         self.revision = None
         if include_revision:
             from .target_revision import RevisionStage
@@ -125,6 +129,7 @@ class StageObserver:
 
     def reset(self):
         self._reset_first()
+        if self.cast is not None: self.cast.reset()
         if self.revision is not None: self.revision.reset()
 
     def _reset_first(self):
@@ -137,6 +142,7 @@ class StageObserver:
         self._reset_first()
 
     def prepare(self, record):
+        if self.cast is not None: self.cast.prepare(record)
         if self.revision is not None: self.revision.prepare(record, self.active)
         from .decision_consumer import _bounded_json
         self.prepared = None
@@ -195,6 +201,7 @@ class StageObserver:
             self._clear()
 
     def after_apply(self):
+        if self.cast is not None: self.cast.after_apply()
         prepared = self.prepared; self.prepared = None
         if (prepared is not None and _scope(self.reducer) == prepared['scope'] and self.reducer.request is None and
                 _paired_response(self.reducer, prepared['request'], prepared['payload'], 'ClientMessageType_PerformActionResp')):
@@ -208,6 +215,7 @@ class StageObserver:
         return {k: source.get(k) for k in ('instanceId', 'grpId', 'type', 'zoneId', 'visibility', 'ownerSeatId', 'controllerSeatId')}
 
     def observe(self, event, details):
+        if self.cast is not None: self.cast.observe(event, details)
         self._observe_first(event, details)
         if self.revision is not None: self.revision.observe(event, details, self.active)
 

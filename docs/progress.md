@@ -1728,3 +1728,74 @@ independent review, updated PR CI and actual-main natural CI are separate
 delivery gates, recorded against their actual identities on PR79. Historical
 qualification failure evidence is retained; no unrelated repair is claimed.
 No MTGA input, new rule solver, runtime dependency or P10; input_sent=false.
+
+## MP64 — actual Cast to four-member current first target request (2026-10-18)
+
+Historical standalone candidate from accepted main d947105, before the MP63
+merge. MP63/#79 was then a separate Draft and unmerged. Pre-implementation production evidence authenticates the retained
+scrubbed fixture's own seat/Full/Diff/request chain, not a private original log.
+The103 parent state/report is frozen before104, and106 child before107+.
+Actual104 uniquely matches original Cast position3 and consumes10100 in the
+same apply. Diff105 explicitly migrates Hand1255 through ObjectIdChanged and
+CastSpell to public Stack Card1264. Old1255 moves to Limbo, not deletion.
+Fresh106/10102 has its own1/1 bounds and four ordered offered Select members.
+Separately107 consumes it,109 is a fresh1/1/1 Unselect request,110 terminal
+Submit consumes that request;111–113 never restore the old refs.
+
+Existing MP59 parent probes, MP38 target validation and Candidate2 enumeration
+already cover their request-local portions. Only the missing cross-request
+provenance is added, subordinate to the same StageObserver/RawReducer. Opt-in
+State/Event15 adds nullable Cast/Card context;14 stays reserved for unmerged
+MP63. Each current proposal uses its child's own Consumer binding/ref/lease.
+No second reducer, validator, rules engine, response encoder or input path.
+Four offered singleton proposals do not establish full target-domain, complete
+legality, payment/readiness, causation or acceptance. Every execution flag false.
+
+Fifteen focused tests pass, including real prefix cutoffs, same-poll consumption,
+four existing singleton validations, a single actual-record watch→Publisher→
+Consumer/JSONL chain, strict row/identity/transfer/member refusals, duplicates,
+mixed-record rearming, a genuinely accepted Full with four default candidates,
+pending partial-poll completion, reset, refs/lease/history/stop and races. All
+mutations and transport clocks are synthetic; the real source fixture is intact.
+Formal development-only schema validation passes28 resources,10 real prefix
+states,40 synthetic events and8 discriminating invalid-state controls.
+
+Python3.11.16 full unittest passes776 tests in109.180s. Windows doctor exits0,
+input_sent=false, LIVE_MTGA NOT_RUN. Isolated accepted-tree/candidate processes
+compare1,773 complete directly affected old values: all equal, sources stable.
+Coverage includes State/Event1–13, Candidate2–6, Advisor, default replay/watch,
+old continuation and Consumer transport at nine Cast boundary prefixes. Old
+fixtures and schemas remain unchanged. Exact-final independent review and hosted
+head/synthetic-merge Linux/Windows CI are delivery gates recorded with the PR.
+No merge, MTGA operation, new match, P10 or latency claim; P10 remains NOT_RUN.
+
+## MP64 formal integration after MP63 main delivery (2026-10-18)
+
+MP63 PR79 was independently reviewed at431020db7896ebeda8635c2abf9ea3e745ed70fc,
+then squash-merged as6219012790ef14a64d6130ea8e4f9729c3b8e0c0, tree
+dc06a36841f7e31e3f6f6aa8c7e89a1b36923353. Head/merge CI39089865839/39089869041
+and natural push/main CI39090202399 all pass Linux/Windows in attempt1 with785
+tests per job. Actual checkout/Tested identities and Windows doctor were checked.
+The actual-main frozen Equip verifier and216 normal v14 values also pass.
+
+PR81 merges that verified main into its original9e621b1 history without rewriting
+either history. Shared source conflicts reuse the reviewed local integration
+candidate; all55 runtime source blobs match cc3cae2. One StageObserver preserves
+Cast/first/Revision hook order, first-only clearing and all-context reset.
+State/Event14 and15 register as parallel13 extensions with exact profile fields
+and opt-ins. Both Consumer sidecars recheck the final current ref/lease. The
+four MP63 refusal regressions are retained alongside12 integration controls;
+Cast remains Card-based and cannot borrow an Equip Ability or selection.
+
+The24 MP63,15 Cast and12 integration focused tests pass. Python3.11.16 full
+unittest passes812 tests in113.463s with stable source/test hashes. Separate
+processes compare249,353 complete old values without differences;216 v14 values
+equal verified MP63 main and160 v15 values equal the original MP64 candidate.
+The frozen Equip chain and public113-record Cast cutoffs pass without future
+constraints. Formal validation passes30 resources,8/10 states,32/40 events and
+10/8 negative controls; four schema14/15 blobs are unchanged. Windows doctor is
+read-only, exit0. New exact-HEAD/tree independent review, PR CI and actual-main
+natural CI are separate final gates, recorded on PR81 with their actual run/
+attempt/checkout identities. Historical qualification failure remains retained
+and unexplained; no weakening, timeout change or claimed repair is included.
+Complete legality remains unimplemented. input_sent=false; P10=NOT_RUN.

@@ -75,9 +75,9 @@ def _observe_tap(reducer):
     return tap
 
 
-def _observe_continuation(reducer, *, include_revision=False):
+def _observe_continuation(reducer, *, include_revision=False, include_cast=False):
     from .choice_continuation import StageObserver
-    stage = StageObserver(reducer, include_revision=include_revision)
+    stage = StageObserver(reducer, include_revision=include_revision, include_cast=include_cast)
     previous = reducer.observer
     def observe(event, details):
         stage.observe(event, details)
@@ -119,6 +119,7 @@ def _project_decision_state(reducer, document, combat, retain_rows, version=1):
         request.pop('_payment_source_tap_provenance', None)
         request.pop('_choice_continuation', None)
         request.pop('_revised_choice_continuation', None)
+        request.pop('_cast_choice_continuation', None)
     if not retain_rows:
         request = document['current'].get('request')
         inventory = request.get('action_inventory') if isinstance(request, dict) else None
@@ -133,11 +134,14 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
            rules_index_path=None, advice_policy=None, decision_state_version=1,
            known_choice_candidates=False, observed_action_target_menus=False,
            known_choice_candidates_version=2, activate_target_payment_relation=False, payment_source_untap_witness=False,
-           current_choice_continuation=False, current_target_revision=False):
+           current_choice_continuation=False, current_target_revision=False, current_cast_continuation=False):
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
+    if type(current_cast_continuation) is not bool or current_cast_continuation and (
+            format != 'player-log' or decision_state_version != 15):
+        raise ValueError('current_cast_continuation_requires_player_log_state15')
     if type(current_target_revision) is not bool or current_target_revision and (
-            format != 'player-log' or decision_state_version < 14):
+            format != 'player-log' or decision_state_version != 14):
         raise ValueError('current_target_revision_requires_player_log_state14')
     if type(current_choice_continuation) is not bool or current_choice_continuation and (
             format != 'player-log' or decision_state_version < 13):
@@ -189,7 +193,7 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
                                                         include_state_messages=decision_state_version >= 10)
         combat = _observe_combat(reducer) if combat_frontier or decision_state else None
         tap = _observe_tap(reducer) if decision_state_version >= 10 else None
-        stage = _observe_continuation(reducer, include_revision=decision_state_version >= 14) if decision_state_version >= 13 else None
+        stage = _observe_continuation(reducer, include_revision=decision_state_version == 14, include_cast=decision_state_version == 15) if decision_state_version >= 13 else None
         if observed_action_target_menus:
             from .action_target_menus import TargetMenuObserver
             menu_observer = TargetMenuObserver()
@@ -240,6 +244,9 @@ def replay(path, dry=False, format='normalized', card_db_path=None,
         if current_target_revision:
             from .target_revision import evaluate_revision
             document['current_target_revision'] = evaluate_revision(document['decision_state'])
+        if current_cast_continuation:
+            from .cast_continuation import evaluate_continuation as evaluate_cast
+            document['current_cast_continuation'] = evaluate_cast(document['decision_state'])
         if rules_index_path is not None:
             from .rule_context import build_static_rule_context
             document['static_rule_context'] = build_static_rule_context(
@@ -312,7 +319,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
                                                                      include_state_messages=decision_state_version >= 10)
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     tap = _observe_tap(reducer) if decision_state_version >= 10 else None
-    stage = _observe_continuation(reducer, include_revision=decision_state_version >= 14) if decision_state_version >= 13 else None
+    stage = _observe_continuation(reducer, include_revision=decision_state_version == 14, include_cast=decision_state_version == 15) if decision_state_version >= 13 else None
     if observed_action_target_menus:
         from .action_target_menus import TargetMenuObserver
         menu_observer = TargetMenuObserver()
@@ -410,13 +417,14 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         document = reducer.document(include_frontier_rows=action_frontier or decision_state,
                                     include_decision_state=decision_state)
         reduced_current = document['current']
-        if follower.framer.partial and stage is not None and decision_state_version == 14:
-            # Clear pending lineage even in the consumed-request interval where
-            # no current request carries a continuity bit.
+        if follower.framer.partial and stage is not None and decision_state_version in (14, 15):
+            # Neither continuation may survive a partial poll, including the
+            # consumed-request interval where no request carries a continuity bit.
             stage.reset()
             if isinstance(reduced_current.get('request'), dict):
                 reduced_current['request'].pop('_choice_continuation', None)
                 reduced_current['request'].pop('_revised_choice_continuation', None)
+                reduced_current['request'].pop('_cast_choice_continuation', None)
         if _poll_observer is not None and reduced_current.get('valid') and not follower.framer.partial:
             history_pending = False
         if follower.framer.partial:
@@ -578,6 +586,8 @@ def main(argv=None):
                                    help='opt-in known proposals; requires player-log State5+; default candidate v2')
         replay_parser.add_argument('--known-choice-candidates-version', type=int, choices=(2, 3, 4, 5, 6), default=2,
                                    help='v3 target proposals; v4 current Discard; v5 Blue1 Cast members (State11); v6 separate Cast/Activate associations (State12)')
+        replay_parser.add_argument('--current-cast-continuation', action='store_true',
+                                   help='read-only actual Cast to first current four-target child (State15)')
         replay_parser.add_argument('--current-target-revision', action='store_true',
                                    help='actual selection update to current revised child; requires State14')
         replay_parser.add_argument('--current-choice-continuation', action='store_true',
@@ -586,7 +596,7 @@ def main(argv=None):
                                    help='explicit pre-request event witnesses only; requires State10')
         replay_parser.add_argument('--activate-target-payment-relation', action='store_true',
                                    help='diagnostics-only target/predictive-payment association; requires State9')
-        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), default=1,
+        replay_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15), default=1,
                                    help='explicit v2 turn; v3 Stack; v4 P/T; v5 request literals; v6 payment selection; v7 current Activate target member; v8 current eight-offer Discard; v9 target/payment association; v10 untap event provenance; v11 Blue1 Cast members')
     watch_parser = sub.add_parser('watch', help='bounded read-only Player.log observations')
     watch_parser.add_argument('input', type=Path)
@@ -607,8 +617,8 @@ def main(argv=None):
                               help='read-only strict combat references; needs --decision-input')
     watch_parser.add_argument('--decision-state', action='store_true',
                               help='unified read-only DecisionState v1')
-    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), default=1,
-                              help='State/Event version; default1; explicit2/3/4/5/6/7/8/9/10/11/12/13/14 implies DecisionState')
+    watch_parser.add_argument('--decision-state-version', type=int, choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15), default=1,
+                              help='State/Event version; default1; explicit2/3/4/5/6/7/8/9/10/11/12/13/14/15 implies DecisionState')
     watch_parser.add_argument('--decision-events', action='store_true',
                               help='separate read-only DecisionEvent JSONL stream (implies DecisionState)')
     watch_parser.add_argument('--max-observation-age-ms', type=float,
@@ -618,6 +628,8 @@ def main(argv=None):
     rules_parser.add_argument('--output', type=Path, required=True, help='new versioned SQLite path; never overwritten')
     rules_parser.add_argument('--source-version', required=True, help='user-supplied dataset version; not freshness proof')
     consumer_parser = sub.add_parser('consume-events', help='read-only DecisionEvent JSONL from stdin')
+    consumer_parser.add_argument('--current-cast-continuation', action='store_true',
+                                 help='read-only current Cast first-child report (State15)')
     consumer_parser.add_argument('--current-target-revision', action='store_true',
                                  help='current revised child continuation (Event14)')
     consumer_parser.add_argument('--current-choice-continuation', action='store_true',
@@ -746,7 +758,8 @@ def main(argv=None):
                               activate_target_payment_relation=args.activate_target_payment_relation,
                               payment_source_untap_witness=args.payment_source_untap_witness,
                               current_choice_continuation=args.current_choice_continuation,
-                              current_target_revision=args.current_target_revision)
+                              current_target_revision=args.current_target_revision,
+                              current_cast_continuation=args.current_cast_continuation)
     elif args.command in {'replay', 'dry-run'}:
         try:
             result = replay(args.input, args.command == 'dry-run', args.format,
@@ -762,6 +775,7 @@ def main(argv=None):
                             payment_source_untap_witness=args.payment_source_untap_witness,
                             current_choice_continuation=args.current_choice_continuation,
                             current_target_revision=args.current_target_revision,
+                            current_cast_continuation=args.current_cast_continuation,
                             observed_action_target_menus=args.observed_action_target_menus)
             code = 0 if result['current']['valid'] and (
                 args.decision_state_version != 2 or result.get('decision_state') is not None) else 1
