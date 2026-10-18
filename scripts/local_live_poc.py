@@ -93,7 +93,8 @@ class Collector:
     """One writer per collector JSONL; the marker UI alone owns marker writes."""
 
     def __init__(self, log, output, *, interval=1.0, pid=None, hwnd=None,
-                 capture_method='printwindow', capture=None, find_window=None):
+                 capture_method='printwindow', capture=None, find_window=None,
+                 raw_archive=None, archive_max_poll_bytes=1024*1024):
         if not math.isfinite(interval) or not 0 < interval <= 60:
             raise ValueError('interval_must_be_positive_and_at_most_60')
         self.log, self.output = Path(log).resolve(), Path(output).resolve()
@@ -112,7 +113,11 @@ class Collector:
         self.capture_started_ns = None
         self.previous_capture_observation = None
         self.closed = False
-        self.follower = RawFollower(self.log)
+        self.archive = None
+        if raw_archive is not None:
+            from mtgaplayer.raw_archive import RawArchive
+            self.archive = RawArchive(self.log,raw_archive,max_poll_bytes=archive_max_poll_bytes)
+        self.follower = self.archive.follower if self.archive is not None else RawFollower(self.log)
         self.events = []
         self.reducer = RawReducer(observer=self._observe,
             include_state_messages=True, include_request_parameters=True)
@@ -140,6 +145,11 @@ class Collector:
             'snapshot_contract': 'completed_poll_prefix_and_completed_screenshot_files'}
         self.manifest['capture_execution'] = ('independent_daemon_thread; Windows_API_timeout_unknown; '
             'a_hung_capture_does_not_block_log_polls; shutdown_join_bounded_250ms')
+        if self.archive is not None:
+            self.manifest.update(raw_bytes_retained=True,
+                raw_storage='immutable_original_byte_segments_with_committed_manifest',
+                partial_json_bytes_retained_by_follower_in_memory_only=False,
+                raw_archive_enabled=True)
         atomic_json(self.output / 'manifest.json', self.manifest)
 
     def _observe(self, event, details):
@@ -290,6 +300,10 @@ class Collector:
             self.counts['log_errors'] += 1
             log_health = {'log_error': str(exc), 'log_error_type': type(exc).__name__,
                           'records': 0, 'partial_record': self.follower.framer.partial}
+        if self.archive is not None:
+            log_health['raw_archive']={'error':self.follower.byte_observer_error,
+                'committed_bytes':sum(g['byte_count'] for g in self.archive.manifest['generations']),
+                'state_impact':False}
         if screenshots:
             self.capture_once()
         # Empty polls can introduce an incomplete source tail or a read error.
@@ -322,6 +336,11 @@ class Collector:
         self.capture_stop.set()
         if self.capture_thread is not None:
             self.capture_thread.join(timeout=.25)
+        if self.archive is not None:
+            try:self.archive.close()
+            except (OSError,ValueError) as exc:
+                self.manifest['raw_archive_close_error']={'error_type':type(exc).__name__,
+                    'errno':getattr(exc,'errno',None)}
         with self.write_lock:
             self.closed = True
             for stream in self.streams.values():
@@ -448,6 +467,16 @@ def main(argv=None):
     frozen = sub.add_parser('snapshot', help='freeze the last completed collection poll')
     frozen.add_argument('--source', required=True, type=Path)
     frozen.add_argument('--output', required=True, type=Path)
+    archive = sub.add_parser('archive', help='raw bytes only; no screenshots or game state')
+    archive.add_argument('--log', required=True, type=Path)
+    archive.add_argument('--output', required=True, type=Path)
+    archive.add_argument('--resume', action='store_true')
+    archive.add_argument('--once', action='store_true')
+    archive.add_argument('--interval', type=float, default=1)
+    archive.add_argument('--duration', type=float, default=0)
+    archive.add_argument('--max-poll-bytes', type=int, default=1024*1024)
+    verify = sub.add_parser('verify-archive', help='read-only bounded public archive summary')
+    verify.add_argument('--archive', required=True, type=Path)
     collect = sub.add_parser('collect', help='read-only collection (default command)')
     collect.add_argument('--log', required=True, type=Path)
     collect.add_argument('--output', required=True, type=Path)
@@ -456,6 +485,7 @@ def main(argv=None):
     collect.add_argument('--pid', type=int)
     collect.add_argument('--hwnd', type=lambda value: int(value, 0))
     collect.add_argument('--capture-method', choices=('printwindow', 'screen'), default='printwindow')
+    collect.add_argument('--raw-archive', type=Path, help='explicit local raw-byte archive directory')
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0].startswith('-'):
         argv.insert(0, 'collect')
@@ -463,10 +493,33 @@ def main(argv=None):
     if args.command == 'snapshot':
         print(json.dumps(snapshot(args.source, require_ignored(args.output)), ensure_ascii=False))
         return 0
+    if args.command == 'verify-archive':
+        from mtgaplayer.raw_archive import verify_archive
+        report=verify_archive(args.archive)
+        print(json.dumps(report));return 0 if report['status']=='verified' else 1
     if not math.isfinite(args.duration) or args.duration < 0:
         parser.error('duration must be finite and nonnegative')
+    if args.command == 'archive':
+        from mtgaplayer.raw_archive import RawArchive,verify_archive
+        if not math.isfinite(args.interval) or not 0<args.interval<=60:parser.error('invalid interval')
+        writer=None
+        try:
+            writer=RawArchive(args.log,args.output,resume=args.resume,max_poll_bytes=args.max_poll_bytes)
+            deadline=time.monotonic()+args.duration if args.duration else None
+            try:
+                while not (writer.root/'stop').exists():
+                    writer.poll()
+                    if args.once or writer.follower.byte_observer_error or deadline is not None and time.monotonic()>=deadline:break
+                    time.sleep(args.interval)
+            except KeyboardInterrupt:pass
+            finally:writer.close()
+            report=verify_archive(args.output)
+            print(json.dumps(report));return 0 if report['status']=='verified' and not report['archive_error'] else 1
+        except (OSError,ValueError) as exc:
+            print(json.dumps({'status':'archive_failed','error_type':type(exc).__name__,
+                'errno':getattr(exc,'errno',None),'input_sent':False,'P10':'NOT_RUN'}));return 1
     collector = Collector(args.log, require_ignored(args.output), interval=args.interval,
-        pid=args.pid, hwnd=args.hwnd, capture_method=args.capture_method)
+        pid=args.pid, hwnd=args.hwnd, capture_method=args.capture_method,raw_archive=args.raw_archive)
     print(json.dumps({'session': str(collector.output), 'collector_pid': os.getpid(),
                       'status': 'running', 'input_sent': False}), flush=True)
     collector.run(args.duration)
