@@ -154,6 +154,23 @@ class RawArchiveTests(unittest.TestCase):
             self.assertEqual(verify_archive(self.output)['status'],'invalid_or_incomplete_archive')
         (self.output/'manifest.json').write_text(json.dumps(manifest))
 
+    def test_unreviewed_metadata_cannot_claim_completeness_or_leak_values(self):
+        self.log.write_bytes(b'{}');writer=self.archive();writer.poll();writer.close()
+        manifest=self.manifest();sentinel='PRIVATE_PATH_SENTINEL_DO_NOT_EXPORT'
+        variants=[]
+        for key,value in (('archive_error',sentinel),('status',True),('unobserved_resume_interval',1)):
+            bad=copy.deepcopy(manifest);bad[key]=value;variants.append(bad)
+        for key,value in (('source_verified_at_stop','false'),('rotation_gap_possible',0),
+                ('backlog_bytes',True),('known_unread_bytes_at_rotation',sentinel),
+                ('source_changed_during_poll',sentinel)):
+            bad=copy.deepcopy(manifest);bad['generations'][0][key]=value;variants.append(bad)
+        for bad in variants:
+            (self.output/'manifest.json').write_text(json.dumps(bad))
+            result=verify_archive(self.output)
+            self.assertEqual(result['status'],'invalid_or_incomplete_archive')
+            self.assertFalse(result['complete_source_files_verified']);self.assertNotIn(sentinel,json.dumps(result))
+        (self.output/'manifest.json').write_text(json.dumps(manifest))
+
     def test_privacy_guard_and_existing_directory_not_overwritten(self):
         self.assertEqual(private_directory(self.output),self.output.resolve())
         with self.assertRaises(ValueError):private_directory(ROOT/'docs'/'raw-private')

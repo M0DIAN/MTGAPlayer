@@ -2169,11 +2169,16 @@ polls, generation/range hashes, private-directory checks and OS single-writer
 lock. Resume verifies all committed ranges and full source prefix; stop hashes
 the complete current prefix/EOF. Rotation and unobserved pause gaps remain
 explicit; old generations and crash orphans are preserved. Archive I/O failures
-are isolated from Reducer state. Direct18 archive controls PASS, including
+are isolated from Reducer state. Direct archive controls include
 independent counterproof repairs for failed-Git privacy checks and stale closed
 writers touching a resumed writer's metadata. Owner acceptance of retained
 MP76 snapshots preserves 3,882,223/382,841 bytes, both exact SHA256 values and
 existing historical-analysis outputs. These samples still contain no AutoTap
 response. Final exactHEAD focused/full3.11, doctor, independent review and
 actual PR/main CI are pending separate delivery gates.
+Independent verifier counterproof additionally found that wrongly typed local
+metadata could create false completeness or export an unreviewed error value.
+Strict summary flag/count/status types and fixed error codes now fail closed;
+the direct negative suite includes these cases. Prior52feb4b full972 PASS is
+retained but cannot substitute the repaired exactHEAD's tests/review/CI.
 See docs/local-raw-archive.md. input_sent=false; P10=NOT_RUN.

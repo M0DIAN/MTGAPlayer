@@ -62,6 +62,10 @@ def _manifest(path):
     value=json.loads(path.read_text(encoding='utf8'))
     if type(value) is not dict or value.get('schema_version')!=VERSION:
         raise ValueError('invalid_archive_manifest')
+    if (value.get('status') not in ('running','stopped') or
+            type(value.get('unobserved_resume_interval')) is not bool or
+            value.get('archive_error') not in (None,'archive_io_or_continuity_failed')):
+        raise ValueError('invalid_archive_summary_metadata')
     return value
 
 
@@ -79,6 +83,17 @@ def _scan(root, manifest, feed=None):
     if type(generations) is not list or len(generations)>1024:raise ValueError('invalid_archive_generations')
     names=set();summaries=[];last=0
     for gen in generations:
+        if type(gen) is not dict or any(type(gen.get(k)) is not bool for k in
+                ('source_verified_at_stop','rotation_gap_possible')):
+            raise ValueError('invalid_archive_generation_flags')
+        if type(gen.get('segments')) is not list or type(gen.get('identity')) is not list or not 1<=len(gen['identity'])<=2 or any(
+                type(v) is not int or v<0 for v in gen['identity']):
+            raise ValueError('invalid_archive_generation_structure')
+        for field in ('backlog_bytes','known_unread_bytes_at_rotation'):
+            v=gen.get(field)
+            if v is not None and (type(v) is not int or v<0):raise ValueError('invalid_archive_summary_count')
+        if gen.get('source_changed_during_poll') is not None and type(gen['source_changed_during_poll']) is not bool:
+            raise ValueError('invalid_archive_poll_flag')
         number=gen['generation']
         if type(number) is not int or number!=last+1:raise ValueError('archive_generation_discontinuity')
         last=number;offset=0;whole=hashlib.sha256();framer=RawFramer();records=0
