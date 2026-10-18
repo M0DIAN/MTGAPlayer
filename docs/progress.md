@@ -1884,3 +1884,36 @@ compatibility, schemas, full tests, frozen original Equip, doctor, independent
 review, head/PR CI and natural main CI remain separate actual delivery gates.
 Historical Windows qualification failure remains unexplained, not claimed
 repaired by a later pass. input_sent=false; P10=NOT_RUN.
+
+## MP68 historical shadow evaluation (2026-10-18)
+
+Accepted basebcba5bed8f7e2fa5089994efafba7ed7c3fe5510. Existing response-choice,
+complex-choice and gap reports do not freeze MP66 decisions. The new explicit
+evaluate-shadow-history entry reuses their strict pairing/classifiers and the
+existing framer, one reducer, projections, Publisher/Consumer and quantiles.
+It freezes at accepted-request callbacks before later messages, with explicit
+historical simulation metadata. Member updates never score as full final sets.
+Raw/private bindings and payloads remain internal; summaries use bounded units.
+
+Owner-local frozen Equip hash and the existing Player source yield164 distinct
+authenticated current requests (zero cross-source identity overlap):126 evaluable,
+2 research preferences,124 abstentions,38 unsupported. Strict historical pairs142,
+unique identities59,comparable preferences0; agreement rate null. Another136-record
+source has no authenticated current requests and adds no coverage denominator.
+Public Cast and original Equip cutoff chains are separate ordering controls.
+
+Independent preflight found non-string response types, a partial-only source,
+growth beyond initial size and an optional null inventory could break bounds or
+safe handling. Direct regressions cover all four; finite source size and typed
+guards fix them without changing MP65/66. A final direct countercheck also
+found legacy target-index equality could count boolean/float1 as integer1;
+the new statistic checks the decoded index type without changing the old helper.
+Early full runs during editing were not accepted as final gates. The earlier
+candidate passed860 complete tests with stable source/test hashes; the typed
+index revision receives fresh full/focused tests and exact-version compatibility/review/CI
+are recorded with actual identities in delivery receipts. See
+docs/shadow_history_evaluation.md for cohort denominators and measured priorities.
+
+Head/PR Linux/Windows CI and natural main CI remain distinct delivery gates.
+Historical qualification failure remains unknown, not claimed repaired.
+input_sent=false; P10=NOT_RUN.
