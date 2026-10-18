@@ -1,0 +1,506 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mtgaplayer:decision-state:v14",
+  "title": "MTGAPlayer read-only DecisionState v14",
+  "$comment": "Register State14 and its local State5/7/8/9/10/11/12/13 dependencies. Preserve every State13 request and first-child profile; add only nullable current revised-stage context, with no full Select-domain, payment, causation, encoding or input authority.",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "schema_version",
+    "status",
+    "binding",
+    "source",
+    "game",
+    "visible_objects",
+    "card_knowledge",
+    "effect_claims",
+    "legal_action_space",
+    "unresolved",
+    "execution",
+    "read_only",
+    "payment_source_tap_provenance",
+    "choice_continuation",
+    "revised_choice_continuation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "mtgaplayer.decision-state.v14"
+    },
+    "status": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/status"
+    },
+    "binding": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/binding"
+    },
+    "source": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/source"
+    },
+    "game": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/game"
+    },
+    "visible_objects": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/visible_objects"
+    },
+    "card_knowledge": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/card_knowledge"
+    },
+    "effect_claims": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/effect_claims"
+    },
+    "legal_action_space": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/legal_action_space"
+    },
+    "unresolved": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/unresolved"
+    },
+    "execution": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/execution"
+    },
+    "read_only": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/read_only"
+    },
+    "payment_source_tap_provenance": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/payment_source_tap_provenance"
+    },
+    "choice_continuation": {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/properties/choice_continuation"
+    },
+    "revised_choice_continuation": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/revisedChoiceContinuation"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/0"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/1"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/2"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/3"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/4"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/5"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/6"
+    },
+    {
+      "$ref": "urn:mtgaplayer:decision-state:v13#/allOf/7"
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "state_observed_without_request"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "revised_choice_continuation": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "revised_choice_continuation": {
+            "type": "object"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "status": {
+            "const": "state_and_request_observed"
+          },
+          "choice_continuation": {
+            "type": "null"
+          },
+          "payment_source_tap_provenance": {
+            "type": "null"
+          },
+          "binding": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_SelectTargetsReq"
+              },
+              "request_id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            }
+          },
+          "legal_action_space": {
+            "properties": {
+              "request_type": {
+                "const": "GREMessageType_SelectTargetsReq"
+              },
+              "request_parameters": {
+                "type": "object",
+                "properties": {
+                  "profile": {
+                    "const": "reviewed_single_slot_public_targets"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "revisionTargetEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetInstanceId",
+        "legalAction"
+      ],
+      "properties": {
+        "targetInstanceId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "legalAction": {
+          "const": "SelectAction_Unselect"
+        },
+        "highlight": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "revisionTargets": {
+      "allOf": [
+        {
+          "$ref": "urn:mtgaplayer:decision-state:v5#/$defs/singleSlotTargets"
+        },
+        {
+          "properties": {
+            "source_object_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "ability_grp_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "targeting_ability_grp_ref": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "target_idx": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "min_targets": {
+              "const": 1
+            },
+            "max_targets": {
+              "const": 1
+            },
+            "selected_count": {
+              "const": 1
+            },
+            "entries": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "properties": {
+                  "object_ref": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "legal_action": {
+                    "const": "SelectAction_Unselect"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "revisionObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraints",
+        "envelope_prompt",
+        "slot_prompt",
+        "target_entries",
+        "field_presence"
+      ],
+      "properties": {
+        "constraints": {
+          "$ref": "#/$defs/revisionTargets"
+        },
+        "envelope_prompt": {
+          "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/continuationPrompt"
+        },
+        "slot_prompt": {
+          "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/continuationNumberPrompt"
+        },
+        "target_entries": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/revisionTargetEntry"
+          }
+        },
+        "field_presence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minTargets",
+            "maxTargets",
+            "selectedTargets",
+            "allowUndo"
+          ],
+          "properties": {
+            "minTargets": {
+              "const": true
+            },
+            "maxTargets": {
+              "const": true
+            },
+            "selectedTargets": {
+              "const": true
+            },
+            "allowUndo": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "field_presence": {
+                "properties": {
+                  "allowUndo": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "allow_undo": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "constraints": {
+                "properties": {
+                  "allow_undo": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "selectionUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_binding",
+        "response_type",
+        "target"
+      ],
+      "properties": {
+        "request_binding": {
+          "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/continuationChildBinding"
+        },
+        "response_type": {
+          "const": "ClientMessageType_SelectTargetsResp"
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetIdx",
+            "targets"
+          ],
+          "properties": {
+            "targetIdx": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "targets": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/continuationTargetEntry"
+              }
+            }
+          }
+        }
+      }
+    },
+    "selectedTargetIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "object_ref",
+        "card_ref",
+        "object_type",
+        "zone_ref",
+        "owner_seat",
+        "controller_seat"
+      ],
+      "properties": {
+        "object_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "card_ref": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "object_type": {
+          "enum": [
+            "GameObjectType_Card",
+            "GameObjectType_Token"
+          ]
+        },
+        "zone_ref": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "owner_seat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "controller_seat": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "object_type": {
+                "const": "GameObjectType_Card"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "card_ref": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "card_ref": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ],
+      "$comment": "Producer observes raw object_type and zone_ref. Portable visible state cross-checks object_ref/card_ref/Battlefield enum/owner/controller, not raw Battlefield zone ID or Token kind. Token grpId is not a catalog card identity."
+    },
+    "revisedChoiceContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "binding",
+        "first_child",
+        "selection_update",
+        "revised_observation",
+        "selected_target_identity",
+        "intervening_diff_count"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "mtgaplayer.revised-choice-continuation.v1"
+        },
+        "binding": {
+          "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/continuationChildBinding"
+        },
+        "first_child": {
+          "$ref": "urn:mtgaplayer:decision-state:v13#/$defs/choiceContinuation"
+        },
+        "selection_update": {
+          "$ref": "#/$defs/selectionUpdate"
+        },
+        "revised_observation": {
+          "$ref": "#/$defs/revisionObservation"
+        },
+        "selected_target_identity": {
+          "$ref": "#/$defs/selectedTargetIdentity"
+        },
+        "intervening_diff_count": {
+          "const": 1
+        }
+      },
+      "$comment": "Runtime enforces equal current bindings; distinct and increasing parent/first/revised identities; selection update bound to the consumed first child; five-field revision identity and actual selected member equality; existing current selected-set checker. Frozen first-child creation state remains unchanged. Producer alone authenticates raw digest, response consumption, one accepted Diff and strictly stable private signatures."
+    }
+  }
+}
