@@ -306,8 +306,8 @@ class CastContinuationTests(unittest.TestCase):
         run = subprocess.run([sys.executable,'-m','mtgaplayer','replay',str(self.path),'--format','player-log',
             '--decision-state-version','15','--current-cast-continuation'],capture_output=True,text=True,encoding='utf-8',timeout=8)
         self.assertEqual(run.returncode,0,run.stderr); self.positive(json.loads(run.stdout)['current_cast_continuation'])
-        for version in (1,5,11,12,13):
+        for version in (1,5,11,12,13,14):
             doc = self.document(version=version); self.assertNotIn(continuation.FIELD,doc['decision_state']); self.assertNotIn('current_cast_continuation',doc)
         with self.assertRaises(ValueError): replay(self.path,format='player-log',decision_state_version=13,current_cast_continuation=True)
         with self.assertRaises(ValueError): consume_events(io.BytesIO(),lambda _:None,current_cast_continuation=1)
-        with self.assertRaises(ValueError): replay(self.path,format='player-log',decision_state_version=14)
+        with self.assertRaises(ValueError): replay(self.path,format='player-log',decision_state_version=14,current_cast_continuation=True)

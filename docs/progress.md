@@ -1664,10 +1664,75 @@ Python3.11.16 full unittest passes761 tests in110.145s. Exact-candidate independ
 review is a delivery gate recorded with the Draft PR, alongside hosted head/merge Linux and Windows
 tested SHA/tree. No merge, new game, MTGA input or latency claim; P10 NOT_RUN.
 
+## MP63 — current revised target stage after actual Select update (2026-10-18)
+
+The frozen-original gate ran before product edits on accepted main d947105,
+tree14137c31. The1422 state/report was frozen before parsing1423–1425; the1425
+state/report was frozen before parsing1426. Root alone authenticated the original
+7,718,945 bytes and exact prefix hashes. Independent reviewers audited the
+whitelisted safe method/receipt, closing typed-signature and mixed-transport
+omissions before the gate passed. Actual1424 is a strict single Select update
+paired after consumption; one continuous Diff retains public endpoint identity;
+fresh own1425 supplies its own1/1/1 Unselect literal matching that actual member.
+Existing selected-literal validation/candidate3 are reused. Only then was the
+header-only1426 terminal response parsed and paired after consumption.
+
+Opt-in State/Event14 adds one nullable revised-stage field to the existing
+StageObserver pipeline and one Consumer diagnostic. Historical first-child
+binding and creation time remain unchanged; the revised request gets its own
+binding/ref/lease. The new proof is current only at1425. The actual single append
+watch/Publisher/Consumer and emitted JSONL stream adapter verify parent6/1→0/0,
+first child→consumed, revised child→consumed, no old-ref revival through1433,
+and candidate3 one at1425→zero at1426. Product1425-only replay freezes the new
+proof before terminal/result data is parsed. Future1426+ never fills constraints.
+
+Independent adversarial review closed a mixed-record callback rearming defect
+using whole-record revision quarantine. A new export path briefly overwrote the
+old13 fixture; the exact old file was restored, the script corrected to a separate
+new14 fixture, and old focused tests passed. Raw Token group identity remains
+private producer evidence; its catalog identity stays null. Portable raw zone ID
+and Token kind are explicitly producer observations, not new authentication.
+
+Two isolated Python processes compare249,353 complete old values: all equal,
+source stable and identical fixture bytes. Coverage includes State/Event1–13,
+request profiles1–8, candidates2–6, old first-child/target/payment/tap sidecars,
+Advisor, semantic1–10, defaults and Consumer transports. Formal development-only
+validation passes8 real portable states,32 synthetic events and10 discriminating
+refusals in a28-resource registry. Windows doctor is read-only, exits0,
+input_sent=false. Python3.11.16 full unittest passes781 tests in109.103s,
+including20 new focused tests. Accepted Full12 and same-value float parentId
+controls retain a valid default request/candidate3 while refusing the new proof.
+Exact-HEAD/tree independent review and hosted head/merge Linux/Windows CI remain
+delivery gates recorded with the Draft PR.
+No merge, game input, new real path or latency claim; P10 NOT_RUN.
+
+## MP63 formal integration repair (2026-10-18)
+
+Remote main and both Draft PR heads were rechecked at the handed-off identities.
+PR79 receives only the v14 producer repairs from the reviewed local integration
+candidate: clear pending context on a partial poll even without a current
+request; quarantine silent duplicate-Diff callbacks; use typed JSON predecessor
+identity for first and revised child when Revision is enabled. State/Event14,
+the shared RawReducer and old v1–13 behavior remain unchanged. No CastStage or
+State/Event15 is included.
+
+Four direct synthetic regressions fail on the original product with four
+assertion failures, then all24 MP63 tests pass after repair. Python3.11.16 full
+unittest passes785 tests in108.144s. Separate processes compare249,353 complete
+old values with zero differences;216 normal v14 values equal the original PR.
+Owner-only frozen Equip byte/hash, prefix/watch/Publisher/Consumer/JSONL and all8
+portable projections still pass. Those receipts bind the same54 product sources.
+Formal development-only validation passes28 schema resources,8 portable states,
+32 events and10 negative controls. Windows doctor exits0 read-only. Exact-head
+independent review, updated PR CI and actual-main natural CI are separate
+delivery gates, recorded against their actual identities on PR79. Historical
+qualification failure evidence is retained; no unrelated repair is claimed.
+No MTGA input, new rule solver, runtime dependency or P10; input_sent=false.
+
 ## MP64 — actual Cast to four-member current first target request (2026-10-18)
 
-Independent branch from accepted main d947105; MP63/#79 remains separate Draft
-and unmerged. Pre-implementation production evidence authenticates the retained
+Historical standalone candidate from accepted main d947105, before the MP63
+merge. MP63/#79 was then a separate Draft and unmerged. Pre-implementation production evidence authenticates the retained
 scrubbed fixture's own seat/Full/Diff/request chain, not a private original log.
 The103 parent state/report is frozen before104, and106 child before107+.
 Actual104 uniquely matches original Cast position3 and consumes10100 in the
@@ -1703,3 +1768,34 @@ old continuation and Consumer transport at nine Cast boundary prefixes. Old
 fixtures and schemas remain unchanged. Exact-final independent review and hosted
 head/synthetic-merge Linux/Windows CI are delivery gates recorded with the PR.
 No merge, MTGA operation, new match, P10 or latency claim; P10 remains NOT_RUN.
+
+## MP64 formal integration after MP63 main delivery (2026-10-18)
+
+MP63 PR79 was independently reviewed at431020db7896ebeda8635c2abf9ea3e745ed70fc,
+then squash-merged as6219012790ef14a64d6130ea8e4f9729c3b8e0c0, tree
+dc06a36841f7e31e3f6f6aa8c7e89a1b36923353. Head/merge CI39089865839/39089869041
+and natural push/main CI39090202399 all pass Linux/Windows in attempt1 with785
+tests per job. Actual checkout/Tested identities and Windows doctor were checked.
+The actual-main frozen Equip verifier and216 normal v14 values also pass.
+
+PR81 merges that verified main into its original9e621b1 history without rewriting
+either history. Shared source conflicts reuse the reviewed local integration
+candidate; all55 runtime source blobs match cc3cae2. One StageObserver preserves
+Cast/first/Revision hook order, first-only clearing and all-context reset.
+State/Event14 and15 register as parallel13 extensions with exact profile fields
+and opt-ins. Both Consumer sidecars recheck the final current ref/lease. The
+four MP63 refusal regressions are retained alongside12 integration controls;
+Cast remains Card-based and cannot borrow an Equip Ability or selection.
+
+The24 MP63,15 Cast and12 integration focused tests pass. Python3.11.16 full
+unittest passes812 tests in113.463s with stable source/test hashes. Separate
+processes compare249,353 complete old values without differences;216 v14 values
+equal verified MP63 main and160 v15 values equal the original MP64 candidate.
+The frozen Equip chain and public113-record Cast cutoffs pass without future
+constraints. Formal validation passes30 resources,8/10 states,32/40 events and
+10/8 negative controls; four schema14/15 blobs are unchanged. Windows doctor is
+read-only, exit0. New exact-HEAD/tree independent review, PR CI and actual-main
+natural CI are separate final gates, recorded on PR81 with their actual run/
+attempt/checkout identities. Historical qualification failure remains retained
+and unexplained; no weakening, timeout change or claimed repair is included.
+Complete legality remains unimplemented. input_sent=false; P10=NOT_RUN.

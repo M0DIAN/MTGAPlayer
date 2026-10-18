@@ -10,7 +10,7 @@ SCHEMA_VERSION = 'mtgaplayer.decision-state.v1'
 SCHEMA_VERSIONS = {1: SCHEMA_VERSION, 2: 'mtgaplayer.decision-state.v2',
                    3: 'mtgaplayer.decision-state.v3', 4: 'mtgaplayer.decision-state.v4',
                    5: 'mtgaplayer.decision-state.v5', 6: 'mtgaplayer.decision-state.v6',
-                   7: 'mtgaplayer.decision-state.v7', 8: 'mtgaplayer.decision-state.v8', 9: 'mtgaplayer.decision-state.v9', 10: 'mtgaplayer.decision-state.v10', 11: 'mtgaplayer.decision-state.v11', 12: 'mtgaplayer.decision-state.v12', 13: 'mtgaplayer.decision-state.v13', 15: 'mtgaplayer.decision-state.v15'}
+                   7: 'mtgaplayer.decision-state.v7', 8: 'mtgaplayer.decision-state.v8', 9: 'mtgaplayer.decision-state.v9', 10: 'mtgaplayer.decision-state.v10', 11: 'mtgaplayer.decision-state.v11', 12: 'mtgaplayer.decision-state.v12', 13: 'mtgaplayer.decision-state.v13', 14: 'mtgaplayer.decision-state.v14', 15: 'mtgaplayer.decision-state.v15'}
 EFFECTIVE_STATS = {'basis': 'accepted_gre_reduced_object_literals', 'scope': 'visible_battlefield',
                    'effect_sources': None, 'durations': None}
 FLAGS = {name: False for name in ('legal_choice_verified', 'complete_legality_verified',
@@ -359,6 +359,14 @@ def build_decision_state(document, *, version=1):
         try:
             check_continuation(value, binding, result['legal_action_space']['request_parameters'], visible, game['stack'])
         except (ValueError, TypeError, KeyError, IndexError, RecursionError):
+            value = None
+        result[FIELD] = copy.deepcopy(value)
+    if version == 14:
+        from .target_revision import FIELD, PRIVATE, check as check_revision
+        value = request.get(PRIVATE) if request is not None else None
+        try:
+            check_revision(value, binding, result['legal_action_space']['request_parameters'], visible, game['stack'])
+        except (ValueError, TypeError, KeyError, IndexError, StopIteration, RecursionError):
             value = None
         result[FIELD] = copy.deepcopy(value)
     if version == 15:

@@ -47,9 +47,10 @@ it cannot prove a Cast/Card relationship.
 
 The strict State13/Consumer contract has no compatible container for this new
 provenance. Explicit State/Event **15** therefore adds only nullable
-`cast_choice_continuation`. State/Event14 remains reserved for unmerged #79;
-this branch is independently based on accepted main, includes no MP63 code and
-does not modify #79. V15 inherits the main's v13 fields, without the unmerged
+`cast_choice_continuation`. The original MP64 candidate branched independently
+from main while State/Event14 was reserved for unmerged #79. Local integration
+registers both as parallel profiles without changing either PR; see
+[integration preparation](mp63-mp64-integration.md). V15 retains v13 fields without the
 v14 revision field. Older versions, schemas, candidates, Advisor and defaults
 keep their values. Candidate v2 is reused unchanged.
 
@@ -91,6 +92,19 @@ lineage on a partial poll even when no current request exists. Quarantine lasts
 through the entire rejected record, preventing later callbacks from rearming it.
 Existing default target diagnostics remain separate when only the association
 is unknown. Diagnostic `last_valid` never restores the Cast proof or proposals.
+
+## Parallel continuation profiles
+
+State/Event14 and15 are independent extensions of13. Version14 carries only
+its required nullable revised field;15 carries only its required nullable Cast
+field. Opt-ins require their exact version. One StageObserver retains one
+RawReducer and both subordinate contexts: Cast observes before first, Revision
+after first. First-only clearing preserves sibling prepared transitions; reset
+and partial polls clear the contexts. Both Consumer diagnostics participate in
+the final current snapshot/ref/lease recheck. Card/Ability, cross-subscription,
+missing-parent and cross-path selection controls cannot borrow the other
+profile's history. The repaired MP63 predecessor and retransmission guards are
+retained. Old schemas/defaults remain unchanged.
 
 Focused verification: `python -m unittest discover -s tests -p
 test_cast_continuation.py -v`, then the required full suite and Windows
