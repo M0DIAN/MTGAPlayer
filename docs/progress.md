@@ -1945,3 +1945,13 @@ unknown complete combinations. Direct type/privacy/competition counterexamples
 pass; full tests, exact-candidate independent review and actual head/PR/main
 CI remain separate final gates recorded with their actual identities.
 No new solver, parser, State/Event or native input. input_sent=false; P10=NOT_RUN.
+
+MP69 PR86 was conditionally squashed to87e3812b375a08d4e99b65c45e2a0030916b3091
+(tree19784115560b8d3b98934f712dd4aed8891769bb). Natural main push39104624203
+attempt1 passed Linux871 but failed Windows871 with one qualification failure:
+test_real_script_all_paths_and_safe_summary received child exit1/stderr empty.
+The test captured stdout containing the qualification report but discarded it
+from its failing assertion; the temporary report was also removed. Exact child
+scenario/root cause is unknown. A narrow follow-up retains stdout in that same
+unchanged exit-code assertion; no timeout, assertion, policy or product gate is
+relaxed. The failed run remains evidence, not a claimed repaired historical flake.
