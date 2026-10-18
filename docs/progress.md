@@ -2146,3 +2146,17 @@ readiness/fullpayment/fulllegality unknown. Addedhelperonly n2 ms
 p50/p95/p99/max=.1231/.1411/.1411/.1411 (oldouter gates excluded;offline).
 Final exact-HEAD tests/review/CI remain separate gates. See
 docs/evidence/mp75-mana-requirement.safe.json. input_sent=false; P10=NOT_RUN.
+
+MP75 independent empty-prediction counterproof: observed solution containers do
+not establish observed output units. New report derives output presence from
+actual parsed nonempty unit lists, with explicit empty-descriptor/empty-unit
+regression. Prior candidate e6e8c8b full run intentionally interrupted for this
+repair (not PASS); completed245 focused/doctor receipts retained separately.
+New ordinary commit and final exact-HEAD gates required; no history rewrite.
+
+MP75 postrepair final owner recheck: all64runtimehashes stable, both original
+hashes match, same2 realmatches/0contradictions/0unsupported combinations, all164
+options/policy and both complete legacyhistoryreports unchanged. Direct17PASS;
+emptyoutput P2 independently closed. Actual newhelperonly n2ms
+p50/p95/p99/max=.1983/.2030/.2030/.2030; no realMTGA latency claim. Regenerated
+safe receipt is bound to this repaired runtime. FinalexactHEAD gates pending.

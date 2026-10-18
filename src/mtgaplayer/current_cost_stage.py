@@ -67,7 +67,8 @@ def _review_mana_requirement(stage, visible, seat, reducer):
     result = _unknown_match('single_concrete_mana_requirement_not_observed')
     requirements = stage['mana_requirements']; solutions = stage['predictive_auto_tap_solutions']
     result.update(requirement_amounts=[copy.deepcopy(r['amount']) for r in requirements],
-        requirement_observed=bool(requirements), predictive_output_observed=bool(solutions))
+        requirement_observed=bool(requirements), predictive_output_observed=any(
+            d['manaPaymentOption']['mana'] for s in solutions for d in s['solution']['autoTapActions']))
     if len(requirements) != 1 or requirements[0]['amount']['color'][0] not in COLORS[1:]:
         return result
     if len(solutions) != 1:

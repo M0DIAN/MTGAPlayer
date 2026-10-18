@@ -134,6 +134,22 @@ class ManaRequirementMatchTests(unittest.TestCase):
             m['payCostsReq']['paymentActions']['actions'][1]['manaPaymentOptions'][0]['mana']*=2
         e,message=self.ready(mutate=duplicate_unit);self.denied(self.report(e,message))
 
+    def test_empty_solution_or_unit_does_not_claim_observed_predictive_output(self):
+        for mode in ('empty_descriptors','empty_units'):
+            def mutate(m):
+                taps=m['payCostsReq']['autoTapActionsReq']['autoTapSolutions'][0]['autoTapActions']
+                if mode=='empty_descriptors':taps.clear()
+                else:
+                    taps[0]['manaPaymentOption']['mana'].clear()
+                    m['payCostsReq']['paymentActions']['actions'][1]['manaPaymentOptions'][0]['mana'].clear()
+            e,message=self.ready(mutate=mutate);report=self.report(e,message);self.denied(report)
+            self.assertEqual(report['status'],'observed')
+            self.assertEqual(len(report['predictive_auto_tap_solutions']),1)
+            self.assertFalse(report['mana_requirement_match']['predictive_output_observed'])
+            self.assertEqual(report['mana_requirement_match']['predictive_amounts'],[])
+            old=cost.assess_current_cost_stage(e.consumer,e.reducer,message)
+            report.pop('mana_requirement_match');self.assertEqual(old,report)
+
     def test_descriptor_unit_source_and_ability_must_match_same_current_action(self):
         for changes in ({'srcInstanceId':1003},{'srcInstanceId':1001},{'abilityGrpId':999}):
             e,message=self.ready(mutate=lambda m:change_output(m,**changes))

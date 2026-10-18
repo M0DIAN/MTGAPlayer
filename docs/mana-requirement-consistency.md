@@ -75,6 +75,10 @@ These levels remain distinct:
 - Source readiness, ability catalog truth, additional costs and complete payment
   unknown; all associated verification/permission fields remain false.
 
+An observed solution container alone is not an observed predictive output.
+Empty descriptor or mana-unit lists keep `predictive_output_observed=false`
+and cannot produce an amount match.
+
 `tapped=null` is not untapped. Earlier untap facts are not used. Predictive mana
 is not paid mana. No previous Cast source or target list is inherited. A future
 PerformAutoTapActionsResp cannot contribute to this current calculation, and a
@@ -129,7 +133,7 @@ offline samples do not establish real MTGA end-to-end latency.
 
 | Added helper only | n | p50 ms | p95 ms | p99 ms | max ms |
 |---|---:|---:|---:|---:|---:|
-| Two current Player observations |2|0.1231|0.1411|0.1411|0.1411|
+| Two current Player observations |2|0.1983|0.2030|0.2030|0.2030|
 
 The frozen Equip source has no mana-stage observations, so its added-helper
 sample count is0 and quantiles are null. Its nonmana observations still retain
