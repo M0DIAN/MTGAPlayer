@@ -1,0 +1,154 @@
+{
+  "schema_version": "mtgaplayer.current-group-portable-evidence.v1",
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "authentication_envelope_retained": false,
+  "future_response_used_for_request": false,
+  "item_namespace": "request_scoped_group_item_not_confirmed_object_or_card",
+  "samples": [
+    {
+      "source_alias": "new_player",
+      "source_sha256": "f4881c042ff40c8685a9f116a90a329e6a19f8533775ce65183842715bfbbc61",
+      "request_record": 143,
+      "group_type": "GroupType_Ordered",
+      "context": "GroupingContext_Scry",
+      "specs": [
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Top"
+        },
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Bottom"
+        }
+      ],
+      "items": [
+        {
+          "item_ref": 1,
+          "list_position": 0,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        },
+        {
+          "item_ref": 2,
+          "list_position": 1,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        }
+      ],
+      "source_present": true,
+      "source_visible": true,
+      "source_is_zero": false,
+      "source_object_type": "GameObjectType_Ability",
+      "source_owner": 1,
+      "source_controller": 1,
+      "source_unique_public_stack_identity_verified": true,
+      "prompt_single_int32_number": true,
+      "prompt_number_semantics": null
+    },
+    {
+      "source_alias": "new_player",
+      "source_sha256": "f4881c042ff40c8685a9f116a90a329e6a19f8533775ce65183842715bfbbc61",
+      "request_record": 302,
+      "group_type": "GroupType_Ordered",
+      "context": "GroupingContext_Scry",
+      "specs": [
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Top"
+        },
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Bottom"
+        }
+      ],
+      "items": [
+        {
+          "item_ref": 1,
+          "list_position": 0,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        },
+        {
+          "item_ref": 2,
+          "list_position": 1,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        }
+      ],
+      "source_present": true,
+      "source_visible": true,
+      "source_is_zero": false,
+      "source_object_type": "GameObjectType_Ability",
+      "source_owner": 1,
+      "source_controller": 1,
+      "source_unique_public_stack_identity_verified": true,
+      "prompt_single_int32_number": true,
+      "prompt_number_semantics": null
+    },
+    {
+      "source_alias": "new_player",
+      "source_sha256": "f4881c042ff40c8685a9f116a90a329e6a19f8533775ce65183842715bfbbc61",
+      "request_record": 490,
+      "group_type": "GroupType_Ordered",
+      "context": "GroupingContext_Scry",
+      "specs": [
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Top"
+        },
+        {
+          "upperBound": 2,
+          "zoneType": "ZoneType_Library",
+          "subZoneType": "SubZoneType_Bottom"
+        }
+      ],
+      "items": [
+        {
+          "item_ref": 1,
+          "list_position": 0,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        },
+        {
+          "item_ref": 2,
+          "list_position": 1,
+          "visible": false,
+          "zone": null,
+          "owner": null,
+          "controller": null,
+          "object_type": null
+        }
+      ],
+      "source_present": true,
+      "source_visible": true,
+      "source_is_zero": false,
+      "source_object_type": "GameObjectType_Ability",
+      "source_owner": 1,
+      "source_controller": 1,
+      "source_unique_public_stack_identity_verified": true,
+      "prompt_single_int32_number": true,
+      "prompt_number_semantics": null
+    }
+  ]
+}

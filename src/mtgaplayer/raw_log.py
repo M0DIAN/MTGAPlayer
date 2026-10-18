@@ -614,6 +614,8 @@ class RawReducer:
             self.request['_cost_evidence_interrupted'] = True
         if self.request is not None and self.request['type'] == 'GREMessageType_SearchReq':
             self.request['_search_evidence_interrupted'] = True
+        if self.request is not None and self.request['type'] == 'GREMessageType_GroupReq':
+            self.request['_group_evidence_interrupted'] = True
 
     def _request_ended(self, disposition):
         if self.observer is not None and self.request is not None:
@@ -650,6 +652,8 @@ class RawReducer:
         self._target_state_continuity_verified = False
         if self.request is not None and self.request['type']=='GREMessageType_SearchReq':
             self.request['_search_evidence_interrupted']=True
+        if self.request is not None and self.request['type']=='GREMessageType_GroupReq':
+            self.request['_group_evidence_interrupted']=True
         if self.request:
             self.request['_continuity_verified'] = False
         if self.observer is not None:
@@ -719,6 +723,9 @@ class RawReducer:
                 if len(hits) == 1 and type(hits[0]) is int and hits[0] in (1, 2):
                     self.room_seat = hits[0]
         payload = entry.get('payload')
+        if ('payload' in entry and self.request is not None and self.request['type']=='GREMessageType_GroupReq' and
+                not (type(payload) is dict and payload.get('type')=='ClientMessageType_UIMessage')):
+            self._interrupt_current_target()
         if ('payload' in entry and self.request is not None and self.request['type']=='GREMessageType_SearchReq' and
                 not (type(payload) is dict and payload.get('type')=='ClientMessageType_UIMessage')):
             self._interrupt_current_target()
@@ -884,6 +891,8 @@ class RawReducer:
                     self.request['id'] == msg_id and self.request.get('_cost_evidence_interrupted') is True))
                 search_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
                     self.request['id'] == msg_id and self.request.get('_search_evidence_interrupted') is True))
+                group_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
+                    self.request['id'] == msg_id and self.request.get('_group_evidence_interrupted') is True))
                 self.request = {'id': msg_id, 'type': message['type'],
                                 '_continuity_verified': prior is None or bool(self.request and
                                     self.request['id'] == msg_id and
@@ -901,6 +910,8 @@ class RawReducer:
                     self.request['_cost_evidence_interrupted'] = True
                 if message['type']=='GREMessageType_SearchReq' and search_interrupted:
                     self.request['_search_evidence_interrupted']=True
+                if message['type']=='GREMessageType_GroupReq' and group_interrupted:
+                    self.request['_group_evidence_interrupted']=True
                 if self._include_request_parameters:
                     from .request_parameters import project
                     current_objects = self._current()['objects']
@@ -1157,6 +1168,7 @@ class RawReducer:
         if request: request.pop('_target_evidence_interrupted', None)
         if request: request.pop('_cost_evidence_interrupted', None)
         if request: request.pop('_search_evidence_interrupted', None)
+        if request: request.pop('_group_evidence_interrupted', None)
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
             request.pop('_request_parameters', None)

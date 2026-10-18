@@ -564,6 +564,7 @@ def main(argv=None):
     history.add_argument('--target-stage-completions', action='store_true', help='historical target update/revision/Submit comparison; no current permission or policy change')
     history.add_argument('--current-target-coverage', action='store_true', help='finite current No-cancel target evidence; requires --target-stage-completions')
     history.add_argument('--current-search-evidence', action='store_true', help='current request-scoped Search members and separate historical selection counts; no policy change')
+    history.add_argument('--current-group-evidence', action='store_true', help='finite current Group structure and separate historical submission counts; no policy change')
     doc = sub.add_parser('doctor', help='read-only environment/config/window probe')
     doc.add_argument('--config')
     doc.add_argument('--log')
@@ -715,7 +716,7 @@ def main(argv=None):
                 protocol_evidence=args.protocol_evidence, current_cost_stages=args.current_cost_stages,
                 mana_requirement_match=args.mana_requirement_match,
                 target_stage_completions=args.target_stage_completions, current_target_coverage=args.current_target_coverage,
-                current_search_evidence=args.current_search_evidence)
+                current_search_evidence=args.current_search_evidence,current_group_evidence=args.current_group_evidence)
             print(json.dumps(result,ensure_ascii=False))
             return 0 if result['source']['complete'] else 1
         except (OSError,ValueError,TypeError,KeyError,IndexError,RecursionError,UnicodeError,OverflowError):
