@@ -309,10 +309,15 @@ def assess_current_land_development(consumer, reducer, message, prepared_rules, 
                 from .target_build import current_resource
                 _need(current_resource(reducer) is not None, 'exact_build_resource_provenance_unverified')
                 options = consumer.current_decision_options()
+                _need(_equal(options['visible_state'], {key: state[key] for key in
+                    ('game', 'visible_objects', 'card_knowledge')}), 'current_options_not_available_or_binding_invalid')
             result = _evaluate(state, source_snapshot_ref, consumer, reducer, message, prepared_rules,
                 supplied_options=options)
             if policy_version == SWAMP_POLICY:
                 result = _swamp_extension(options, result, prepared_rules)
+                if options is not None:
+                    _need(_equal(options['visible_state'], {key: state[key] for key in
+                        ('game', 'visible_objects', 'card_knowledge')}), 'current_options_not_available_or_binding_invalid')
             _need(_equal(stamp, _stamp(reducer, message, state)), 'raw_state_changed_during_frame')
             _need(_equal({key: reducer.turn.get(key) for key in turn_keys},
                          {key: state['game']['turn'].get(key) for key in turn_keys}), 'raw_state_changed_during_frame')

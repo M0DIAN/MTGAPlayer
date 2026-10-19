@@ -2595,3 +2595,14 @@ missing live categories fabricated and no unknown-failure product fix claimed.
 See docs/land-development-research.md, docs/evidence/mp92-owner.json and public
 land_swamp_real.README.md. All actual effect/legality/optimality/execution flags
 remainfalse; input_sent=false; P10=NOT_RUN.
+
+MP92 candidate review follow-up: a controlled mismatch of same-ref derived
+options versus callback state reproduced three synthetic counterexamples
+(CardId/phase/during-lookup mutation). No formal Consumer path or MP91 defect
+was established. The newv2 now compares its visible options against the same
+callback game/visible_objects/card_knowledge before and after computation,
+without a second options build or change to old policies. Canonical public
+fixture hashes in the owner receipt now explicitly use LF; the prior CRLF
+values under LF labels were corrected, never changing original raw SHA256.
+11new tests including these direct regressions pass; updated committed-candidate
+full tests/independent review/hosted CI remain required before merge.

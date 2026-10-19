@@ -125,8 +125,8 @@
     "input_sent": false,
     "P10": "NOT_RUN"
   },
-  "public_current_fixture_sha256_lf": "92025525ed017eb12fb14130f237b4fd2ba9bbbcd99f07db326d1ab674c381bf",
-  "public_reference_fixture_sha256_lf": "17463b910405561d269b719b6ab6fa335dfa5950b37065e35f944e1eff9fae00",
+  "public_current_fixture_sha256_lf": "613952804d6fe35e31dc65cc15475c6d29d303a228f8b55e8dd175d68344e8a8",
+  "public_reference_fixture_sha256_lf": "9ed147b164a25b23f8d4ebb105d737cf24ece15e35b65f5b5a6d7480760d30d1",
   "independent_review_scope": "Public projections, code, controlled runtime and safe owner receipts; private raw byte certification is owner-only.",
   "telemetry_limits": {
     "MP91_revocation_query_samples": 2814,
@@ -149,5 +149,16 @@
   "response_encoding_verified": false,
   "execution_ready": false,
   "input_sent": false,
-  "P10": "NOT_RUN"
+  "P10": "NOT_RUN",
+  "controlled_consistency_regression": {
+    "scope": "Synthetic internal derived-options mismatch, not a proven MP91 or reachable Consumer defect",
+    "old_candidate": "5ec573fa9eebeeef3d5e0c331f26fce48e7d4732",
+    "actual_red_cases": [
+      "source CardId mismatch",
+      "phase mismatch",
+      "options mutation during lookup"
+    ],
+    "red_failures": 3,
+    "new_gate": "Before/after equality of v2 visible options and the same callback state; original policies unchanged."
+  }
 }

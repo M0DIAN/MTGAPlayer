@@ -5,6 +5,7 @@ runtime tests change an MP87 fixture to exercise wiring/lifecycle, never to
 claim a second real MP91 request or historical lease measurement.
 """
 import copy
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -48,13 +49,15 @@ class LandSwampTests(unittest.TestCase):
         for key in EXECUTION:
             self.assertIs(report[key], False)
 
-    def stream(self, *, policy=land.SWAMP_POLICY, prefix=True, **kwargs):
+    def stream(self, *, policy=land.SWAMP_POLICY, prefix=True, card_id=106531, phase=None, **kwargs):
         # Invented Swamp transport over the old public Island test, explicitly
         # distinct from the real frozen MP91 policy inputs tested above.
         sample = copy.deepcopy(read('land_development_real.json')['cases'][1])
         play = next(r for r in sample['message']['actionsAvailableReq']['actions'] if r['actionType'] == 'ActionType_Play')
-        play['grpId'] = 106531
-        next(o for o in sample['initial']['objects'] if o['instanceId'] == play['instanceId'])['grpId'] = 106531
+        play['grpId'] = card_id
+        next(o for o in sample['initial']['objects'] if o['instanceId'] == play['instanceId'])['grpId'] = card_id
+        if phase is not None:
+            sample['initial']['turn_info']['phase'] = phase
         self.serial += 1
         path = Path(self.temp.name) / f'synthetic-route-{self.serial}.jsonl'
         prelude = ('\n'.join(read('target_effect_real.json')['resource_prelude']) + '\n').encode() if prefix else b''
@@ -73,6 +76,11 @@ class LandSwampTests(unittest.TestCase):
     def test_actual_frozen_unique_swamp_has_one_deterministic_preference(self):
         self.assertEqual(self.real['origin'], 'retained_scrubbed_real_frozen_current_projection')
         self.assertFalse(self.real['raw_equivalent'])
+        receipt = json.loads((FIXTURES.parents[1] / 'docs/evidence/mp92-owner.json').read_text(encoding='utf8'))
+        for name, field in (('land_swamp_current_real.json', 'public_current_fixture_sha256_lf'),
+                ('land_swamp_reference_real.json', 'public_reference_fixture_sha256_lf')):
+            self.assertEqual(hashlib.sha256((FIXTURES / name).read_bytes().replace(b'\r\n', b'\n')).hexdigest(),
+                receipt[field])
         before = copy.deepcopy(self.real)
         result = self.frozen()
         self.assertEqual(result, self.frozen())
@@ -221,6 +229,33 @@ class LandSwampTests(unittest.TestCase):
         with (patch('mtgaplayer.rules_index.sqlite3.connect', side_effect=AssertionError('IO')),
               patch('mtgaplayer.rules_index._file_sha256', side_effect=AssertionError('IO'))):
             self.assertEqual(self.frozen(reference=reference)['status'], 'research_preference')
+
+    def test_derived_options_cannot_disagree_with_the_same_callback_state(self):
+        # Synthetic corruption of an internal derived report, not evidence of
+        # a reachable Consumer defect or an MP91 game failure.
+        for mode in ('card', 'phase', 'during_lookup'):
+            runtime, _, _, _, _, _ = self.stream(card_id=96828 if mode == 'card' else 106531,
+                phase='Phase_Main2' if mode == 'phase' else None)
+            options = runtime.consumer.current_decision_options()
+            play = next(o for o in options['options'] if o['observation']['engine_action_type'] == 'ActionType_Play')
+            source = next(o for o in options['visible_state']['visible_objects']
+                if o['instance_id'] == play['observation']['visible_object_id'])
+            if mode == 'card': source['card_id'] = 106531
+            elif mode == 'phase': options['visible_state']['game']['turn']['phase'] = 'Phase_Main1'
+            lookup = PreparedRulesIndex.lookup
+            calls = 0
+            def changed(instance, *args, **kwargs):
+                nonlocal calls
+                result = lookup(instance, *args, **kwargs); calls += 1
+                if mode == 'during_lookup' and calls == 2:
+                    source['card_id'] = 96828
+                return result
+            with (self.subTest(mode=mode), patch.object(runtime.consumer, 'current_decision_options', return_value=options),
+                  patch.object(PreparedRulesIndex, 'lookup', changed)):
+                report = land.assess_current_land_development(runtime.consumer, runtime._reducer,
+                    runtime._message, prepared(), policy_version=land.SWAMP_POLICY,
+                    completed_stamp=runtime._completed_stamp)
+                self.denied(report)
 
 
 if __name__ == '__main__':
