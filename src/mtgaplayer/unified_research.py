@@ -10,10 +10,12 @@ from .decision_consumer import EXECUTION, _bounded_json
 from .decision_options import MAX_OPTIONS
 from .semantic_samples import _need
 from .shadow_decision import POLICY as SHADOW_POLICY
-from .land_development import POLICY as LAND_POLICY
+from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY
 from .target_effect import POLICY as TARGET_POLICY
 
 POLICY = 'unified_research.v1'
+V2_POLICY = 'unified_research.v2'
+POLICIES = (POLICY, V2_POLICY)
 VERSION = 'mtgaplayer.unified-research-decision.v1'
 REASONS = frozenset(('research_policy_conflict', 'current_candidate_unverified',
     'current_policy_binding_invalid', 'exact_build_resource_provenance_unverified'))
@@ -23,8 +25,15 @@ GLOBAL_FAILURES = frozenset(('current_snapshot_binding_invalid', 'current_snapsh
     'current_view_unavailable', 'frame_report_binding_invalid'))
 
 
-def _unknown(reason, ref=None):
-    return {'schema_version': VERSION, 'policy_version': POLICY, 'selected_policy': None,
+def _applicable_policy(request_type, *, policy_version=POLICY):
+    _need(type(policy_version) is str and policy_version in POLICIES, 'current_policy_binding_invalid')
+    return {'GREMessageType_ActionsAvailableReq': LAND_POLICY if policy_version == POLICY else SWAMP_POLICY,
+            'GREMessageType_SelectTargetsReq': TARGET_POLICY}.get(request_type)
+
+
+def _unknown(reason, ref=None, *, policy_version=POLICY):
+    _need(type(policy_version) is str and policy_version in POLICIES, 'current_policy_binding_invalid')
+    return {'schema_version': VERSION, 'policy_version': policy_version, 'selected_policy': None,
         'selected_policy_version': None, 'status': 'expired', 'reason': reason,
         'request_binding': None, 'source_snapshot_ref': copy.deepcopy(ref),
         'preferred_option_key': None, 'candidate_namespace': None, 'preference_basis': None,
@@ -34,7 +43,7 @@ def _unknown(reason, ref=None):
         'read_only': True, **EXECUTION}
 
 
-def combine_current_research(options, shadow, research=None, target_evidence=None):
+def combine_current_research(options, shadow, research=None, target_evidence=None, *, policy_version=POLICY):
     """One result from the same frame's reports; conflicting candidates abstain.
 
     Matching numeric positions across inventories never establishes identity.
@@ -44,11 +53,10 @@ def combine_current_research(options, shadow, research=None, target_evidence=Non
     _need(type(options['options']) is list and len(options['options']) <= MAX_OPTIONS,
         'current_candidate_unverified')
     binding, ref = options['request_binding'], options['source_snapshot_ref']
-    result = _unknown('insufficient_policy_evidence', ref)
+    result = _unknown('insufficient_policy_evidence', ref, policy_version=policy_version)
     result.update(status='abstain', request_binding=copy.deepcopy(binding))
     typ = binding['request_type']
-    applicable = { 'GREMessageType_ActionsAvailableReq': LAND_POLICY,
-                   'GREMessageType_SelectTargetsReq': TARGET_POLICY }.get(typ)
+    applicable = _applicable_policy(typ, policy_version=policy_version)
     reports = [(SHADOW_POLICY, shadow)]
     if research is not None:
         _need(applicable is not None, 'current_policy_binding_invalid')
@@ -62,7 +70,7 @@ def combine_current_research(options, shadow, research=None, target_evidence=Non
             'current_policy_binding_invalid')
         if (report['status'] == 'expired' or report.get('reason') in GLOBAL_FAILURES or
                 str(report.get('reason','')).startswith('consumer_')):
-            return _unknown('current_policy_binding_invalid')
+            return _unknown('current_policy_binding_invalid', policy_version=policy_version)
         if report['request_binding'] is not None or report['source_snapshot_ref'] is not None:
             _need((_equal(report['request_binding'],binding) and _equal(report['source_snapshot_ref'],ref)) or
                 (report['request_binding'] is None and report['status'] != 'research_preference' and
