@@ -303,6 +303,28 @@ class CurrentTargetPlayerTests(unittest.TestCase):
                 e, message = self.ready(sample)
                 self.denied(self.report(e, message))
 
+    def test_synthetic_equal_numeric_raw_source_groups_require_integer_identity(self):
+        # Ability card_id is null in the visible projection. A raw-context type
+        # mutation must therefore be rejected independently of that projection
+        # and of the unchanged accepted-state digest. The group-1 alias below
+        # is synthetic, solely to make True numerically equal to the old group.
+        for integral, changed in ((1000, 1000.0), (1, True)):
+            with self.subTest(integral=integral, changed_type=type(changed).__name__):
+                sample = copy.deepcopy(self.sample)
+                sample['objects'][0]['grpId'] = integral
+                body = sample['message']['selectTargetsReq']
+                body['abilityGrpId'] = integral
+                body['targets'][0]['targetingAbilityGrpId'] = integral
+                e, message = self.ready(sample)
+                self.assertEqual(self.report(e, message)['status'], 'observed')
+                digest = e.reducer.accepted_digest
+                visible = copy.deepcopy(e.reducer.document()['current']['objects'])
+                self.assertIsNone(next(row for row in visible if row['id'] == 100)['card_id'])
+                e.reducer.objects[100]['grpId'] = changed
+                self.assertEqual(e.reducer.accepted_digest, digest)
+                self.assertEqual(e.reducer.document()['current']['objects'], visible)
+                self.denied(self.report(e, message))
+
     def test_synthetic_public_target_cannot_be_ability_hidden_or_wrong_zone(self):
         for mode in ('ability', 'hidden', 'zone', 'duplicate_zone', 'missing'):
             with self.subTest(mode=mode):

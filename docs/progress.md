@@ -2308,3 +2308,10 @@ doctor PASS. Direct role/build controls52PASS; independent pre-final48scenarios/
 HEAD/tree review and actual PR/main CI remain final delivery gates. See
 docs/current-player-target-evidence.md. MP81 current_view_unavailable and prior
 Windows qualification root causes remain UNKNOWN. input_sent=false; P10=NOT_RUN.
+
+MP84 post-review direct counterproof found same-valued float/bool raw source
+Ability group IDs could pass new-profile equality despite unchanged visible
+card_id=null and accepted digest. Reuse strict typed _equal for both groups;
+new direct tests cover1000→1000.0 and1→True. Prior candidate e84b84c2's1120PASS,
+review and CI are historical only; the repaired ordinary commit requires fresh
+full tests, exact-HEAD review and actual Linux/Windows CI before delivery.

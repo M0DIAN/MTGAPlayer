@@ -142,8 +142,10 @@ Focused synthetic counterproofs cover version/owner/generation, raw namespace
 collisions, hidden visibility, Card/Token/Ability distinction, partial domains,
 typed proposal tampering, quantity/source/slot/seat, lifecycle and in-flight
 changes. Independent review found and repaired typed-role omission, source-seat
-ambiguity, late duplicate version headers and completed-frame hidden collision
-freshness. Full Python3.11, doctor, exact-HEAD review and actual PR/main CI are
+ambiguity, late duplicate version headers, completed-frame hidden collision
+freshness and same-valued float/bool raw source-group identities. The last was
+found after the first candidate review, so that candidate's PASS/CI cannot
+substitute the repaired HEAD's gates. Full Python3.11, doctor, exact-HEAD review and actual PR/main CI are
 separate delivery gates; their precise revisions/results belong to PR receipts.
 
 MP81 current_view_unavailable and historical Windows qualification root causes

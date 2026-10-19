@@ -224,7 +224,9 @@ def _project_referents(reducer, message, state, ref, limit, visible):
     signatures[source] = _identity(reducer, source, ('GameObjectType_Ability',), 'ZoneType_Stack')
     source_row = reducer.objects[source]
     _need(all(type(source_row[k]) is int and source_row[k] == state['binding']['self_seat'] for k in
-        ('ownerSeatId', 'controllerSeatId')) and source_row['grpId'] == constraints['ability_grp_ref'] == constraints['targeting_ability_grp_ref'])
+        ('ownerSeatId', 'controllerSeatId')) and
+        _equal(source_row['grpId'], constraints['ability_grp_ref']) and
+        _equal(source_row['grpId'], constraints['targeting_ability_grp_ref']))
     _need(all(type(constraints[k]) is int and constraints[k] == 1 for k in ('min_targets', 'max_targets')))
     stack = state['game']['stack']
     _need(stack['availability'] == 'observed' and any(m['instance_id'] == source and
