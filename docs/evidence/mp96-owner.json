@@ -1,0 +1,853 @@
+{
+  "schema_version": "mtgaplayer.mp96-owner-evidence.v1",
+  "base_main": "2e4594a7100e434299a09552415065a1ac032e35",
+  "base_tree": "a61aa3a02bc344893a7a0fdac37b9cd96afd9e9c",
+  "functional_candidate_head": "4cc36af57dbb3b512c2ffd83316ad1b9ba2954e2",
+  "functional_candidate_tree": "03cc068e813cac6ee8e07bd90323891acb7f8e34",
+  "source_sha256_lf": {
+    "src/mtgaplayer/cast_cardflow.py": "4264767c356a81a5bfcac1508a3d8ce6447b91b538279ba2527696ef75814855",
+    "src/mtgaplayer/rules_index.py": "a419f1699111348def0ee1ed356322de4ade61f1da2e12e51fe7471cb8924c7f",
+    "src/mtgaplayer/shadow_runtime.py": "3f40ff57c3ed3c518d42693de765c735cab69278dfc8175c9538fe7611654305",
+    "src/mtgaplayer/unified_research.py": "e3cf7cd857abfd801764811a21d5b76a98dff75ccb71d0706c93dbbb5417fbb3",
+    "tests/test_cast_cardflow.py": "f46cabe9feb6f5dc7db19fa0fb698cd08ba867a5be5bce5c32c55d9f80f3b736",
+    "tests/test_unified_research_v2.py": "afbc87d3b5650c4254da1028629d88d11edd4d6747b0a339d18dcf445c290f8b",
+    "tests/fixtures/cast_cardflow_real.json": "a8f5f28499b9119a045e4d5660a95bcc9d462a6ac4dfe3127565ba5bb82ecd29",
+    "tests/fixtures/cast_cardflow_reference_real.json": "7f2a300c83cc501022a83ccafe0cc6d64cd8b736efc05e9995ac4d7f489f7805"
+  },
+  "binding_scope": "Functional source tested at this commit; subsequent evidence/docs-only commit and final delivery identities are separately reviewed and hosted CI tested.",
+  "preserved_investigation_sha256": {
+    "MP94_progress": "310a895aa00897f7db58f84236d17033fc340cefa1617ddaadfb525d5ad3184d",
+    "MP95_progress": "71a33d01b071eb33224b6265773ce0e453e7773006cf4426266ca511fd88e2bc"
+  },
+  "method": {
+    "owner_authenticated_private_originals": true,
+    "independent_reviewer_private_raw_certification": false,
+    "replay": "Existing production Runtime; original logical MP91 poll starts and50 boundaries; MP81 original42cutoffs. Prefix bytes appended only after freezing.",
+    "no_future_response_policy_inputs": true,
+    "no_historical_choices_used_to_define_goal": true,
+    "performance": "Bounded actual local-clock prefix replay, concurrent host work, nested stages; not a new live MTGA measurement."
+  },
+  "conditional_profile": {
+    "source_card_id": 96626,
+    "specific_ability_id": 190898,
+    "distinct_activated_ability_id": 190899,
+    "client_build": "2026.64.0.14517.1329972",
+    "catalog_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "Data": "2026.64.0.280",
+    "GRP": "280.1327372",
+    "scope": "Reviewed native enters/leaves trigger draw1; goal uses prospective enters only, no future leave benefit.",
+    "goal": "conditional_card_flow_research",
+    "comparison_scope": "goal_conditioned_heuristic_only",
+    "FloatMana_resource_bound": null
+  },
+  "cohorts": {
+    "mp91": {
+      "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+      "source_bytes": 8382052,
+      "archive_verification": {
+        "status": "verified",
+        "clean_stop": true,
+        "complete_source_files_verified": true,
+        "rotation_gap_possible": false,
+        "archive_error": null,
+        "pending_manifest": null,
+        "uncommitted_segments": null,
+        "generations": [
+          {
+            "generation": 1,
+            "bytes": 8382052,
+            "sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+            "segments": 789,
+            "ranges_contiguous": true,
+            "framed_records": 1844,
+            "partial_record": false,
+            "framing_errors": 0,
+            "source_verified_at_stop": true,
+            "rotation_gap_possible": false
+          }
+        ]
+      },
+      "first_current_opportunities": 50,
+      "authenticated_requests": 93,
+      "original_boundaries_and_digests_verified": true,
+      "one_follower_reducer_owner": true,
+      "all_six_old_modes": {
+        "default": {
+          "population": 50,
+          "statuses": {
+            "unsupported": 9,
+            "abstain": 41
+          }
+        },
+        "land1": {
+          "population": 24,
+          "statuses": {
+            "abstain": 24
+          }
+        },
+        "land2": {
+          "population": 24,
+          "statuses": {
+            "abstain": 23,
+            "research_preference": 1
+          }
+        },
+        "target": {
+          "population": 4,
+          "statuses": {
+            "abstain": 4
+          }
+        },
+        "unified1": {
+          "population": 50,
+          "statuses": {
+            "unsupported": 9,
+            "abstain": 41
+          }
+        },
+        "unified2": {
+          "population": 50,
+          "statuses": {
+            "unsupported": 9,
+            "abstain": 40,
+            "research_preference": 1
+          }
+        }
+      },
+      "cast_all_current_statuses": {
+        "unsupported": 26,
+        "abstain": 14,
+        "research_preference": 10
+      },
+      "cast_actions_available": {
+        "selected_current_opportunities": 24,
+        "evaluated_reports": 24,
+        "not_evaluated_reports": 0,
+        "status_distribution": {
+          "research_preference": 10,
+          "abstain": 14,
+          "unsupported": 0,
+          "expired": 0
+        },
+        "reason_distribution": {
+          "active_action_structure_unreviewed": 4,
+          "conditional_cardflow_goal_heuristic": 10,
+          "no_reviewed_cardflow_cast": 10
+        },
+        "preference_opportunity_ordinals": [
+          18,
+          19,
+          20,
+          39,
+          40,
+          41,
+          42,
+          43,
+          46,
+          48
+        ]
+      },
+      "cast_primary_no_play": {
+        "selected_current_opportunities": 10,
+        "evaluated_reports": 10,
+        "not_evaluated_reports": 0,
+        "status_distribution": {
+          "research_preference": 5,
+          "abstain": 5,
+          "unsupported": 0,
+          "expired": 0
+        },
+        "reason_distribution": {
+          "conditional_cardflow_goal_heuristic": 5,
+          "no_reviewed_cardflow_cast": 5
+        },
+        "preference_opportunity_ordinals": [
+          20,
+          41,
+          43,
+          46,
+          48
+        ]
+      },
+      "cast_eligible_opportunities": [
+        {
+          "opportunity_ordinal": 18,
+          "unranked_competitor_count": 8
+        },
+        {
+          "opportunity_ordinal": 19,
+          "unranked_competitor_count": 10
+        },
+        {
+          "opportunity_ordinal": 20,
+          "unranked_competitor_count": 10
+        },
+        {
+          "opportunity_ordinal": 39,
+          "unranked_competitor_count": 8
+        },
+        {
+          "opportunity_ordinal": 40,
+          "unranked_competitor_count": 10
+        },
+        {
+          "opportunity_ordinal": 41,
+          "unranked_competitor_count": 10
+        },
+        {
+          "opportunity_ordinal": 42,
+          "unranked_competitor_count": 11
+        },
+        {
+          "opportunity_ordinal": 43,
+          "unranked_competitor_count": 11
+        },
+        {
+          "opportunity_ordinal": 46,
+          "unranked_competitor_count": 11
+        },
+        {
+          "opportunity_ordinal": 48,
+          "unranked_competitor_count": 11
+        }
+      ],
+      "unified_v3_statuses": {
+        "unsupported": 9,
+        "abstain": 32,
+        "research_preference": 9
+      },
+      "unified_v3_preference_ordinals": [
+        18,
+        19,
+        20,
+        39,
+        40,
+        41,
+        43,
+        46,
+        48
+      ],
+      "unified_v3_conflicts": 1,
+      "current_request_revocations": 50,
+      "post_consumption_revivals": 0,
+      "close_revoked": true,
+      "cross_mode_checks": {
+        "existing_mp93_checks": {
+          "checks": {
+            "current_options_all_modes_equal": 50,
+            "shadow_decision_all_modes_equal": 50,
+            "land2_actual_route_equal": 24,
+            "target_effect_route_equal": 4
+          },
+          "additional_unified_preference_ordinals": [
+            42
+          ]
+        },
+        "mp96_checks": {
+          "current_options_all_modes_equal": 50,
+          "shadow_decision_all_modes_equal": 50,
+          "local_evidence_all_modes_equal": 50,
+          "non_actions_specialist_route_unchanged": 26,
+          "cast_actual_route_equal": 24,
+          "existing_land2_report_equal": 24,
+          "land_cast_conflicts_correctly_abstained": 1
+        },
+        "additional_unified_preference_ordinals": [
+          18,
+          19,
+          20,
+          39,
+          40,
+          41,
+          43,
+          46,
+          48
+        ]
+      },
+      "added_only_performance_ms": {
+        "scope": "Controlled original-byte endpoint prefixes; actual local clock, not live MTGA.",
+        "timings_ms": {
+          "All": {
+            "cast_cardflow_policy": {
+              "sample_count": 24,
+              "p50_ms": 7.4632,
+              "p95_ms": 13.2487,
+              "p99_ms": 16.6249,
+              "max_ms": 16.6249
+            },
+            "research_policy": {
+              "sample_count": 28,
+              "p50_ms": 6.4298,
+              "p95_ms": 48.848,
+              "p99_ms": 59.7793,
+              "max_ms": 59.7793
+            },
+            "unified_dispatch": {
+              "sample_count": 50,
+              "p50_ms": 0.0956,
+              "p95_ms": 0.5704,
+              "p99_ms": 0.6749,
+              "max_ms": 0.6749
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 52,
+              "p50_ms": 48.5259,
+              "p95_ms": 169.4644,
+              "p99_ms": 1067.6677,
+              "max_ms": 1067.6677
+            }
+          },
+          "ActionsAvailable": {
+            "cast_cardflow_policy": {
+              "sample_count": 24,
+              "p50_ms": 7.4632,
+              "p95_ms": 13.2487,
+              "p99_ms": 16.6249,
+              "max_ms": 16.6249
+            },
+            "research_policy": {
+              "sample_count": 24,
+              "p50_ms": 6.8295,
+              "p95_ms": 48.848,
+              "p99_ms": 59.7793,
+              "max_ms": 59.7793
+            },
+            "unified_dispatch": {
+              "sample_count": 24,
+              "p50_ms": 0.1366,
+              "p95_ms": 0.6044,
+              "p99_ms": 0.6749,
+              "max_ms": 0.6749
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 24,
+              "p50_ms": 83.8863,
+              "p95_ms": 169.4644,
+              "p99_ms": 184.5422,
+              "max_ms": 184.5422
+            }
+          },
+          "SelectTargets": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 4,
+              "p50_ms": 5.6899,
+              "p95_ms": 6.4298,
+              "p99_ms": 6.4298,
+              "max_ms": 6.4298
+            },
+            "unified_dispatch": {
+              "sample_count": 4,
+              "p50_ms": 0.0928,
+              "p95_ms": 0.0984,
+              "p99_ms": 0.0984,
+              "max_ms": 0.0984
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 4,
+              "p50_ms": 27.3279,
+              "p95_ms": 28.7292,
+              "p99_ms": 28.7292,
+              "max_ms": 28.7292
+            }
+          },
+          "Other": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "unified_dispatch": {
+              "sample_count": 22,
+              "p50_ms": 0.0693,
+              "p95_ms": 0.077,
+              "p99_ms": 0.1125,
+              "max_ms": 0.1125
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 22,
+              "p50_ms": 19.2037,
+              "p95_ms": 46.936,
+              "p99_ms": 124.6518,
+              "max_ms": 124.6518
+            }
+          },
+          "ExpiredOrRevoked": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "unified_dispatch": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 2,
+              "p50_ms": 147.4015,
+              "p95_ms": 1067.6677,
+              "p99_ms": 1067.6677,
+              "max_ms": 1067.6677
+            }
+          }
+        }
+      },
+      "post_consumption_query_ms": {
+        "All": {
+          "sample_count": 50,
+          "p50_ms": 0.0192,
+          "p95_ms": 0.0211,
+          "p99_ms": 0.0253,
+          "max_ms": 0.0253
+        },
+        "ActionsAvailable": {
+          "sample_count": 24,
+          "p50_ms": 0.0194,
+          "p95_ms": 0.0211,
+          "p99_ms": 0.0253,
+          "max_ms": 0.0253
+        },
+        "SelectTargets": {
+          "sample_count": 4,
+          "p50_ms": 0.0191,
+          "p95_ms": 0.0202,
+          "p99_ms": 0.0202,
+          "max_ms": 0.0202
+        },
+        "Other": {
+          "sample_count": 22,
+          "p50_ms": 0.019,
+          "p95_ms": 0.0206,
+          "p99_ms": 0.0209,
+          "max_ms": 0.0209
+        }
+      }
+    },
+    "mp81": {
+      "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+      "source_bytes": 3225997,
+      "archive_verification": {
+        "status": "verified",
+        "clean_stop": true,
+        "complete_source_files_verified": true,
+        "rotation_gap_possible": false,
+        "archive_error": null,
+        "pending_manifest": null,
+        "uncommitted_segments": null,
+        "generations": [
+          {
+            "generation": 1,
+            "bytes": 3225997,
+            "sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+            "segments": 217,
+            "ranges_contiguous": true,
+            "framed_records": 367,
+            "partial_record": false,
+            "framing_errors": 0,
+            "source_verified_at_stop": true,
+            "rotation_gap_possible": false
+          }
+        ]
+      },
+      "first_current_opportunities": 42,
+      "authenticated_requests": 53,
+      "original_boundaries_and_digests_verified": true,
+      "one_follower_reducer_owner": true,
+      "all_six_old_modes": {
+        "default": {
+          "population": 42,
+          "statuses": {
+            "unsupported": 8,
+            "abstain": 33,
+            "research_preference": 1
+          }
+        },
+        "land1": {
+          "population": 13,
+          "statuses": {
+            "abstain": 12,
+            "research_preference": 1
+          }
+        },
+        "land2": {
+          "population": 13,
+          "statuses": {
+            "abstain": 12,
+            "research_preference": 1
+          }
+        },
+        "target": {
+          "population": 14,
+          "statuses": {
+            "unsupported": 1,
+            "abstain": 4,
+            "research_preference": 9
+          }
+        },
+        "unified1": {
+          "population": 42,
+          "statuses": {
+            "unsupported": 8,
+            "abstain": 23,
+            "research_preference": 11
+          }
+        },
+        "unified2": {
+          "population": 42,
+          "statuses": {
+            "unsupported": 8,
+            "abstain": 23,
+            "research_preference": 11
+          }
+        }
+      },
+      "cast_all_current_statuses": {
+        "unsupported": 29,
+        "abstain": 10,
+        "research_preference": 3
+      },
+      "cast_actions_available": {
+        "selected_current_opportunities": 13,
+        "evaluated_reports": 13,
+        "not_evaluated_reports": 0,
+        "status_distribution": {
+          "research_preference": 3,
+          "abstain": 10,
+          "unsupported": 0,
+          "expired": 0
+        },
+        "reason_distribution": {
+          "active_action_structure_unreviewed": 2,
+          "conditional_cardflow_goal_heuristic": 3,
+          "no_reviewed_cardflow_cast": 8
+        },
+        "preference_opportunity_ordinals": [
+          5,
+          6,
+          8
+        ]
+      },
+      "cast_primary_no_play": null,
+      "cast_eligible_opportunities": [
+        {
+          "opportunity_ordinal": 5,
+          "unranked_competitor_count": 10
+        },
+        {
+          "opportunity_ordinal": 6,
+          "unranked_competitor_count": 11
+        },
+        {
+          "opportunity_ordinal": 8,
+          "unranked_competitor_count": 11
+        }
+      ],
+      "unified_v3_statuses": {
+        "unsupported": 8,
+        "abstain": 20,
+        "research_preference": 14
+      },
+      "unified_v3_preference_ordinals": [
+        5,
+        6,
+        8,
+        12,
+        19,
+        32,
+        33,
+        35,
+        36,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "unified_v3_conflicts": 0,
+      "current_request_revocations": 41,
+      "post_consumption_revivals": 0,
+      "close_revoked": true,
+      "cross_mode_checks": {
+        "existing_mp93_checks": {
+          "checks": {
+            "current_options_all_modes_equal": 42,
+            "shadow_decision_all_modes_equal": 42,
+            "land2_actual_route_equal": 13,
+            "target_effect_route_equal": 14
+          },
+          "additional_unified_preference_ordinals": []
+        },
+        "mp96_checks": {
+          "current_options_all_modes_equal": 42,
+          "shadow_decision_all_modes_equal": 42,
+          "local_evidence_all_modes_equal": 42,
+          "non_actions_specialist_route_unchanged": 29,
+          "cast_actual_route_equal": 13,
+          "existing_land2_report_equal": 13
+        },
+        "additional_unified_preference_ordinals": [
+          5,
+          6,
+          8
+        ]
+      },
+      "added_only_performance_ms": {
+        "scope": "Controlled original-byte endpoint prefixes; actual local clock, not live MTGA.",
+        "timings_ms": {
+          "All": {
+            "cast_cardflow_policy": {
+              "sample_count": 13,
+              "p50_ms": 8.5368,
+              "p95_ms": 12.2615,
+              "p99_ms": 12.2615,
+              "max_ms": 12.2615
+            },
+            "research_policy": {
+              "sample_count": 27,
+              "p50_ms": 5.1989,
+              "p95_ms": 11.3852,
+              "p99_ms": 13.3995,
+              "max_ms": 13.3995
+            },
+            "unified_dispatch": {
+              "sample_count": 42,
+              "p50_ms": 0.1039,
+              "p95_ms": 0.5193,
+              "p99_ms": 0.6429,
+              "max_ms": 0.6429
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 44,
+              "p50_ms": 21.9434,
+              "p95_ms": 146.0168,
+              "p99_ms": 234.9521,
+              "max_ms": 234.9521
+            }
+          },
+          "ActionsAvailable": {
+            "cast_cardflow_policy": {
+              "sample_count": 13,
+              "p50_ms": 8.5368,
+              "p95_ms": 12.2615,
+              "p99_ms": 12.2615,
+              "max_ms": 12.2615
+            },
+            "research_policy": {
+              "sample_count": 13,
+              "p50_ms": 7.0948,
+              "p95_ms": 13.3995,
+              "p99_ms": 13.3995,
+              "max_ms": 13.3995
+            },
+            "unified_dispatch": {
+              "sample_count": 13,
+              "p50_ms": 0.121,
+              "p95_ms": 0.6429,
+              "p99_ms": 0.6429,
+              "max_ms": 0.6429
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 13,
+              "p50_ms": 70.0533,
+              "p95_ms": 216.1221,
+              "p99_ms": 216.1221,
+              "max_ms": 216.1221
+            }
+          },
+          "SelectTargets": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 14,
+              "p50_ms": 4.9082,
+              "p95_ms": 5.648,
+              "p99_ms": 5.648,
+              "max_ms": 5.648
+            },
+            "unified_dispatch": {
+              "sample_count": 14,
+              "p50_ms": 0.1331,
+              "p95_ms": 0.1486,
+              "p99_ms": 0.1486,
+              "max_ms": 0.1486
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 14,
+              "p50_ms": 21.3857,
+              "p95_ms": 26.2919,
+              "p99_ms": 26.2919,
+              "max_ms": 26.2919
+            }
+          },
+          "Other": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "unified_dispatch": {
+              "sample_count": 15,
+              "p50_ms": 0.0682,
+              "p95_ms": 0.0874,
+              "p99_ms": 0.0874,
+              "max_ms": 0.0874
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 15,
+              "p50_ms": 14.7054,
+              "p95_ms": 40.5885,
+              "p99_ms": 40.5885,
+              "max_ms": 40.5885
+            }
+          },
+          "ExpiredOrRevoked": {
+            "cast_cardflow_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "unified_dispatch": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 2,
+              "p50_ms": 63.0172,
+              "p95_ms": 234.9521,
+              "p99_ms": 234.9521,
+              "max_ms": 234.9521
+            }
+          }
+        }
+      },
+      "post_consumption_query_ms": {
+        "All": {
+          "sample_count": 41,
+          "p50_ms": 0.0186,
+          "p95_ms": 0.0221,
+          "p99_ms": 0.033,
+          "max_ms": 0.033
+        },
+        "ActionsAvailable": {
+          "sample_count": 13,
+          "p50_ms": 0.0192,
+          "p95_ms": 0.0221,
+          "p99_ms": 0.0221,
+          "max_ms": 0.0221
+        },
+        "SelectTargets": {
+          "sample_count": 14,
+          "p50_ms": 0.017,
+          "p95_ms": 0.0224,
+          "p99_ms": 0.0224,
+          "max_ms": 0.0224
+        },
+        "Other": {
+          "sample_count": 14,
+          "p50_ms": 0.0183,
+          "p95_ms": 0.033,
+          "p99_ms": 0.033,
+          "max_ms": 0.033
+        }
+      }
+    }
+  },
+  "legacy_compatibility": {
+    "schema_version": "mtgaplayer.mp93-entire-frame-compatibility.v1",
+    "status": "PASS",
+    "compared_endpoints_across_modes": 552,
+    "equal_entire_frame_leaf_values": 691502,
+    "equal_entire_safe_summary_leaf_values": 29084,
+    "private_mismatching_endpoints": 0,
+    "equality": "Canonical JSON retains bool/integer/float distinctions; comparison never uses Python loose numeric equality.",
+    "normalization": "Entire CurrentDecisionFrame and matching-code safe_summary. Only random snapshot transport session_id/sequence and actual timings_ns/timings_ms are removed; all binding, versions, source hashes, evidence and lifecycle fields remain.",
+    "source_data_scope": "Already saved private replay outputs only; no archive is reparsed and no strategy is rerun.",
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "tests": {
+    "focused_cast": 13,
+    "focused_unified": 27,
+    "full_python311": 1258,
+    "full_seconds": 209.026,
+    "full_status": "PASS",
+    "windows_doctor": "PASS_READ_ONLY",
+    "public_transport_and_faults_are_synthetic": true,
+    "real_positive_proof": "Owner original-byte Runtime replay, distinct from public synthetic transport tests."
+  },
+  "independent_review_and_hosted_CI": "Final exact-HEAD/tree and actual CI runs/attempts recorded in PR delivery; not certified by this owner receipt.",
+  "remaining_unknowns": [
+    "actual_resolution",
+    "actual_trigger",
+    "net_hand_gain",
+    "payment",
+    "dynamic_effects",
+    "other_action_goal_values",
+    "complete_legality",
+    "strategic_optimality",
+    "response_encoding",
+    "server_acceptance"
+  ],
+  "effect_triggered_verified": false,
+  "net_hand_gain_verified": false,
+  "payment_verified": false,
+  "strategic_dominance_verified": false,
+  "complete_legality_verified": false,
+  "strategic_optimality_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

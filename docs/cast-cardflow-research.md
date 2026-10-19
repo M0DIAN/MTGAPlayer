@@ -108,3 +108,25 @@ dedicated arbitration permission, conflicts and request lifecycle. They are
 never counted as additional real positive opportunities. Controlled replay
 timings describe local computation, not live MTGA end-to-end latency or a new
 three-second qualification. Historical agreement is not correctness or win rate.
+
+Actual owner replay results (preference / abstain / unsupported):
+
+| Population | Original Unified v2 | Cast-only | Unified v3 |
+| --- | --- | --- | --- |
+| MP91 all50 current opportunities | 1 / 40 / 9 | 10 / 14 / 26 | 9 / 32 / 9 |
+| MP81 all42 current opportunities | 11 / 23 / 8 | 3 / 10 / 29 | 14 / 20 / 8 |
+
+On MP91's24 ActionsAvailable requests Cast-only is10/14/0. The primary ten
+no-Play requests contribute5/5/0; all five requested opportunities20/41/43/46/48
+have a preference, with10/10/11/11/11 unranked competitors. Five additional
+reviewed offers occur among requests that also contain Play. Opportunity42's
+real Land/Cast conflict abstains, so v3 replaces the old land preference there
+and gains nine preferences elsewhere. No preference is generated for the
+four structurally unreviewed requests. Complete six-mode old frames and safe
+summaries compare equal on552 endpoint-mode pairs (691,502 +29,084 typed leaf
+values), normalizing only transport session/sequence and actual timings.
+
+See [the owner evidence receipt](evidence/mp96-owner.json) for source hashes,
+denominators, current request revocations and bounded computation timings.
+Independent review and hosted CI bind the final delivery separately. No new
+real game or historical choice label is used to define or tune this goal.
