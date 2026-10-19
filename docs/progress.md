@@ -2353,8 +2353,9 @@ Card/Ability reports remain identical even with both flags enabled.
 10realJSONL/1152record documents/options/policy/Candidate2-6, all53authenticated
 defaults, completeMP73/historyreport and41runtimeframes/safe summaries identical
 across825554leafvalues; policy1research/33abstain/8unsupported unchanged. Independent
-workingtree controls46scenarios/325assertionsPASS; final full tests/exactHEAD-tree
-review and actual PR/main Linux+Windows CI remain delivery gates. Added-only
+workingtree controls46scenarios/325assertionsPASS. Final local full Python3.11
+1148testsPASS/166.543s; exactHEAD-tree review and actual PR/main Linux+Windows CI
+remain delivery gates. Added-only
 43poll replay ns timing converted to ms p50/p95/p99/max=.1255/10.7253/10.8755/
 10.8755; bounded nested RevisionStage+freeze work, not full MTGA-step latency.
 See docs/player-target-stage-evidence.md and safe owner receipt. MP81
