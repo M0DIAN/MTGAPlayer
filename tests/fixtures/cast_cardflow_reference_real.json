@@ -1,0 +1,151 @@
+{
+  "metadata": {
+    "schema_version": "mtgaplayer.mtga-cardflow-reference.v1",
+    "source_format": "mtga_official_sqlite_conditional_cardflow_metadata",
+    "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+    "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "source_version_is_user_supplied": false,
+    "card_records": 1,
+    "records_without_arena_id": 0,
+    "unique_arena_ids": 1,
+    "ambiguous_arena_ids": 0
+  },
+  "matches": {
+    "96626": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-cardflow-reference.v1",
+        "card_id": 96626,
+        "profile": {
+          "Types": "1",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 7,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "o1oU",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "190898:1055624,190899:1055625",
+          "HiddenAbilityIds": ""
+        },
+        "ability_definitions": [
+          {
+            "row": {
+              "Id": 190898,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 1055623,
+              "Category": 2,
+              "SubCategory": 10,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 0,
+              "PaymentType": 0,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": null,
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": null,
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": null,
+              "HiddenByAbilityIds": null,
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": null,
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 1055623,
+              "Formatted": 1,
+              "Loc": "When CARDNAME enters or leaves the battlefield, draw a card."
+            },
+            "specific_text": {
+              "LocId": 1055624,
+              "Formatted": 1,
+              "Loc": "When this artifact enters or leaves the battlefield, draw a card."
+            }
+          },
+          {
+            "row": {
+              "Id": 190899,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 1092,
+              "Category": 1,
+              "SubCategory": 0,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 5,
+              "PaymentType": 0,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": "o1oU",
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": "25",
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": null,
+              "HiddenByAbilityIds": null,
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": "4",
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 1092,
+              "Formatted": 1,
+              "Loc": "{o1oU}, Sacrifice CARDNAME: Put a stun counter on up to one target tapped creature."
+            },
+            "specific_text": {
+              "LocId": 1055625,
+              "Formatted": 1,
+              "Loc": "{o1oU}, Sacrifice this artifact: Put a stun counter on up to one target tapped creature."
+            }
+          }
+        ],
+        "conditional_instruction": {
+          "ability_id": 190898,
+          "category": "conditional_card_flow",
+          "trigger_events": [
+            "enters_battlefield",
+            "leaves_battlefield"
+          ],
+          "base_cards_drawn_per_trigger": 1,
+          "researched_branch": "prospective_enters_only",
+          "cast_direct_draw": false,
+          "leaves_branch_counted_as_cast_benefit": false
+        },
+        "effective_in_game": false,
+        "complete_legality_verified": false
+      }
+    }
+  }
+}

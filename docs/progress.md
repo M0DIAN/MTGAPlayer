@@ -2662,3 +2662,69 @@ Linux/Windows/naturalmainCI remain delivery gates. See
 docs/unified-research-runtime.md and docs/evidence/mp93-owner.json.
 complete_legality_verified=false; strategic_optimality_verified=false;
 execution_ready=false; input_sent=false; P10=NOT_RUN.
+
+MP96 — goal-conditioned Cast research and explicit Unifiedv3:
+
+Remote main reverified2e4594a7100e434299a09552415065a1ac032e35/tree
+a61aa3a02bc344893a7a0fdac37b9cd96afd9e9c. A clean separate worktree preserves
+MP94/95's uncommitted investigation records byte-for-byte. The original MP94-B
+strict Pareto gate remains unexecuted; FloatMana effects/bounds remain unknown.
+This task explicitly authorizes a different, conditional_card_flow_research
+goal, without claiming superiority over all competing actions.
+
+Existing code had no equivalent Cast strategy. New explicit
+cast_cardflow_research.v1 reuses the same Consumer, original MP65 identities,
+finite action shape checks, source visibility and completed-poll/raw witness.
+One offline native reference factory reuses the existing metadata loader and
+PreparedRulesIndex, supplementing exactly two Abilities/four localization rows.
+Owner and independent static investigation reverified official catalog
+SHA1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25,
+Data2026.64.0.280/GRP280.1327372 with accepted MP89 build/resource provenance.
+96626/190898 is conditional enters/leaves draw1; research counts only the
+prospective enters branch.190899 remains a distinct paid sacrifice activation.
+Cast-direct draw, actual trigger/resolution, net hand gain and payment are not
+proved. Necessary current source/overlay/type/abilities, literal1U/no unreviewed
+mode or target, ownMain1/priority, positive library count and lifecycle gates
+must pass. Known nonempty Stack or goal contradictions abstain; unknown Stack
+remains unknown. Multiple equally reviewed goal Casts abstain without tie-break.
+
+All active and inactive denominators are preserved. Every other active action
+remains an unranked competitor with null goal utility, including FloatMana,
+Cast, Activate, Activate_Mana, Pass and Play when offered. No global MP65 flag
+changes. The same arbiter admits this one Cast profile only under its dedicated
+version/goal/effect/source evidence checks. Explicit Unifiedv3 dispatches AA to
+Landv2 plus Cast Cardflow, targets to existing MP89, others to MP66. Conflicting
+candidate preferences abstain; no strategy priority is added. Old defaults,
+single strategies and Unifiedv1/v2 preserve complete outputs.
+
+Owner reauthenticated complete MP91 8,382,052B SHAaa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b
+and MP81 3,225,997B SHA1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac,
+all789/217segments and original50/42first-current boundaries. Existing production
+Runtime per mode uses one Follower/Reducer/Owner and original logical poll
+starts/cutoffs; source bytes after the boundary arrive only after freezing.
+Actual MP91 Cast all50=10preference/14abstain/26unsupported; AA24=10/14/0,
+primary no-Play10=5/5/0. Requested20/41/43/46/48 all prefer, preserving10/10/11/
+11/11unranked peers. Unifiedv3=9/32/9, with real Land/Cast conflict at42 correctly
+abstaining. MP81 Cast=3/10/29; v3=14/20/8. Originalv2 stays1/40/9 and11/23/8.
+No future response, payment, resolution, draw or historical choice label enters
+the goal. MP91 all50 and MP81 41consumed frozen requests immediately revoke;
+close also revokes, no consumed request revives. Public aliased real field
+projections are distinct from invented bootstrap/negative controls; reviewers
+do not certify Owner-only private raw bytes.
+
+Six old modes across552whole frames and matching-code safe summaries compare
+691,502+29,084typed leafvalues,0differences, normalizing only random transport
+session/sequence and actual timing.13new focused tests and27existing unified
+tests PASS. Full Python3.11.9 at functional commit4cc36af57dbb3b512c2ffd83316ad1b9ba2954e2
+passes1258tests in209.026s; Windowsdoctor PASS_READ_ONLY, input_sent=false.
+Bounded actual-clock prefix replay measures new Cast computation/unified
+dispatch/poll-to-frame and consumption queries; no new live MTGA timing or
+missing MP91 category data is claimed. MP91 AA Cast stage n24,p50/p95/p99/max
+7.4632/13.2487/16.6249/16.6249ms; unified dispatch0.1366/0.6044/0.6749/0.6749ms.
+Host work was concurrent, not an isolated benchmark. See
+docs/cast-cardflow-research.md and docs/evidence/mp96-owner.json. Independent
+final HEAD/tree review and actual Linux/Windows/naturalmainCI are delivery
+gates, not inferred from this local test. No game input/response encoding,
+new parser/state/request ledger or rules engine. complete_legality_verified=false;
+strategic_optimality_verified=false; execution_ready=false; input_sent=false;
+P10=NOT_RUN.

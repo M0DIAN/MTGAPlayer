@@ -94,7 +94,8 @@ class LocalShadowRuntime:
                  research_policy=None,prepared_rules=None,prepared_references=None):
         from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY
         from .target_effect import POLICY as TARGET_POLICY
-        from .unified_research import POLICIES as UNIFIED_POLICIES
+        from .cast_cardflow import POLICY as CAST_POLICY
+        from .unified_research import POLICIES as UNIFIED_POLICIES, V3_POLICY
         from .rules_index import PreparedRulesIndex
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
@@ -102,10 +103,11 @@ class LocalShadowRuntime:
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
                 observation_mode not in ('local_log_watch','controlled_stream_replay') or
                 type(player_target_stages) is not bool or type(parent_target_lineage) is not bool or
-                research_policy not in (None,LAND_POLICY,SWAMP_POLICY,TARGET_POLICY,*UNIFIED_POLICIES) or
+                research_policy not in (None,LAND_POLICY,SWAMP_POLICY,TARGET_POLICY,CAST_POLICY,*UNIFIED_POLICIES) or
                 prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex) or
                 prepared_references is not None and (research_policy not in UNIFIED_POLICIES or
-                    type(prepared_references) is not dict or not set(prepared_references) <= {'land','target_effect'} or
+                    type(prepared_references) is not dict or not set(prepared_references) <=
+                        ({'land','target_effect','cast_cardflow'} if research_policy==V3_POLICY else {'land','target_effect'}) or
                     any(not isinstance(value,PreparedRulesIndex) for value in prepared_references.values())) or
                 research_policy in UNIFIED_POLICIES and prepared_rules is not None):
             raise ValueError('invalid_shadow_runtime_bounds')
@@ -158,8 +160,10 @@ class LocalShadowRuntime:
         elif self.research_policy is not None and 'research_decision' not in result:
             from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY, _unknown as land_unknown, _swamp_unknown
             from .target_effect import _unknown as target_unknown
+            from .cast_cardflow import POLICY as CAST_POLICY, _unknown as cast_unknown
             unknown=(_swamp_unknown if self.research_policy==SWAMP_POLICY else
-                land_unknown if self.research_policy==LAND_POLICY else target_unknown)
+                land_unknown if self.research_policy==LAND_POLICY else
+                cast_unknown if self.research_policy==CAST_POLICY else target_unknown)
             result['research_decision']=unknown(result['reason'])
             result['research_decision']['status']='expired'
         if (threading.get_ident()==self._owner and self.player_target_stages and self._stage_observer is not None):
@@ -232,11 +236,12 @@ class LocalShadowRuntime:
             _need(_equal(policy['request_binding'],binding) and _equal(policy['source_snapshot_ref'],ref),'frame_report_binding_invalid')
             if policy['status']=='research_preference':
                 _need(sum(_equal(o['option_key'],policy['preferred_option_key']) for o in options['options'])==1,'frame_report_binding_invalid')
-            research=None;unified=None
+            research=None;unified=None;cast_research=None
             if self.research_policy is not None:
                 from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY, assess_current_land_development
                 from .target_effect import POLICY as TARGET_POLICY, assess_current_target_effect
-                from .unified_research import POLICIES as UNIFIED_POLICIES, _applicable_policy, combine_current_research
+                from .cast_cardflow import POLICY as CAST_POLICY, assess_current_cast_cardflow
+                from .unified_research import POLICIES as UNIFIED_POLICIES, V3_POLICY, _applicable_policy, combine_current_research
                 selected_policy=self.research_policy;prepared=self.prepared_rules
                 dispatch_ns=0
                 if self.research_policy in UNIFIED_POLICIES:
@@ -245,7 +250,8 @@ class LocalShadowRuntime:
                     prepared=self.prepared_references.get('land' if selected_policy in (LAND_POLICY,SWAMP_POLICY) else 'target_effect')
                     dispatch_ns=self.clock()-dispatch_start
                 if selected_policy is not None:
-                    assess=assess_current_land_development if selected_policy in (LAND_POLICY,SWAMP_POLICY) else assess_current_target_effect
+                    assess=(assess_current_land_development if selected_policy in (LAND_POLICY,SWAMP_POLICY) else
+                        assess_current_cast_cardflow if selected_policy==CAST_POLICY else assess_current_target_effect)
                     def applicable_research():
                         if self.research_policy in UNIFIED_POLICIES and selected_policy==LAND_POLICY:
                             from .target_build import current_resource
@@ -260,15 +266,21 @@ class LocalShadowRuntime:
                     research=self._timed('research_policy',applicable_research)
                     _bound(research,binding,ref)
                     if research['status']=='research_preference':
-                        reviewed=(options['options'] if selected_policy in (LAND_POLICY,SWAMP_POLICY) else
+                        reviewed=(options['options'] if selected_policy in (LAND_POLICY,SWAMP_POLICY,CAST_POLICY) else
                             local.get('current_target_evidence',{}).get('local_proposals',[]))
                         _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in reviewed)==1,
                             'frame_report_binding_invalid')
+                if self.research_policy==V3_POLICY and typ=='GREMessageType_ActionsAvailableReq':
+                    cast_research=self._timed('cast_cardflow_policy',lambda: assess_current_cast_cardflow(
+                        self.consumer,self._reducer,self._message,self.prepared_references.get('cast_cardflow'),
+                        completed_stamp=self._completed_stamp))
+                    _bound(cast_research,binding,ref)
                 if self.research_policy in UNIFIED_POLICIES:
                     dispatch_start=self.clock()
                     try:
                         unified=combine_current_research(options,policy,research,
-                            local.get('current_target_evidence'),policy_version=self.research_policy)
+                            local.get('current_target_evidence'),policy_version=self.research_policy,
+                            **({'cast_research':cast_research} if self.research_policy==V3_POLICY else {}))
                         _bound(unified,binding,ref)
                         _need(unified['status']!='expired','frame_report_binding_invalid')
                     finally:self._timings['unified_dispatch']=dispatch_ns+self.clock()-dispatch_start
@@ -282,6 +294,7 @@ class LocalShadowRuntime:
                 abstention_reason=None if policy['status']=='research_preference' else policy['reason'],
                 unresolved_constraints={'options':copy.deepcopy(options['unresolved']),'policy':copy.deepcopy(policy['unresolved'])})
             if research is not None:result['research_decision']=research
+            if cast_research is not None:result['cast_cardflow_decision']=cast_research
             if unified is not None:result['unified_research_decision']=unified
             _bounded_json(result);return result
         try:
@@ -320,10 +333,11 @@ class LocalShadowRuntime:
         self._counts['polls']+=1;self._counts[frame['time_scope']]+=1
         self._in_poll=False
         if frame['time_scope']=='current_at_completed_poll':self._counts['current_'+TYPES.get(frame['request_type'],'other')]+=1
-        from .unified_research import POLICIES as UNIFIED_POLICIES
+        from .unified_research import POLICIES as UNIFIED_POLICIES, V3_POLICY
         stages=STAGES
         if self.research_policy in UNIFIED_POLICIES:
             stages=(*STAGES,'research_policy','unified_dispatch')
+            if self.research_policy==V3_POLICY:stages=(*stages,'cast_cardflow_policy')
             labels=[*labels,'unified_'+(TYPES.get(frame.get('request_type'),'other')
                 if frame['time_scope']=='current_at_completed_poll' else 'failed_or_revoked')]
         for label in ('all_polls',*labels):
@@ -513,14 +527,16 @@ def safe_summary(frame):
     if type(research) is dict:
         from .land_development import POLICY as LAND_POLICY,SWAMP_POLICY,REASONS as LAND_REASONS
         from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
+        from .cast_cardflow import POLICY as CAST_POLICY,REASONS as CAST_REASONS
         from .unified_research import REASONS as UNIFIED_REASONS
         policy=research.get('policy_version')
         names=(('active_action_rows','play_offers','verified_play_sources','verified_static_land_candidates','ordinary_profile_candidates')
             if policy in (LAND_POLICY,SWAMP_POLICY) else ('reviewed_target_members','local_proposals','verified_player_targets',
-                'verified_public_object_targets','effect_identified') if policy==TARGET_POLICY else ())
-        result['research_decision']={'policy_version':policy if policy in (LAND_POLICY,SWAMP_POLICY,TARGET_POLICY) else 'unsupported',
+                'verified_public_object_targets','effect_identified') if policy==TARGET_POLICY else
+                ('active_action_rows','inactive_action_rows','cast_offers','reviewed_cardflow_casts') if policy==CAST_POLICY else ())
+        result['research_decision']={'policy_version':policy if policy in (LAND_POLICY,SWAMP_POLICY,TARGET_POLICY,CAST_POLICY) else 'unsupported',
             'status':research.get('status') if research.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
-            'reason':research.get('reason') if research.get('reason') in LAND_REASONS|TARGET_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'reason':research.get('reason') if research.get('reason') in LAND_REASONS|TARGET_REASONS|CAST_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
             'coverage':{key:count(research.get('coverage',{}).get(key)) for key in names},
             'complete_legality_verified':False,'payment_verified':False,'strategic_optimality_verified':False,
             'read_only':True,**EXECUTION}
@@ -530,20 +546,33 @@ def safe_summary(frame):
     if type(unified) is dict:
         from .land_development import POLICY as LAND_POLICY,SWAMP_POLICY,REASONS as LAND_REASONS
         from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
+        from .cast_cardflow import POLICY as CAST_POLICY,REASONS as CAST_REASONS
         from .shadow_decision import POLICY as SHADOW_POLICY
-        from .unified_research import POLICY as UNIFIED_POLICY,POLICIES as UNIFIED_POLICIES,REASONS as UNIFIED_REASONS
+        from .unified_research import POLICY as UNIFIED_POLICY,POLICIES as UNIFIED_POLICIES,V3_POLICY,REASONS as UNIFIED_REASONS
         version=unified.get('policy_version')
         policies=((SHADOW_POLICY,LAND_POLICY if version==UNIFIED_POLICY else SWAMP_POLICY,TARGET_POLICY)
             if version in UNIFIED_POLICIES else ())
+        if version==V3_POLICY:policies=(*policies,CAST_POLICY)
         result['unified_research_decision']={'policy_version':version if version in UNIFIED_POLICIES else 'unsupported',
             'selected_policy':unified.get('selected_policy') if unified.get('selected_policy') in policies else None,
             'status':unified.get('status') if unified.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
             'reason':unified.get('reason') if unified.get('reason') in
-                LAND_REASONS|TARGET_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+                LAND_REASONS|TARGET_REASONS|CAST_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
             'conflict':unified.get('reason')=='research_policy_conflict',
             'complete_legality_verified':False,'strategic_optimality_verified':False,
             'server_acceptance_verified':False,'read_only':True,**EXECUTION}
         for key in ('research_policy','unified_dispatch'):
             elapsed=frame.get('timings_ns',{}).get(key)
             if type(elapsed) is int and elapsed>=0:result['timings_ns'][key]=elapsed
+    cast=frame.get('cast_cardflow_decision')
+    if type(cast) is dict:
+        from .cast_cardflow import POLICY as CAST_POLICY,REASONS as CAST_REASONS
+        result['cast_cardflow_decision']={'policy_version':CAST_POLICY if cast.get('policy_version')==CAST_POLICY else 'unsupported',
+            'status':cast.get('status') if cast.get('status') in ('research_preference','abstain','unsupported','expired') else 'unknown',
+            'reason':cast.get('reason') if cast.get('reason') in CAST_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'unranked_competitor_count':count(cast.get('unranked_competitor_count')),
+            'complete_legality_verified':False,'strategic_optimality_verified':False,
+            'read_only':True,**EXECUTION}
+        elapsed=frame.get('timings_ns',{}).get('cast_cardflow_policy')
+        if type(elapsed) is int and elapsed>=0:result['timings_ns']['cast_cardflow_policy']=elapsed
     return result

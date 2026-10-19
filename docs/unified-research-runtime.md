@@ -37,13 +37,22 @@ for frame in runtime.frames():
 
 The original `research_policy=None`, `land_development_research.v1` and
 `target_effect_research.v1` plus `prepared_rules` APIs retain their behavior.
-`prepared_references` is confined to unified mode, accepts only the two named
+`prepared_references` is confined to unified mode; v1/v2 accept only the two named
 PreparedRulesIndex entries, and cannot be mixed with `prepared_rules`. Missing
 entries are allowed: the applicable policy abstains using its own evidence gate.
 Passing a different reference format does not authorize its use. Each reference
 retains its independent source schema, format, SHA256, Data/GRP and reviewed scope.
 Hot lookup performs no filesystem/SQLite I/O. Installed resources are not runtime
 dependencies of default operation or public CI.
+
+Explicit `unified_research.v3` additionally accepts `cast_cardflow`, prepared with
+`prepare_mtga_cardflow_reference(local_catalog_path, [96626], **source)`. Its
+ActionsAvailable frame retains Land v2 as `research_decision` and adds
+`cast_cardflow_decision` from `cast_cardflow_research.v1`. Both reports enter the
+same arbiter; different preferred candidates abstain without a policy priority.
+SelectTargets/other routing remains Target Effect v1/MP66. V1 and v2 never call
+the Cast policy and continue to reject the new reference key. See
+[the conditional card-flow goal and evidence boundary](cast-cardflow-research.md).
 
 ## Routing and arbitration
 

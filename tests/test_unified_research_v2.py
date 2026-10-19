@@ -97,7 +97,7 @@ class UnifiedV2Tests(unittest.TestCase):
                     policy_version=version)
         with self.assertRaisesRegex(ValueError, 'current_policy_binding_invalid'):
             combine_current_research(frame['current_options'], frame['shadow_decision'], frame['research_decision'])
-        for version in ('unified_research.v3', True, None):
+        for version in ('unified_research.v4', True, None):
             with self.subTest(version=version), self.assertRaisesRegex(ValueError, 'current_policy_binding_invalid'):
                 combine_current_research(frame['current_options'], frame['shadow_decision'], policy_version=version)
 
