@@ -310,3 +310,130 @@ def lookup_rules(index_path, arena_ids):
             return metadata, result
     except (OSError, sqlite3.Error, ValueError, TypeError, RecursionError):
         raise RulesIndexError('rules_index_unavailable_or_invalid') from None
+
+
+# This is a second explicit *source format* for the same prepared reference
+# container, not a Scryfall conversion. No printing/Oracle IDs are invented.
+MTGA_LAND_VERSION = 'mtgaplayer.mtga-land-reference.v1'
+MTGA_LAND_FORMAT = 'mtga_official_sqlite_card_metadata'
+MTGA_PROFILE_FIELDS = ('Types', 'Supertypes', 'Subtypes', 'TypeTextId', 'SubtypeTextId',
+    'OldSchoolManaText', 'LinkedFaceType', 'LinkedFaceGrpIds', 'LinkedAbilityTemplateCardGrpIds',
+    'IsToken', 'IsPrimaryCard', 'IsDigitalOnly', 'IsRebalanced', 'RebalancedCardGrpId',
+    'DefunctRebalancedCardGrpId', 'RawFrameDetail', 'AdditionalFrameDetails', 'ExtraFrameDetails',
+    'TextChangeData', 'AbilityIds', 'HiddenAbilityIds')
+
+
+def _file_sha256(path):
+    digest = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(_CHUNK), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _catalog_numbers(value):
+    _require(type(value) is str and len(value) <= 16384)
+    if not value:
+        return []
+    _require(re.fullmatch(r'[0-9]+(?:,[0-9]+)*', value) is not None)
+    values = [int(item) for item in value.split(',')]
+    _require(len(values) <= 512 and all(_id(item) for item in values) and
+             len(set(values)) == len(values))
+    return values
+
+
+def prepare_mtga_land_reference(db_path, arena_ids, *, expected_sha256, expected_source_version):
+    """Prepare a bounded, exact-ID official catalog metadata subset, offline.
+
+    The explicit hash and literal Data/GRP versions pin the owner's reviewed
+    source. Queries close before publication; subsequent lookups do no I/O.
+    This metadata does not establish current card characteristics or legality.
+    """
+    ids = _lookup_ids(arena_ids)
+    _require(type(expected_sha256) is str and re.fullmatch('[0-9a-f]{64}', expected_sha256) is not None)
+    _require(type(expected_source_version) is dict and set(expected_source_version) == {'Data', 'GRP'} and
+             all(type(value) is str and re.fullmatch(r'[0-9.]{1,80}', value) is not None
+                 for value in expected_source_version.values()))
+    try:
+        path = Path(db_path).resolve()
+        before = path.stat()
+        _require(path.is_file() and 0 < before.st_size <= 512 * 1024 * 1024)
+        _require(_file_sha256(path) == expected_sha256)
+        with closing(sqlite3.connect(path.as_uri() + '?mode=ro&immutable=1', uri=True)) as db:
+            db.execute('PRAGMA query_only=ON')
+            db.row_factory = sqlite3.Row
+            required = {'Cards': {'GrpId', *MTGA_PROFILE_FIELDS},
+                'Enums': {'Type', 'Value', 'LocId'}, 'Localizations_enUS': {'LocId', 'Formatted', 'Loc'},
+                'Versions': {'Type', 'Version'}}
+            for table, columns in required.items():
+                actual = {row[1]: row[2].upper() for row in db.execute('PRAGMA table_info(' + table + ')')}
+                _require(columns <= actual.keys())
+                integer = {'GrpId', 'TypeTextId', 'SubtypeTextId', 'LinkedFaceType', 'IsToken',
+                    'IsPrimaryCard', 'IsDigitalOnly', 'IsRebalanced', 'RebalancedCardGrpId',
+                    'DefunctRebalancedCardGrpId', 'Value', 'LocId', 'Formatted'}
+                flags = {'IsToken', 'IsPrimaryCard', 'IsDigitalOnly', 'IsRebalanced'}
+                _require(all(actual[key] in (('INT', 'INTEGER', 'BOOLEAN') if key in flags else
+                    ('INT', 'INTEGER') if key in integer else ('TEXT',)) for key in columns))
+            versions = db.execute('SELECT Type,Version FROM Versions LIMIT 33').fetchall()
+            _require(len(versions) == 2 and all(type(row['Type']) is str and type(row['Version']) is str for row in versions))
+            source_versions = {row['Type']: row['Version'] for row in versions}
+            _require(len(source_versions) == 2 and source_versions == expected_source_version)
+            total = db.execute('SELECT COUNT(*) FROM Cards').fetchone()[0]
+            _require(type(total) is int and 0 <= total <= DEFAULT_MAX_CARDS)
+
+            def localized(loc_id):
+                _require(_id(loc_id))
+                rows = db.execute('SELECT LocId,Formatted,Loc FROM Localizations_enUS WHERE LocId=? LIMIT 3', (loc_id,)).fetchall()
+                _require(len(rows) == 1 and type(rows[0]['LocId']) is int and rows[0]['LocId'] == loc_id and
+                         type(rows[0]['Formatted']) is int and rows[0]['Formatted'] == 1)
+                return _text(rows[0]['Loc'], 256, False)
+
+            def terms(kind, raw):
+                result = []
+                for value in _catalog_numbers(raw):
+                    rows = db.execute('SELECT Type,Value,LocId FROM Enums WHERE Type=? AND Value=? LIMIT 3', (kind, value)).fetchall()
+                    _require(len(rows) == 1 and rows[0]['Type'] == kind and type(rows[0]['Value']) is int and rows[0]['Value'] == value)
+                    result.append({'value': value, 'loc_id': rows[0]['LocId'], 'label': localized(rows[0]['LocId'])})
+                return result
+
+            cards = {}; selected_rows = 0; ambiguous = 0
+            for arena in sorted(ids):
+                rows = db.execute('SELECT GrpId,' + ','.join(MTGA_PROFILE_FIELDS) + ' FROM Cards WHERE GrpId=? LIMIT 4097', (arena,)).fetchall()
+                _require(len(rows) <= 4096)
+                selected_rows += len(rows)
+                if len(rows) != 1:
+                    cards[arena] = {'status': 'ambiguous' if rows else 'unresolved', 'card': None}
+                    ambiguous += bool(rows)
+                    continue
+                row = dict(rows[0]); _require(type(row.pop('GrpId')) is int)
+                for key, value in row.items():
+                    if key in ('TypeTextId', 'SubtypeTextId', 'LinkedFaceType', 'RebalancedCardGrpId', 'DefunctRebalancedCardGrpId'):
+                        _require(_id(value))
+                    elif key in ('IsToken', 'IsPrimaryCard', 'IsDigitalOnly', 'IsRebalanced'):
+                        _require(type(value) is int and value in (0, 1))
+                    else:
+                        _text(value, 16384, False)
+                # The empty links are literal source facts. A reverse link
+                # prevents the narrow unlinked profile even if this row omits it.
+                reverse = db.execute("SELECT GrpId FROM Cards WHERE instr(',' || COALESCE(LinkedFaceGrpIds,'') || ',', ?) > 0 LIMIT 2",
+                                     (',' + str(arena) + ',',)).fetchall()
+                card = {'schema_version': MTGA_LAND_VERSION, 'card_id': arena,
+                    'type_line': localized(row['TypeTextId']), 'card_types': terms('CardType', row['Types']),
+                    'supertypes': terms('SuperType', row['Supertypes']), 'subtypes': terms('SubType', row['Subtypes']),
+                    'profile': row, 'reverse_face_link_observed': bool(reverse),
+                    'current_face': None, 'effective_in_game': False, 'rules_verified': False}
+                _catalog_numbers(row['LinkedFaceGrpIds'])
+                _catalog_numbers(row['LinkedAbilityTemplateCardGrpIds'])
+                cards[arena] = {'status': 'resolved', 'card': card}
+        after = path.stat()
+        _require((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) ==
+                 (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns) and _file_sha256(path) == expected_sha256)
+        metadata = {'schema_version': MTGA_LAND_VERSION, 'source_format': MTGA_LAND_FORMAT,
+            'source_version': 'Data=' + source_versions['Data'] + ';GRP=' + source_versions['GRP'],
+            'source_sha256': expected_sha256, 'source_version_is_user_supplied': False,
+            'card_records': selected_rows, 'records_without_arena_id': 0,
+            'unique_arena_ids': sum(item['status'] == 'resolved' for item in cards.values()),
+            'ambiguous_arena_ids': ambiguous}
+        return PreparedRulesIndex(metadata, cards)
+    except (OSError, sqlite3.Error, ValueError, TypeError, RecursionError, KeyError, OverflowError):
+        raise RulesIndexError('mtga_land_reference_unavailable_or_invalid') from None

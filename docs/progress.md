@@ -2400,3 +2400,45 @@ local replay, not historical leases or actual MTGA latency. See
 docs/parent-player-target-lineage.md and safe owner receipt. HistoricalMP81
 current_view_unavailable and Windows qualification roots stayUNKNOWN.
 input_sent=false; P10=NOT_RUN.
+
+MP87 on acceptedede90c56/tree552537ff: original verified3225997-byte
+SHA1d75cd1b... archive preserves53authenticated/42original current opportunities,
+13AA. All8 offeredPlay rows across5requests reviewed, not just5later selected.
+All8 uniquely own-visibleHandCard sources agree with original active positions
+and catalog IDs. Existing official offlineSQLite259883008bytes/SHA1be01054...
+Data2026.64.0.280/GRP280.1327372 yields four unique staticLand identities through
+typed enum/localization bridges, independently rehashed/queried. Native one-time
+readonly factory reuses PreparedRulesIndex without pretending Scryfall identity,
+changing its default loader or adding a game runtime dependency.
+
+Explicit land_development_research.v1 Runtime opt-in keeps independent
+research_decision and originalMP66 unchanged. First profile is unlinked primary
+BasicLand/Island literal metadata, ownMain1/typedactive+decision+priority, unique
+flatPlay and complete active inventory. No name/ID/order/historical-choice ranking.
+MultiplePlay, unknown modes/structure/source/version and explicit phase/Stack
+contradictions abstain. Missingstep/unknownStack/generalPrompt routing stay
+unknown; no fulllegality/payment/optimality/acceptance/input claim. SameConsumer
+completed-poll stamp/ref/lease and before/after raw source/turn checks revoke
+consumed/replaced/partial/reset/gapped/stopped/expired results, without cache or
+secondstate/ledger. Consumer internalownerID is checked only by new report;
+old outputs/default behavior remain intact. Prepared hot lookups perform noIO.
+
+Actual13AA results:1new preference/12abstain/0unsupported; staticLand8offered
+memberships/4distinct IDs. One strict comparable frozen preference agrees with
+the laterPlay;4of5historicalPlay and12of13all selections are uncomparable. All13
+strict consumed responses immediately revoke old research. Agreement is not
+correctness/win rate/resource benefit. Default42MP66 policy stays1/33/8, full
+825554legacy leafvalues matchbase; existingMP85 11/24/11/10/2/2/2 andMP86
+sourceLineage1/objectupdate1/actualplayer0/fullstage0 remain unchanged.
+
+18new direct tests/218focusedPASS; fullWindows3.11 1189PASS/182.879s; doctorPASS.
+Independent workingtree49scenarios/949assertions plus12typedrawID controls PASS;
+final committedexactHEAD/tree+actualLinux/WindowsCI+naturalmainCI remain delivery
+gates. Pureproduction localcontrolled replay with realclock:13AA addedpolicy
+p50/p95/p99/maxms=5.9843/11.6227/11.6227/11.6227; fullpoll→frame52.4883/121.4738/
+121.4738/121.4738. All41incremental p50/p95/p99/max=17.7121/81.5221/121.4738/
+121.4738; startuphistory n1=223.798ms, staticpreparation382.8415ms beforelease.
+These are local replay metrics, not realMTGA three-second qualification.
+See docs/land-development-research.md and safe owner receipt. MP76AutoTap
+evidence remainsblocked, historicalWindowsqualification andMP81
+current_view_unavailable rootcauses remainUNKNOWN. input_sent=false; P10=NOT_RUN.

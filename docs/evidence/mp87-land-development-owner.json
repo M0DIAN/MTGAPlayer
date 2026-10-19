@@ -1,0 +1,566 @@
+{
+  "schema_version": "mtgaplayer.mp87-land-development-owner-receipt.v1",
+  "base_main": "ede90c5647f0b15d3231f905d735335dcdbb5af4",
+  "base_tree": "552537ff90f9fe87744b890a2d536e84b4533f3d",
+  "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+  "source_bytes": 3225997,
+  "archive_verified": true,
+  "source_generations": 1,
+  "framed_records": 367,
+  "authenticated_requests": 53,
+  "original_current_opportunities": 42,
+  "original_first_current_boundaries_preserved": true,
+  "old164_requests_included": false,
+  "private_log_bytes_authenticated_by_owner": true,
+  "private_log_bytes_authenticated_by_independent_reviewer": false,
+  "native_static_database_independently_rehashed_and_queried": true,
+  "static_source": {
+    "source_basename": "Raw_CardDatabase_c344d0dccdfb898a5e3fd4101eedbd48.mtga",
+    "bytes": 259883008,
+    "sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "versions": {
+      "Data": "2026.64.0.280",
+      "GRP": "280.1327372"
+    },
+    "card_rows": 27136,
+    "open_mode": "ro&immutable=1",
+    "executed_game_code": false,
+    "allowlisted_card_ids": [
+      92359,
+      92360,
+      95062,
+      96839
+    ],
+    "exact_matches": 4,
+    "duplicate_matches": 0,
+    "all_four": {
+      "Types": "5",
+      "IsToken": 0,
+      "IsPrimaryCard": 1,
+      "IsDigitalOnly": 0,
+      "IsRebalanced": 0,
+      "LinkedFaceType": 0,
+      "LinkedFaceGrpIds": "",
+      "LinkedAbilityTemplateCardGrpIds": "",
+      "OldSchoolManaText": "",
+      "reverse_linked_face_references": 0
+    },
+    "unique_type_mapping": {
+      "enum_type": "CardType",
+      "value": 5,
+      "loc_id": 11,
+      "formatted": 1,
+      "english_type": "Land"
+    },
+    "type_localizations": {
+      "92359": "Land",
+      "92360": "Land",
+      "95062": "Land",
+      "96839": "Basic Land"
+    },
+    "uninterpreted_metadata": {
+      "AdditionalFrameDetails_hybrid_count": 3,
+      "AdditionalFrameDetails_empty_count": 1
+    },
+    "identity_claim": "exact_static_Land_identity_only",
+    "current_dynamic_rules_verified": false,
+    "complete_legality_verified": false,
+    "payment_verified": false,
+    "execution_ready": false
+  },
+  "native_factory_actual_lookup_matches_public_projection": true,
+  "historical_wall_clock_leases_proven": false,
+  "actual_census": {
+    "base_main": "ede90c5647f0b15d3231f905d735335dcdbb5af4",
+    "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+    "bytes": 3225997,
+    "archive_verified": true,
+    "generation_count": 1,
+    "framed_records": 367,
+    "authenticated_requests": 53,
+    "current_opportunities": 42,
+    "actions_available": 13,
+    "play_offers": 8,
+    "requests_with_play": 5,
+    "verified_play_source_identities": 8,
+    "distinct_play_card_ids": 4,
+    "historical_selected_play": 5,
+    "original_defaults_equal": true,
+    "original_policy": {
+      "unsupported": 8,
+      "abstain": 33,
+      "research_preference": 1
+    },
+    "input_sent": false,
+    "P10": "NOT_RUN",
+    "research_policy": "land_development_research.v1",
+    "research_status_distribution": {
+      "abstain": 12,
+      "research_preference": 1
+    },
+    "research_reason_distribution": {
+      "multiple_play_competitors": 2,
+      "no_play_offered": 6,
+      "ordinary_land_profile_unverified": 2,
+      "active_action_structure_unreviewed": 2,
+      "verified_land_development_heuristic": 1
+    },
+    "verified_static_land_candidates": 8,
+    "comparable_policy_preferences": 1,
+    "historical_agreements": 1,
+    "historical_disagreements": 0,
+    "uncomparable_all_strict_selections": 12,
+    "uncomparable_historical_play_selections": 4,
+    "response_revocations": 13
+  },
+  "case_summaries": [
+    {
+      "case": "aa-1",
+      "active_count": 8,
+      "play_count": 3,
+      "play_positions": [
+        4,
+        5,
+        6
+      ],
+      "play_fields": {
+        "actionType": 3,
+        "grpId": 3,
+        "instanceId": 3,
+        "facetId": 3,
+        "shouldStop": 3
+      },
+      "verified_play_identities": 3,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-2",
+      "active_count": 9,
+      "play_count": 2,
+      "play_positions": [
+        4,
+        5
+      ],
+      "play_fields": {
+        "actionType": 2,
+        "grpId": 2,
+        "instanceId": 2,
+        "facetId": 2,
+        "shouldStop": 2
+      },
+      "verified_play_identities": 2,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-3",
+      "active_count": 9,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-4",
+      "active_count": 11,
+      "play_count": 1,
+      "play_positions": [
+        5
+      ],
+      "play_fields": {
+        "actionType": 1,
+        "grpId": 1,
+        "instanceId": 1,
+        "facetId": 1,
+        "shouldStop": 1
+      },
+      "verified_play_identities": 1,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-5",
+      "active_count": 12,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-6",
+      "active_count": 12,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-7",
+      "active_count": 10,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-8",
+      "active_count": 13,
+      "play_count": 1,
+      "play_positions": [
+        5
+      ],
+      "play_fields": {
+        "actionType": 1,
+        "grpId": 1,
+        "instanceId": 1,
+        "facetId": 1,
+        "shouldStop": 1
+      },
+      "verified_play_identities": 1,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-9",
+      "active_count": 14,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-10",
+      "active_count": 16,
+      "play_count": 1,
+      "play_positions": [
+        6
+      ],
+      "play_fields": {
+        "actionType": 1,
+        "grpId": 1,
+        "instanceId": 1,
+        "facetId": 1,
+        "shouldStop": 1
+      },
+      "verified_play_identities": 1,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-11",
+      "active_count": 16,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-12",
+      "active_count": 11,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    },
+    {
+      "case": "aa-13",
+      "active_count": 16,
+      "play_count": 0,
+      "play_positions": [],
+      "play_fields": {},
+      "verified_play_identities": 0,
+      "turn_field_types": {
+        "turnNumber": "int",
+        "activePlayer": "int",
+        "decisionPlayer": "int",
+        "phase": "str",
+        "step": "NoneType",
+        "priorityPlayer": "int"
+      },
+      "phase": "Phase_Main1",
+      "step": null,
+      "own_active": true,
+      "own_decision": true,
+      "own_priority": true,
+      "public_stack_count": null
+    }
+  ],
+  "existing_mp85_counts_unchanged": {
+    "frozen_reviewed_domains": 11,
+    "frozen_local_proposals": 24,
+    "strictly_paired_target_updates": 11,
+    "historically_selected_player_targets": 10,
+    "independently_revised_selections": 2,
+    "strictly_paired_terminal_submits": 2,
+    "fully_linked_historical_stages": 2
+  },
+  "existing_mp86_counts_unchanged": {
+    "frozen_parent_requests": 13,
+    "strict_parent_responses": 13,
+    "parent_child_source_lineages": 1,
+    "linked_mp85_target_updates": 1,
+    "linked_selected_player_targets": 0,
+    "linked_mp85_complete_stages": 0
+  },
+  "fixture_lf_sha256": {
+    "land_development_real.json": "918c78dc531dc44329d1726eb0bdcca76877f698e37ffaadf858cba78dc99dd0",
+    "land_static_reference_real.json": "fc04dbe48ac90d1003d2c21205de6dec2c6d00d43337c0f3bfbbf19a57352ae3"
+  },
+  "legacy_compatibility": {
+    "base_main": "ede90c5647f0b15d3231f905d735335dcdbb5af4",
+    "public_real_sources": 10,
+    "recordwise_documents_options_policy_candidates2_to6": 1152,
+    "authenticated_requests": 53,
+    "full_mp73_and_existing_history_report_equal": true,
+    "default_runtime_frames_and_safe_summaries_equal": 41,
+    "equal_leaf_values": 825554,
+    "differences": 0,
+    "normalization": [
+      "transport snapshot refs",
+      "version/source digest",
+      "timings"
+    ],
+    "original42_policy": {
+      "research_preference": 1,
+      "abstain": 33,
+      "unsupported": 8
+    },
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "local_full_tests": {
+    "tests": 1189,
+    "seconds": 182.879,
+    "result": "PASS"
+  },
+  "local_focused_tests": {
+    "tests": 218,
+    "seconds": 39.651,
+    "result": "PASS"
+  },
+  "windows_doctor": "PASS_READ_ONLY",
+  "performance": {
+    "schema_version": "mtgaplayer.mp87-owner-added-performance.v1",
+    "scope": "one existing source / original current cuts / actual perf_counter clock / unmodified production Runtime / no Reducer instrumentation",
+    "prepared_reference_once_before_consumer_ms": 382.8415,
+    "preparation_included_in_policy_or_frame_timings": false,
+    "aa_policy_only_ms": {
+      "sample_count": 13,
+      "p50_ms": 5.9843,
+      "p95_ms": 11.6227,
+      "p99_ms": 11.6227,
+      "max_ms": 11.6227
+    },
+    "aa_full_local_poll_to_frame_ready_ms": {
+      "sample_count": 13,
+      "p50_ms": 52.4883,
+      "p95_ms": 121.4738,
+      "p99_ms": 121.4738,
+      "max_ms": 121.4738
+    },
+    "aa_publish_through_frame_ready_ms": {
+      "sample_count": 13,
+      "p50_ms": 34.1546,
+      "p95_ms": 55.848,
+      "p99_ms": 55.848,
+      "max_ms": 55.848
+    },
+    "all41_incremental_poll_to_frame_ready_ms": {
+      "sample_count": 41,
+      "p50_ms": 17.7121,
+      "p95_ms": 81.5221,
+      "p99_ms": 121.4738,
+      "max_ms": 121.4738
+    },
+    "cold_start_history_poll_to_frame_ready_ms": {
+      "sample_count": 1,
+      "p50_ms": 223.798,
+      "p95_ms": 223.798,
+      "p99_ms": 223.798,
+      "max_ms": 223.798
+    },
+    "runtime_added_policy_report": {
+      "sample_count": 41,
+      "p50_ms": 2.1256,
+      "p95_ms": 7.5404,
+      "p99_ms": 11.6227,
+      "max_ms": 11.6227,
+      "attempted_samples": 41,
+      "omitted_by_cap": 0
+    },
+    "research_status_distribution": {
+      "abstain": 12,
+      "research_preference": 1
+    },
+    "actual_MTGA_end_to_end_proven": false,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "historical_agreement_is_correctness_or_win_rate": false,
+  "default_policy_changed": false,
+  "strategic_optimality_verified": false,
+  "complete_legality_verified": false,
+  "payment_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

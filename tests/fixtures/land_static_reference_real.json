@@ -1,0 +1,207 @@
+{
+  "origin": "retained_real_official_sqlite_metadata",
+  "raw_equivalent": false,
+  "source_authentication": "owner and independent reviewer rehashed actual offline database; portable projection does not authenticate private source bytes",
+  "scope": "exact four previously own-visible CardIds; no name/Oracle lookup, no fabricated Scryfall identity/layout; metadata does not prove dynamic rules",
+  "metadata": {
+    "schema_version": "mtgaplayer.mtga-land-reference.v1",
+    "source_format": "mtga_official_sqlite_card_metadata",
+    "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+    "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "source_version_is_user_supplied": false,
+    "card_records": 4,
+    "records_without_arena_id": 0,
+    "unique_arena_ids": 4,
+    "ambiguous_arena_ids": 0
+  },
+  "matches": {
+    "92360": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-land-reference.v1",
+        "card_id": 92360,
+        "type_line": "Land",
+        "card_types": [
+          {
+            "value": 5,
+            "loc_id": 11,
+            "label": "Land"
+          }
+        ],
+        "supertypes": [],
+        "subtypes": [],
+        "profile": {
+          "Types": "5",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 11,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "hybrid",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "1002:227604,174570:813195",
+          "HiddenAbilityIds": ""
+        },
+        "reverse_face_link_observed": false,
+        "current_face": null,
+        "effective_in_game": false,
+        "rules_verified": false
+      }
+    },
+    "96839": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-land-reference.v1",
+        "card_id": 96839,
+        "type_line": "Basic Land",
+        "card_types": [
+          {
+            "value": 5,
+            "loc_id": 11,
+            "label": "Land"
+          }
+        ],
+        "supertypes": [
+          {
+            "value": 1,
+            "loc_id": 2,
+            "label": "Basic"
+          }
+        ],
+        "subtypes": [
+          {
+            "value": 43,
+            "loc_id": 652,
+            "label": "Island"
+          }
+        ],
+        "profile": {
+          "Types": "5",
+          "Supertypes": "1",
+          "Subtypes": "43",
+          "TypeTextId": 261494,
+          "SubtypeTextId": 652,
+          "OldSchoolManaText": "",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "U",
+          "AdditionalFrameDetails": "",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "",
+          "HiddenAbilityIds": ""
+        },
+        "reverse_face_link_observed": false,
+        "current_face": null,
+        "effective_in_game": false,
+        "rules_verified": false
+      }
+    },
+    "95062": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-land-reference.v1",
+        "card_id": 95062,
+        "type_line": "Land",
+        "card_types": [
+          {
+            "value": 5,
+            "loc_id": 11,
+            "label": "Land"
+          }
+        ],
+        "supertypes": [],
+        "subtypes": [],
+        "profile": {
+          "Types": "5",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 11,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "hybrid",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "1004:227612,176676:879499",
+          "HiddenAbilityIds": ""
+        },
+        "reverse_face_link_observed": false,
+        "current_face": null,
+        "effective_in_game": false,
+        "rules_verified": false
+      }
+    },
+    "92359": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-land-reference.v1",
+        "card_id": 92359,
+        "type_line": "Land",
+        "card_types": [
+          {
+            "value": 5,
+            "loc_id": 11,
+            "label": "Land"
+          }
+        ],
+        "supertypes": [],
+        "subtypes": [],
+        "profile": {
+          "Types": "5",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 11,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "hybrid",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "1001:227607,174569:813192",
+          "HiddenAbilityIds": ""
+        },
+        "reverse_face_link_observed": false,
+        "current_face": null,
+        "effective_in_game": false,
+        "rules_verified": false
+      }
+    }
+  }
+}
