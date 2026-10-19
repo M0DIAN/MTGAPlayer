@@ -437,3 +437,132 @@ def prepare_mtga_land_reference(db_path, arena_ids, *, expected_sha256, expected
         return PreparedRulesIndex(metadata, cards)
     except (OSError, sqlite3.Error, ValueError, TypeError, RecursionError, KeyError, OverflowError):
         raise RulesIndexError('mtga_land_reference_unavailable_or_invalid') from None
+
+
+MTGA_TARGET_EFFECT_VERSION = 'mtgaplayer.mtga-target-effect-reference.v1'
+MTGA_TARGET_EFFECT_FORMAT = 'mtga_official_sqlite_target_effect_metadata'
+TARGET_EFFECT_SHA256 = '1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25'
+TARGET_EFFECT_VERSIONS = {'Data': '2026.64.0.280', 'GRP': '280.1327372'}
+_ABILITY_INTS = ('Id', 'BaseId', 'BaseIdNumeral', 'FakeBaseIdNumeral', 'TextId', 'Category',
+    'SubCategory', 'AbilityWord', 'NumericAid', 'RequiresConfirmation', 'PaymentType',
+    'FullyParsed', 'IsIntrinsicAbility')
+_ABILITY_NULLS = ('OldSchoolManaText', 'LoyaltyCost', 'LevelRequirement', 'Power', 'Toughness',
+    'MiscellaneousTerms', 'EmbeddedActiveAbilityIds', 'EmbeddedIntoAbilityIds', 'HiddenAbilityIds',
+    'HiddenByAbilityIds', 'ReferencedAbilityIds', 'ReferencedKeywordNumerals', 'ReferencedAbilityTypes',
+    'ModalChildIds', 'ModalParentIds', 'CostTypes', 'Tags', 'ReferencedAbilityManaText')
+_EFFECT_TEXT = {
+    839352: 'When CARDNAME enters, it deals 2 damage to any target.',
+    943760: 'When this artifact enters, it deals 2 damage to any target.',
+    1055993: 'When CARDNAME leaves the battlefield, it deals 2 damage to any target.',
+    1055994: 'When this token leaves the battlefield, it deals 2 damage to any target.',
+    757065: '{o2}, {oT}, Sacrifice another artifact: Create a 3/3 colorless Golem artifact creature token.',
+    1055995: 'Whenever a nontoken artifact you control enters, create a colorless artifact token named Munitions with "When this token leaves the battlefield, it deals 2 damage to any target."',
+}
+
+
+def _effect_localization(ident):
+    return {'LocId': ident, 'Formatted': 1, 'Loc': _EFFECT_TEXT[ident]}
+
+
+def _expected_target_effect_card(arena):
+    """Literal reviewed native rows, not a general card-text rules interpreter."""
+    _require(arena in (90673, 96854) and type(arena) is int)
+    token = arena == 96854
+    profile = {'GrpId': arena, 'TitleId': 1056259 if token else 757062,
+        'Types': '1', 'Supertypes': '', 'Subtypes': '', 'TypeTextId': 262981 if token else 7,
+        'SubtypeTextId': 0, 'OldSchoolManaText': '' if token else 'o1oR', 'LinkedFaceType': 0,
+        'LinkedFaceGrpIds': '', 'LinkedAbilityTemplateCardGrpIds': '',
+        'IsToken': int(token), 'IsPrimaryCard': int(not token), 'IsDigitalOnly': 0, 'IsRebalanced': 0,
+        'RebalancedCardGrpId': 0, 'DefunctRebalancedCardGrpId': 0, 'RawFrameDetail': '',
+        'AdditionalFrameDetails': '', 'ExtraFrameDetails': '', 'TextChangeData': '',
+        'AbilityIds': '191026:1055994' if token else '1553:943760,172054:757065', 'HiddenAbilityIds': ''}
+    definitions = []
+    for ident in ((191026, 191027) if token else (1553, 172054)):
+        row = {key: 0 for key in _ABILITY_INTS}
+        row.update(dict.fromkeys(_ABILITY_NULLS))
+        row.update(Id=ident, TextId={1553:839352, 172054:757065, 191026:1055993, 191027:1055995}[ident],
+            Category=1 if ident == 172054 else 2, SubCategory=10 if ident == 1553 else 0, FullyParsed=1)
+        if ident == 172054: row.update(OldSchoolManaText='o2', RequiresConfirmation=6, PaymentType=1, CostTypes='2,4')
+        if ident == 191026: row['HiddenByAbilityIds'] = '191027'
+        if ident == 191027: row['HiddenAbilityIds'] = '191026'
+        definitions.append({'row': row, 'generic_text': _effect_localization(row['TextId'])})
+    specific = ([(191026,1055994)] if token else [(1553,943760),(172054,757065)])
+    return {'schema_version': MTGA_TARGET_EFFECT_VERSION, 'card_id': arena, 'profile': profile,
+        'ability_definitions': definitions,
+        'specific_ability_texts': [{'ability_id': ability, 'text': _effect_localization(text)} for ability,text in specific],
+        'base_effect_instruction': {'ability_id': 191026 if token else 1553,
+            'category': 'fixed_base_damage', 'base_damage': 2,
+            'trigger': 'leaves_battlefield' if token else 'enters', 'target_text_scope': 'any_target'},
+        'effective_in_game': False, 'complete_legality_verified': False}
+
+
+def reviewed_target_effect(card, ability_id):
+    """Revalidate detached reference data before using its finite instruction."""
+    _require(type(card) is dict and type(card.get('card_id')) is int and card['card_id'] in (90673,96854))
+    expected = _expected_target_effect_card(card['card_id'])
+    _require(json.dumps(card,sort_keys=True,ensure_ascii=False) == json.dumps(expected,sort_keys=True,ensure_ascii=False))
+    _require(type(ability_id) is int and ability_id == expected['base_effect_instruction']['ability_id'])
+    return copy.deepcopy(expected['base_effect_instruction'])
+
+
+def prepare_mtga_target_effect_reference(db_path, arena_ids, *, expected_sha256, expected_source_version):
+    """Prepare the two version-pinned, reviewed base-damage definitions offline.
+
+    Preserve exact ability IDs, generic and card-specific texts, and the distinct
+    cost/creator definitions. This source cannot certify current effective damage.
+    No database, filesystem or text interpretation occurs during policy lookup.
+    """
+    ids = _lookup_ids(arena_ids)
+    _require(ids <= {90673,96854} and expected_sha256 == TARGET_EFFECT_SHA256 and
+        type(expected_sha256) is str and type(expected_source_version) is dict and
+        expected_source_version == TARGET_EFFECT_VERSIONS and
+        all(type(k) is str and type(v) is str for k,v in expected_source_version.items()))
+    try:
+        path = Path(db_path).resolve(); before = path.stat()
+        _require(path.is_file() and 0 < before.st_size <= 512*1024*1024 and _file_sha256(path) == expected_sha256)
+        with closing(sqlite3.connect(path.as_uri()+'?mode=ro&immutable=1',uri=True)) as db:
+            db.execute('PRAGMA query_only=ON'); db.row_factory = sqlite3.Row
+            required = {'Cards': {'GrpId','TitleId',*MTGA_PROFILE_FIELDS},
+                'Abilities': {*_ABILITY_INTS,*_ABILITY_NULLS},
+                'Localizations_enUS': {'LocId','Formatted','Loc'}, 'Versions': {'Type','Version'}}
+            integers = {'GrpId','TitleId','TypeTextId','SubtypeTextId','LinkedFaceType','IsToken','IsPrimaryCard',
+                'IsDigitalOnly','IsRebalanced','RebalancedCardGrpId','DefunctRebalancedCardGrpId','LocId','Formatted',*_ABILITY_INTS}
+            flags = {'IsToken','IsPrimaryCard','IsDigitalOnly','IsRebalanced','FullyParsed','IsIntrinsicAbility'}
+            for table,columns in required.items():
+                actual = {r[1]:r[2].upper() for r in db.execute('PRAGMA table_info('+table+')')}
+                _require(columns <= actual.keys() and all(actual[k] in
+                    (('INT','INTEGER','BOOLEAN') if k in flags else ('INT','INTEGER') if k in integers else ('TEXT',)) for k in columns))
+            versions = db.execute('SELECT Type,Version FROM Versions LIMIT 3').fetchall()
+            _require(len(versions)==2 and all(type(r['Type']) is str and type(r['Version']) is str for r in versions) and
+                {r['Type']:r['Version'] for r in versions} == TARGET_EFFECT_VERSIONS)
+            def localized(ident):
+                rows = db.execute('SELECT LocId,Formatted,Loc FROM Localizations_enUS WHERE LocId=? LIMIT 2',(ident,)).fetchall()
+                _require(len(rows)==1)
+                return dict(rows[0])
+            cards = {}
+            for arena in sorted(ids):
+                expected = _expected_target_effect_card(arena)
+                rows = db.execute('SELECT '+','.join(expected['profile'])+' FROM Cards WHERE GrpId=? LIMIT 2',(arena,)).fetchall()
+                _require(len(rows)==1)
+                actual = copy.deepcopy(expected); actual['profile'] = dict(rows[0])
+                for definition in actual['ability_definitions']:
+                    ident = definition['row']['Id']
+                    rows = db.execute('SELECT '+','.join(definition['row'])+' FROM Abilities WHERE Id=? LIMIT 2',(ident,)).fetchall()
+                    _require(len(rows)==1); definition['row'] = dict(rows[0])
+                    definition['generic_text'] = localized(definition['row']['TextId'])
+                for specific in actual['specific_ability_texts']:
+                    specific['text'] = localized(specific['text']['LocId'])
+                # JSON distinguishes integers from bools/floats; all literal
+                # fields including modes, costs and hidden/parent links matter.
+                reviewed_target_effect(actual, expected['base_effect_instruction']['ability_id'])
+                cards[arena] = {'status':'resolved','card':actual}
+        _require(_file_sha256(path)==expected_sha256)
+        after=path.stat()
+        _require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns)==
+            (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns))
+        return PreparedRulesIndex({'schema_version':MTGA_TARGET_EFFECT_VERSION,'source_format':MTGA_TARGET_EFFECT_FORMAT,
+            'source_version':'Data=2026.64.0.280;GRP=280.1327372','source_sha256':expected_sha256,
+            'source_version_is_user_supplied':False,'card_records':len(cards),'records_without_arena_id':0,
+            'unique_arena_ids':len(cards),'ambiguous_arena_ids':0},cards)
+    except (OSError,sqlite3.Error,ValueError,TypeError,RecursionError,KeyError,OverflowError):
+        raise RulesIndexError('mtga_target_effect_reference_unavailable_or_invalid') from None
