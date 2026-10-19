@@ -51,7 +51,8 @@ def _prompt(value, *, number=False):
             -(2**31) <= parameter['numberValue'] < 2**31)
 
 
-def _observe_target_fields(message, visible, seat, *, allow_absent_prompts=False, allow_no_cancel=False):
+def _observe_target_fields(message, visible, seat, *, allow_absent_prompts=False, allow_no_cancel=False,
+                           referent_roles=None):
     """Validate every witnessed field before using the existing target projector."""
     _need(type(message) is dict and not set(message) - {'type', 'msgId', 'gameStateId', 'systemSeatIds',
         'prompt', 'selectTargetsReq', 'allowCancel', 'allowUndo'} and message['type'] == 'GREMessageType_SelectTargetsReq')
@@ -75,7 +76,8 @@ def _observe_target_fields(message, visible, seat, *, allow_absent_prompts=False
         _positive(entry['targetInstanceId'])
         _need(entry['legalAction'] in (targets.SELECT, targets.UNSELECT) and
             ('highlight' not in entry or type(entry['highlight']) is str and len(entry['highlight']) <= 128))
-    observed = {'constraints': targets.project_request(message, visible, seat, LiteralRefs(), (), allow_no_cancel=allow_no_cancel),
+    observed = {'constraints': targets.project_request(message, visible, seat, LiteralRefs(), (),
+                    allow_no_cancel=allow_no_cancel, referent_roles=referent_roles),
         'envelope_prompt': copy.deepcopy(message.get('prompt')), 'slot_prompt': copy.deepcopy(slot.get('prompt')),
         'target_entries': copy.deepcopy(slot['targets']),
         'field_presence': {key: key in slot for key in ('minTargets', 'maxTargets', 'selectedTargets')}}

@@ -2269,3 +2269,60 @@ receipts, not private bytes. Final exactHEAD tests/doctor/review and actual PR/
 main CI remain separate delivery gates. See docs/current-selectn-evidence.md.
 MP81 current_view_unavailable and historical Windows qualification causes remain
 UNKNOWN. input_sent=false; P10=NOT_RUN.
+
+MP84 version-bound player targets on accepted8cf6e624/treef78d63be: MP83's
+missing bridge is now independently reviewable. Archived MP81 full build
+2026.64.0.14517.1329972 matches installed Live0.1.14517.1329972; fresh three DLL
+hashes/MVIDs match pre-MP81 MP61 receipt and newer public manifest. Finite static
+IL/metadata verifies seat-to-player InstanceId, MtgPlayer avatar Model and target
+entity-ID comparison in those installed bytes. Public directory/date alone is
+not proof; historical exact binary capture/in-memory patch absence stays unknown.
+No client code load, input, binary/source redistribution or runtime dependency.
+
+Same complete217-segment/one-generation3225997-byte SHA1d75cd1b…a73ac archive
+retains53 authenticated requests/42 original current opportunities/14Targets.
+Each13 former-gap first-current boundary verifies current player list, source,
+slot, typed1/1 and absence of raw-object/zone collisions independently:24player
+memberships/two distinct players,2existing public BF members,0remainingunknown,
+11new complete local Select domains/24local proposals. Two Unselect-only cases
+stay current selected literals,0Select conversion. Full target/action legality
+unknown. Public13case projections omit raw auth/hidden faces/future responses.
+
+Existing current-target API gains a namespaced v2 sidecar only with a same-owner,
+generation/reset-bound version capability from the unique Follower's bytes.
+One reviewed prelude within16KiB, finalprefixhash and incremental duplicate-header
+checks fail closed. Legacy object-only v1/defaultwatch stay intact. The existing
+projector/checker and bounded subset enumerator are reused, with no partial
+proposals on new-profile truncation. Current raw digest/source/player/collision/
+build/ref/lease gates run before/after; frame freshness includes hidden existence
+without payload exposure. Independent counterproof repairs close typed-role
+omission, source-seat collision, later Version headers and completed-frame raw
+collision changes. New options remain research-ineligible; defaults stay1/33/8.
+
+Complete10JSONL/1152record documents/options/policy/Candidate2–6,53authenticated
+defaults and history report match base across783470leafvalues;41append frames/
+safe summaries match except13explicit role sidecars. Full3.11 1120PASS and Windows
+doctor PASS. Direct role/build controls52PASS; independent pre-final48scenarios/
+595assertionsPASS. Added role projection n52 p50/p95/p99/maxms=.4689/.7227/.9201/
+.9201; nested controlled local replay is not liveMTGA latency. Exact committed
+HEAD/tree review and actual PR/main CI remain final delivery gates. See
+docs/current-player-target-evidence.md. MP81 current_view_unavailable and prior
+Windows qualification root causes remain UNKNOWN. input_sent=false; P10=NOT_RUN.
+
+MP84 post-review direct counterproof found same-valued float/bool raw source
+Ability group IDs could pass new-profile equality despite unchanged visible
+card_id=null and accepted digest. Reuse strict typed _equal for both groups;
+new direct tests cover1000→1000.0 and1→True. Prior candidate e84b84c2's1120PASS,
+review and CI are historical only; the repaired ordinary commit requires fresh
+full tests, exact-HEAD review and actual Linux/Windows CI before delivery.
+
+MP84 concentrated follow-up review also found new-profile wire identity bounds
+were inheriting the legacy JSON2**53 limit. Only the new role path now applies
+the pinned uint32 limits to used message/state/source/group/slot/entity/zone/
+member fields, retains optional zero/absent group/parent semantics, and checks
+typed zone-row identity. Visible-zone metadata joins the private frame stamp;
+no extra state projection or hidden-face read. Independent worktree review
+64scenarios/644assertionsPASS, review scope closed. New actual owner acceptance
+retains13/24/11/24 and783470equal leaves/41original rawdigests. Added-only n52
+ms=.4889/.7413/.7843/.7843; previous timing/CI are historical. Final ordinary
+candidate/full/doctor/exactHEAD review/Linux+Windows CI gates must run anew.

@@ -228,3 +228,20 @@ The existing pinned ArcaneForge `45f27866c5dfd5891fc101c00e611a36254d2f49`
 confirms TriggeredAbility/Stacking labels only. No upstream implementation,
 decompiled client text, binary, card/game resource or runtime dependency is
 copied. [Current semantics and limits](docs/current-selectn-evidence.md).
+
+## MP84 version-bound player target references (2026-10-19)
+
+Finite public research pins the same ArcaneForge commit above. The GreInterface
+mapping blob is `63c8e7f8eb8bb89d9c52dae58e0803e1bea27f1d`; source-directory
+labels alone do not bind its version. The owner additionally inspected only
+relevant static metadata/IL in the checked installed assemblies, whose hashes
+match the accepted MP61 receipt and pinned newer manifest. No client code was
+loaded/executed or copied into this product. Full provenance and limitations are
+in [the version receipt](docs/evidence/mp84-player-target-version.json).
+
+The thirteen aliased public projections in
+`tests/fixtures/current_target_players_real.json` retain only current target and
+necessary public identity structure. The adjacent README pins the source and
+fixture hashes and redactions. Synthetic bootstraps/mutations are not additional
+real evidence. Raw archives, authentication, hidden faces, absolute local paths,
+DLLs, decompiled implementation text and research dependencies stay undistributed.

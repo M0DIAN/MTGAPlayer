@@ -31,6 +31,21 @@ def _unknown(reason, ref=None):
         'read_only': True, **EXECUTION}
 
 
+def _bounded_target_sets(domain, minimum, maximum, limit):
+    """The existing finite count/subset enumeration, independent of ID namespace."""
+    if minimum > len(domain): return [], None, 'required_target_count_exceeds_offered_domain'
+    upper = min(maximum, len(domain))
+    total = sum(comb(len(domain), count) for count in range(minimum, upper+1))
+    if total == 0: return [], None, 'no_supported_final_target_sets'
+    subsets = []
+    for count in range(minimum, upper+1):
+        for selected in combinations(domain, count):
+            if len(subsets) == limit: break
+            subsets.append(list(selected))
+        if len(subsets) == limit: break
+    return subsets, total, None
+
+
 def _target_proposals(request, binding, ref, limit):
     """Shared bounded local membership/count enumeration, not a rules solver."""
     from .semantic_targets import SELECT, check_final_set
@@ -40,24 +55,18 @@ def _target_proposals(request, binding, ref, limit):
         return [], None, 'complete_current_select_domain_not_observed'
     if minimum is None or maximum is None:
         return [], None, 'final_target_count_bounds_not_observed'
-    domain = [row['object_ref'] for row in entries]
-    if minimum > len(domain): return [], None, 'required_target_count_exceeds_offered_domain'
-    upper = min(maximum, len(domain))
-    total = sum(comb(len(domain), count) for count in range(minimum, upper+1))
-    if total == 0: return [], None, 'no_supported_final_target_sets'
+    subsets, total, reason = _bounded_target_sets([row['object_ref'] for row in entries], minimum, maximum, limit)
+    if reason: return [], total, reason
     proposals = []
-    for count in range(minimum, upper+1):
-        for selected in combinations(domain, count):
-            if len(proposals) == limit: break
-            final = {'source_object_ref': request['source_object_ref'],
-                     'target_idx': request['target_idx'], 'object_refs': list(selected)}
-            proposed = {'request_identity': copy.deepcopy(binding), 'proposed_final_target_set': final}
-            if ref is not None: proposed['source_snapshot_ref'] = copy.deepcopy(ref)
-            check_proposal(proposed)
-            if check_final_set(request, final)[0] != 'verified_known_constraints':
-                return [], None, 'known_constraints_not_verified'
-            proposals.append(proposed)
-        if len(proposals) == limit: break
+    for selected in subsets:
+        final = {'source_object_ref': request['source_object_ref'],
+                 'target_idx': request['target_idx'], 'object_refs': selected}
+        proposed = {'request_identity': copy.deepcopy(binding), 'proposed_final_target_set': final}
+        if ref is not None: proposed['source_snapshot_ref'] = copy.deepcopy(ref)
+        check_proposal(proposed)
+        if check_final_set(request, final)[0] != 'verified_known_constraints':
+            return [], None, 'known_constraints_not_verified'
+        proposals.append(proposed)
     return proposals, total, None
 
 
