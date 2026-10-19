@@ -1,0 +1,76 @@
+{
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+  "source_bytes": 8382052,
+  "source_opportunity": 20,
+  "projection": "Actual mana and annotation ids independently aliased. Color int32 values retained. Original raw bytes and hidden identities excluded.",
+  "evidence": {
+    "schema_version": "mtgaplayer.cast-1u-mana-fields.v1",
+    "document_sha256": "7d12c0f78dca7629f315517f18a6db929aa81b36c6e914ad0a467fdffee759a8",
+    "identity": {
+      "match_ref": 1,
+      "game": 1,
+      "self_seat": 2,
+      "request_ref": 1
+    },
+    "version_evidence": {
+      "client_build": "2026.64.0.14517.1329972",
+      "header_sha256": "6f0427d6b57e660e862dbaa8810f57c60c318613fa52f0bf44d27ac3e104d2c0",
+      "SharedClientCore.dll": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "SharedClientCore_mvid": "c162c20f-ba79-438b-abd6-058f915926a3",
+      "Wizards.MDN.GreProtobuf.dll": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+      "GreProtobuf_mvid": "3acc2830-eab7-4327-be16-8969a71eb3aa",
+      "parser_MoveNext_body_sha256": "c5c5fd05cb344d89e02d84e9c4b5b01b120db7ad9519b48ef1b667d8ce41fcf2"
+    },
+    "mana_id_namespace": "aliased_actual_mana_not_predictive",
+    "events": [
+      {
+        "state_ref": 2,
+        "fact_index": 2,
+        "source_object_ref": 9,
+        "spell_object_ref": 16,
+        "annotation_ref": "paid-annotation-1",
+        "details": [
+          {
+            "key": "id",
+            "type": "KeyValuePairValueType_int32",
+            "valueInt32": [
+              1
+            ]
+          },
+          {
+            "key": "color",
+            "type": "KeyValuePairValueType_int32",
+            "valueInt32": [
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "state_ref": 2,
+        "fact_index": 3,
+        "source_object_ref": 15,
+        "spell_object_ref": 16,
+        "annotation_ref": "paid-annotation-2",
+        "details": [
+          {
+            "key": "id",
+            "type": "KeyValuePairValueType_int32",
+            "valueInt32": [
+              2
+            ]
+          },
+          {
+            "key": "color",
+            "type": "KeyValuePairValueType_int32",
+            "valueInt32": [
+              2
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

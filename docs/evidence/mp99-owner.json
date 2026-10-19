@@ -1,0 +1,235 @@
+{
+  "schema_version": "mtgaplayer.mp99-owner-evidence.v1",
+  "base_main": "7a688ca6b54e589fc11f5bd2d0bbca5158cf9569",
+  "scope": "Two selected historical Casts; Owner authenticates private original bytes, independent reviewer uses safe projections and static evidence.",
+  "version_evidence": {
+    "client_build": "2026.64.0.14517.1329972",
+    "header_sha256": "6f0427d6b57e660e862dbaa8810f57c60c318613fa52f0bf44d27ac3e104d2c0",
+    "SharedClientCore.dll": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+    "SharedClientCore_mvid": "c162c20f-ba79-438b-abd6-058f915926a3",
+    "Wizards.MDN.GreProtobuf.dll": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+    "GreProtobuf_mvid": "3acc2830-eab7-4327-be16-8969a71eb3aa",
+    "parser_MoveNext_body_sha256": "c5c5fd05cb344d89e02d84e9c4b5b01b120db7ad9519b48ef1b667d8ce41fcf2"
+  },
+  "method_evidence": [
+    {
+      "type": "GreClient.Rules.MtgMana",
+      "method": ".ctor",
+      "token": "0x60009d3",
+      "raw_method_body_sha256": "85deaefdbf7766433069b771764a41f299b3b9c6797a6aba856cf86fb2fb26af",
+      "code_bytes": 144
+    },
+    {
+      "type": "GreClient.Rules.Annotations.ManaPaidAnnotationParser",
+      "method": "GetManaId",
+      "token": "0x6000c31",
+      "raw_method_body_sha256": "e87c3321845ab66b7ca7cf989706d9b5677c1df64008c672074847292cb0147b",
+      "code_bytes": 92
+    },
+    {
+      "type": "GreClient.Rules.Annotations.ManaPaidAnnotationParser",
+      "method": "GetColor",
+      "token": "0x6000c33",
+      "raw_method_body_sha256": "9bc791145cade4ded9f7c36052d5d044dfa278cb695de9d44eb3e52f7bea27ae",
+      "code_bytes": 92
+    },
+    {
+      "type": "GreClient.Rules.Annotations.ManaPaidAnnotationParser",
+      "method": ".ctor",
+      "token": "0x6000c34",
+      "raw_method_body_sha256": "38c0934d66b3b93aa665516af766c0f6f6d0acd78b35af7ffbbf139b7c311238",
+      "code_bytes": 7
+    },
+    {
+      "type": "GreClient.Rules.Annotations.ManaPaidAnnotationParser/<Process>d__7",
+      "method": ".ctor",
+      "token": "0x6001d15",
+      "raw_method_body_sha256": "4cda5b2a4e5d228a67c875899a2ba24b87f259633034118fcd9798d1f9d4e796",
+      "code_bytes": 25
+    },
+    {
+      "type": "GreClient.Rules.Annotations.ManaPaidAnnotationParser/<Process>d__7",
+      "method": "MoveNext",
+      "token": "0x6001d17",
+      "raw_method_body_sha256": "c5c5fd05cb344d89e02d84e9c4b5b01b120db7ad9519b48ef1b667d8ce41fcf2",
+      "code_bytes": 448
+    }
+  ],
+  "episodes": {
+    "mp91": {
+      "cohort": "mp91",
+      "opportunity": 20,
+      "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+      "source_bytes": 8382052,
+      "current_boundary_reauthenticated": true,
+      "policy_recomputed": false,
+      "strict_full_active_row_and_consumption": true,
+      "freeze": {
+        "active": 11,
+        "inactive": 1,
+        "pre_tapped": [
+          null,
+          null
+        ],
+        "untap_grades": [
+          "unknown",
+          "unknown"
+        ],
+        "untap_reasons": [
+          "other_source_annotation",
+          "other_source_annotation"
+        ],
+        "strict_public_sources": 2,
+        "build_witness": {
+          "client_build": "2026.64.0.14517.1329972",
+          "mapping_profile": "reviewed_14517_1329972_player_system_seat_to_entity_instance",
+          "generation": 1,
+          "header_sha256": "6f0427d6b57e660e862dbaa8810f57c60c318613fa52f0bf44d27ac3e104d2c0"
+        }
+      },
+      "pre_source_object_rows": {
+        "omitted_or_unknown": 2
+      },
+      "pre_tap_event_counts": {},
+      "pre_accepted_states_same_scope": 67,
+      "pre_typed_continuity_all": true,
+      "trace_states": 38,
+      "trace_status": "next_request_observed",
+      "mana_paid_events": 2,
+      "distinct_annotation_ids": 2,
+      "distinct_actual_mana_ids": 2,
+      "distinct_detail_color_values": 1,
+      "detail_color_equals_exact_build_Blue_2": [
+        true,
+        true
+      ],
+      "all_first_cast_state": true,
+      "actual_sources_equal_prediction": true,
+      "affected_only_migrated_spell": true,
+      "prior_pool_shapes": [
+        [
+          "absent",
+          "absent"
+        ],
+        [
+          "absent",
+          "absent"
+        ]
+      ],
+      "prior_pool_id_hit_counts": [
+        0,
+        0
+      ],
+      "prior_pool_counts": [
+        [],
+        []
+      ],
+      "typed_payment_state_continuity": true,
+      "client_color_semantics_verified": true,
+      "actual_units_verified": false,
+      "duplicate_or_merge_universally_excluded": false,
+      "additional_payment_or_costs_complete": null,
+      "source_readiness": "UNKNOWN",
+      "complete_payment_verified": false,
+      "input_sent": false,
+      "P10": "NOT_RUN"
+    },
+    "mp81": {
+      "cohort": "mp81",
+      "opportunity": 8,
+      "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+      "source_bytes": 3225997,
+      "current_boundary_reauthenticated": true,
+      "policy_recomputed": false,
+      "strict_full_active_row_and_consumption": true,
+      "freeze": {
+        "active": 12,
+        "inactive": 0,
+        "pre_tapped": [
+          null,
+          null
+        ],
+        "untap_grades": [
+          "unknown",
+          "unknown"
+        ],
+        "untap_reasons": [
+          "source_row_replaced",
+          "source_row_replaced"
+        ],
+        "strict_public_sources": 2,
+        "build_witness": {
+          "client_build": "2026.64.0.14517.1329972",
+          "mapping_profile": "reviewed_14517_1329972_player_system_seat_to_entity_instance",
+          "generation": 1,
+          "header_sha256": "6f0427d6b57e660e862dbaa8810f57c60c318613fa52f0bf44d27ac3e104d2c0"
+        }
+      },
+      "pre_source_object_rows": {
+        "omitted_or_unknown": 6,
+        "explicit_true": 2
+      },
+      "pre_tap_event_counts": {
+        "typed_1": 2,
+        "typed_0": 2
+      },
+      "pre_accepted_states_same_scope": 83,
+      "pre_typed_continuity_all": true,
+      "trace_states": 3,
+      "trace_status": "next_request_observed",
+      "mana_paid_events": 2,
+      "distinct_annotation_ids": 2,
+      "distinct_actual_mana_ids": 2,
+      "distinct_detail_color_values": 1,
+      "detail_color_equals_exact_build_Blue_2": [
+        true,
+        true
+      ],
+      "all_first_cast_state": true,
+      "actual_sources_equal_prediction": true,
+      "affected_only_migrated_spell": true,
+      "prior_pool_shapes": [
+        [
+          "absent",
+          "absent"
+        ],
+        [
+          "absent",
+          "absent"
+        ]
+      ],
+      "prior_pool_id_hit_counts": [
+        0,
+        0
+      ],
+      "prior_pool_counts": [
+        [],
+        []
+      ],
+      "typed_payment_state_continuity": true,
+      "client_color_semantics_verified": true,
+      "actual_units_verified": false,
+      "duplicate_or_merge_universally_excluded": false,
+      "additional_payment_or_costs_complete": null,
+      "source_readiness": "UNKNOWN",
+      "complete_payment_verified": false,
+      "input_sent": false,
+      "P10": "NOT_RUN"
+    }
+  },
+  "verified_scope": [
+    "same-build id is old pool key or fallback ManaId",
+    "same-build annotation color uses ManaColor enum",
+    "two Blue-encoded annotation literals in each selected historical episode"
+  ],
+  "client_count_scope": "Map miss sets client Count1; map hit reuses old pool Count/Color. Neither proves actual engine units.",
+  "public_positive": "tests/fixtures/cast_1u_mana_fields_real.json paired with unchanged cast_1u_payment_real.json",
+  "source_readiness": "UNKNOWN",
+  "actual_mana_units": null,
+  "complete_payment_verified": false,
+  "frozen_policy_recomputed": false,
+  "product_runtime_or_policy_changed": false,
+  "raw_payload_exported": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}
