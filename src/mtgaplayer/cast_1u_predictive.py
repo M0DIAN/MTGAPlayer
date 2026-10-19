@@ -12,6 +12,7 @@ from .choice_candidates import _assess_current_report
 from .decision_consumer import EXECUTION, _bounded_json
 from .request_parameters import LiteralRefs
 from .semantic_cast import action
+from .semantic_activate import ability_observation
 from .semantic_samples import _need
 from .shadow_runtime import _stamp
 
@@ -67,30 +68,12 @@ def _unknown(reason, ref=None, *, parent_status=None):
     }
 
 
-def _positive(state, ref, reducer, message, parent, completed_stamp):
-    # The MP96 policy has already checked the full parent offer, exact catalog,
-    # visible Hand card and static/phase gates. Never borrow a later outcome.
-    _need(
-        _equal(parent["request_binding"], state["binding"])
-        and _equal(parent["source_snapshot_ref"], ref)
-        and state["binding"]["request_type"] == "GREMessageType_ActionsAvailableReq"
-        and _equal(_stamp(reducer, message, state), completed_stamp),
-        "parent_binding_or_content_changed",
-    )
-    raw = message["actionsAvailableReq"]["actions"]
-    position = parent["source_identity"]["list_position"]
-    _need(type(position) is int and 0 <= position < len(raw), "parent_binding_or_content_changed")
-    cast = raw[position]
-    _need(
-        cast["actionType"] == "ActionType_Cast"
-        and cast["grpId"] == 96626
-        and _equal(action(cast, LiteralRefs(), ()), parent["cast_action_evidence"])
-        and _equal(cast["manaCost"], [
-            {"color": ["ManaColor_Generic"], "count": 1},
-            {"color": ["ManaColor_Blue"], "count": 1},
-        ]),
-        "parent_binding_or_content_changed",
-    )
+def _route(raw, cast):
+    """Shared exact current-offer projection; no outcome or resource solver."""
+    _need(_equal(cast.get("manaCost"), [
+        {"color": ["ManaColor_Generic"], "count": 1},
+        {"color": ["ManaColor_Blue"], "count": 1},
+    ]), "parent_binding_or_content_changed")
     solution = cast.get("autoTapSolution")
     _need(type(solution) is dict and set(solution) == {"autoTapActions"}, "cast_auto_tap_shape_not_reviewed")
     descriptors = solution["autoTapActions"]
@@ -98,8 +81,7 @@ def _positive(state, ref, reducer, message, parent, completed_stamp):
 
     sources = set()
     mana_ids = set()
-    untapped = 0
-    unknown_tapped = 0
+    routes = []
     for descriptor in descriptors:
         _need(type(descriptor) is dict and set(descriptor) == {
             "instanceId", "abilityGrpId", "manaPaymentOption"
@@ -154,11 +136,44 @@ def _positive(state, ref, reducer, message, parent, completed_stamp):
         unique_ability = mana.get("uniqueAbilityId")
         _need(type(unique_ability) is int and unique_ability > 0,
               "public_source_or_ability_identity_unverified")
+        routes.append((source_id, mana))
+    return routes
+
+
+def _positive(state, ref, reducer, message, parent, completed_stamp):
+    # The MP96 policy has already checked the full parent offer, exact catalog,
+    # visible Hand card and static/phase gates. Never borrow a later outcome.
+    _need(
+        _equal(parent["request_binding"], state["binding"])
+        and _equal(parent["source_snapshot_ref"], ref)
+        and state["binding"]["request_type"] == "GREMessageType_ActionsAvailableReq"
+        and _equal(_stamp(reducer, message, state), completed_stamp),
+        "parent_binding_or_content_changed",
+    )
+    raw = message["actionsAvailableReq"]["actions"]
+    position = parent["source_identity"]["list_position"]
+    _need(type(position) is int and 0 <= position < len(raw), "parent_binding_or_content_changed")
+    cast = raw[position]
+    _need(
+        cast["actionType"] == "ActionType_Cast"
+        and cast["grpId"] == 96626
+        and _equal(action(cast, LiteralRefs(), ()), parent["cast_action_evidence"])
+        and _equal(cast["manaCost"], [
+            {"color": ["ManaColor_Generic"], "count": 1},
+            {"color": ["ManaColor_Blue"], "count": 1},
+        ]),
+        "parent_binding_or_content_changed",
+    )
+    routes = _route(raw, cast)
+    untapped = unknown_tapped = 0
+    for source_id, mana in routes:
+        unique_ability = mana["uniqueAbilityId"]
         source = reducer.objects.get(source_id)
         visible = [o for o in state["visible_objects"] if type(o) is dict and o.get("instance_id") == source_id]
         seat = state["binding"]["self_seat"]
         _need(
             type(source) is dict and source.get("type") == "GameObjectType_Card"
+            and source_id in reducer._mana_source_refs()
             and type(source.get("grpId")) is int and source["grpId"] == mana.get("grpId")
             and type(source.get("ownerSeatId")) is int and source["ownerSeatId"] == seat
             and type(source.get("controllerSeatId")) is int and source["controllerSeatId"] == seat
@@ -167,10 +182,7 @@ def _positive(state, ref, reducer, message, parent, completed_stamp):
             and type(visible[0]["card_id"]) is int and visible[0]["card_id"] == mana.get("grpId")
             and type(visible[0]["owner_seat"]) is int and visible[0]["owner_seat"] == seat
             and type(visible[0]["controller_seat"]) is int and visible[0]["controller_seat"] == seat
-            and type(source.get("uniqueAbilities")) is list
-            and sum(type(a) is dict and type(a.get("id")) is int
-                    and a["id"] == unique_ability and type(a.get("grpId")) is int
-                    and a["grpId"] == group_id for a in source["uniqueAbilities"]) == 1,
+            and ability_observation(mana, source.get("uniqueAbilities")) == "verified_observed_pair",
             "public_source_or_ability_identity_unverified",
         )
         if visible[0]["tapped"] is True:
@@ -191,7 +203,7 @@ def _positive(state, ref, reducer, message, parent, completed_stamp):
         request_binding=copy.deepcopy(state["binding"]),
         reviewed_cast_option_key=copy.deepcopy(parent["preferred_option_key"]),
         predictive_blue_units=2,
-        distinct_predictive_sources=len(sources),
+        distinct_predictive_sources=len(routes),
         matched_offered_mana_actions=2,
         explicit_untapped_sources=untapped,
         sources_with_unknown_tapped_state=unknown_tapped,
@@ -233,3 +245,101 @@ def assess_current_cast_1u_predictive(consumer, reducer, message, prepared_rules
                             source_snapshot_ref, parent_status=parent["status"])
 
     return _assess_current_report(consumer, evaluate, _unknown)
+
+
+def reconcile_observed_cast_1u_sources(document):
+    """Opt-in historical v2 source-link replay, never a current payment verdict.
+
+    The existing portable producer certifies the request/response pair; replay
+    does not reauthenticate private bytes. MP34 preserves ManaPaid source/spell
+    links, not its opaque id/color details or actual units. This profile joins
+    those links to the selected Cast's same-request predicted sources only.
+    """
+    from .semantic_cast import VERSION as SAMPLES_V2
+    from .semantic_samples import replay_samples
+    from .semantic_activate import raw_action
+
+    _need(type(document) is dict and document.get("schema_version") == SAMPLES_V2,
+          "historical_v2_samples_required")
+    replay = replay_samples(document)  # existing size, typed shape and trace checks
+    reports = []
+    for sample, checked in zip(document["samples"], replay["samples"]):
+        report = _unknown("historical_source_links_unverified")
+        report.update(schema_version="mtgaplayer.cast-1u-observed-sources.v1",
+            profile=PROFILE, time_scope="historical_only", current_available=False,
+            raw_source_auth_revalidated=False, identity=copy.deepcopy(sample["identity"]),
+            observed_mana_paid_source_links=None, observed_sources_tapped=None,
+            historical_source_links_consistent=False, actual_color_count_verified=False)
+        try:
+            position = checked["selected_action_position"]
+            rows = sample["request"]["payload"]["actions"]
+            chosen = sample["response"]["payload"]["action"]
+            _need(type(position) is int and _equal(rows[position], chosen),
+                  "historical_selected_row_not_exact")
+            raw = [raw_action(a) for a in rows]
+            cast = raw[position]
+            _need(cast["actionType"] == "ActionType_Cast" and cast["grpId"] == 96626,
+                  "historical_cast_profile_unreviewed")
+            routes = _route(raw, cast)
+            seat = sample["identity"]["self_seat"]
+            before = {o["object_ref"]: o for o in sample["before"]["objects"]}
+            source = before[cast["instanceId"]]
+            _need(source["zone"] == "ZoneType_Hand" and source["card_id"] == 96626
+                  and source["owner"] == source["controller"] == seat,
+                  "historical_cast_source_unverified")
+            trace = sample["trace"]
+            _need(trace["status"] in ("eof", "next_request_observed") and not trace["truncated"]
+                  and trace["states"] and all(s["facts_status"] == "reviewed_subset" for s in trace["states"]),
+                  "historical_trace_incomplete")
+            first = trace["states"][0]
+            migrations = [f for s in trace["states"] for f in s["facts"]
+                if f["kind"] == "object_id_changed" and f["original_object_ref"] == cast["instanceId"]]
+            _need(len(migrations) == 1 and migrations[0] in first["facts"],
+                  "historical_cast_migration_ambiguous")
+            spell = migrations[0]["new_object_ref"]
+            objects = {o["object_ref"]: o for o in first["snapshot"]["objects"]}
+            involved = [f for s in trace["states"] for f in s["facts"]
+                if f["kind"] == "object_id_changed" and
+                (f["original_object_ref"] in (cast["instanceId"], spell) or
+                 f["new_object_ref"] in (cast["instanceId"], spell))]
+            _need(len(involved) == 1 and spell not in before and
+                  all(cast["instanceId"] not in {o["object_ref"] for o in s["snapshot"]["objects"]}
+                      for s in trace["states"]), "historical_cast_migration_ambiguous")
+            _need(objects[spell]["zone"] == "ZoneType_Stack" and objects[spell]["card_id"] == 96626
+                  and objects[spell]["owner"] == objects[spell]["controller"] == seat
+                  and sum(f == {"kind":"zone_transfer", "object_ref":spell,
+                      "source_zone":"ZoneType_Hand", "destination_zone":"ZoneType_Stack",
+                      "category":"CastSpell"} for f in first["facts"]) == 1,
+                  "historical_cast_stack_unverified")
+            expected = {sid for sid, _ in routes}
+            links = [(s, f) for s in trace["states"] for f in s["facts"]
+                     if f["kind"] == "mana_paid"]
+            _need(len(links) == 2 and all(s is first and f["spell_object_ref"] == spell for s, f in links)
+                  and {f["source_object_ref"] for _, f in links} == expected,
+                  "historical_paid_source_links_mismatch")
+            for sid, offered in routes:
+                original = before[sid]
+                _need(original["card_id"] == offered["grpId"] and
+                      original["zone"] == "ZoneType_Battlefield" and
+                      original["owner"] == original["controller"] == seat,
+                      "historical_payment_source_unverified")
+                for state in trace["states"]:
+                    visible = {o["object_ref"]: o for o in state["snapshot"]["objects"]}
+                    obj = visible[sid]
+                    _need(all(_equal(obj[k], original[k]) for k in ("card_id", "zone", "owner", "controller")),
+                          "historical_payment_source_changed")
+                    _need(not any(f["kind"] == "object_id_changed" and
+                                  (f["original_object_ref"] in expected or f["new_object_ref"] in expected)
+                                  for f in state["facts"]), "historical_payment_source_changed")
+            report.update(status="historical_source_links_consistent",
+                reason="same_cast_predicted_sources_match_observed_mana_paid_links",
+                observed_mana_paid_source_links=2,
+                observed_sources_tapped=sum(objects[sid]["tapped"] is True for sid in expected),
+                historical_source_links_consistent=True, actual_mana_paid_observed=True)
+        except (ValueError, TypeError, KeyError, IndexError):
+            pass  # opaque or contradictory history cannot grant a current result
+        reports.append(report)
+    return {"schema_version":"mtgaplayer.cast-1u-observed-source-replay.v1",
+        "time_scope":"historical_only", "samples":reports, "raw_source_auth_revalidated":False,
+        "current_available":False, "complete_payment_verified":False,
+        "complete_legality_verified":False, "read_only":True, **EXECUTION}

@@ -1,0 +1,141 @@
+{
+  "schema_version": "mtgaplayer.mp98-owner-payment-evidence.v1",
+  "scope": "Owner-authenticated two selected historical Casts only; no strategy re-evaluation",
+  "base_main": "221ba6a52d4fc72ddc914f2aeaad37eb8efba4e0",
+  "cohorts": {
+    "mp91": {
+      "cohort": "mp91",
+      "opportunity": 20,
+      "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+      "source_bytes": 8382052,
+      "freeze_reauthenticated_at_original_boundary": true,
+      "strict_original_row_and_consumption": true,
+      "frozen_policy_recomputed": false,
+      "active_actions": 11,
+      "inactive_actions": 1,
+      "literal_cost_is_1U": true,
+      "predictive_descriptors": 2,
+      "distinct_predictive_sources": 2,
+      "predictive_units": 2,
+      "source_pre_tapped_states": [
+        null,
+        null
+      ],
+      "strict_public_sources": 2,
+      "verified_ability_pairs": 2,
+      "bounded_trace_states": 38,
+      "trace_end": "next_request_observed",
+      "ManaPaid_annotations_to_selected_spell": 2,
+      "unique_ManaPaid_annotation_ids": 2,
+      "actual_source_multiset_equals_predictive_sources": true,
+      "all_affected_only_migrated_spell": true,
+      "all_ManaPaid_in_existing_MP34_facts": true,
+      "actual_sources_strict_public": 2,
+      "source_tapped_post_payment": [
+        true,
+        true
+      ],
+      "actual_detail_keys": [
+        [
+          "color",
+          "id"
+        ],
+        [
+          "color",
+          "id"
+        ]
+      ],
+      "actual_details_numeric_color_values_count": 1,
+      "actual_id_numerically_equals_a_predictive_id": [
+        false,
+        false
+      ],
+      "actual_id_semantics_verified": false,
+      "actual_color_semantics_verified": false,
+      "actual_payment_amount_verified": false,
+      "complete_payment_verified": false,
+      "complete_legality_verified": false,
+      "input_sent": false,
+      "P10": "NOT_RUN"
+    },
+    "mp81": {
+      "cohort": "mp81",
+      "opportunity": 8,
+      "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+      "source_bytes": 3225997,
+      "freeze_reauthenticated_at_original_boundary": true,
+      "strict_original_row_and_consumption": true,
+      "frozen_policy_recomputed": false,
+      "active_actions": 12,
+      "inactive_actions": 0,
+      "literal_cost_is_1U": true,
+      "predictive_descriptors": 2,
+      "distinct_predictive_sources": 2,
+      "predictive_units": 2,
+      "source_pre_tapped_states": [
+        null,
+        null
+      ],
+      "strict_public_sources": 2,
+      "verified_ability_pairs": 2,
+      "bounded_trace_states": 3,
+      "trace_end": "next_request_observed",
+      "ManaPaid_annotations_to_selected_spell": 2,
+      "unique_ManaPaid_annotation_ids": 2,
+      "actual_source_multiset_equals_predictive_sources": true,
+      "all_affected_only_migrated_spell": true,
+      "all_ManaPaid_in_existing_MP34_facts": true,
+      "actual_sources_strict_public": 2,
+      "source_tapped_post_payment": [
+        true,
+        true
+      ],
+      "actual_detail_keys": [
+        [
+          "color",
+          "id"
+        ],
+        [
+          "color",
+          "id"
+        ]
+      ],
+      "actual_details_numeric_color_values_count": 1,
+      "actual_id_numerically_equals_a_predictive_id": [
+        false,
+        false
+      ],
+      "actual_id_semantics_verified": false,
+      "actual_color_semantics_verified": false,
+      "actual_payment_amount_verified": false,
+      "complete_payment_verified": false,
+      "complete_legality_verified": false,
+      "input_sent": false,
+      "P10": "NOT_RUN"
+    }
+  },
+  "public_fixture": "tests/fixtures/cast_1u_payment_real.json",
+  "public_fixture_origin": "retained_scrubbed_real; aliases; not raw-equivalent; selected-pair counts; no synthetic transport",
+  "mp81_portable_scope": "Original other Cast targets exceed existing v2; no row removed to create a portable positive",
+  "independent_review_boundary": "Reviewer may verify public projections/safe receipts but does not authenticate private original bytes",
+  "frozen_policy_results_unchanged": {
+    "mp91_unified3": {
+      "research_preference": 9,
+      "abstain": 32,
+      "unsupported": 9
+    },
+    "mp81_unified3": {
+      "research_preference": 14,
+      "abstain": 20,
+      "unsupported": 8
+    }
+  },
+  "current_resource_availability": "unknown",
+  "actual_amount_color_accounting": "unknown",
+  "complete_payment": "unknown",
+  "complete_legality_verified": false,
+  "strategic_optimality_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

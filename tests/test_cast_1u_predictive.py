@@ -6,7 +6,8 @@ import tempfile
 import unittest
 
 from mtgaplayer.cast_1u_predictive import (
-    CONSISTENT, PROFILE, VERSION, assess_current_cast_1u_predictive)
+    CONSISTENT, PROFILE, VERSION, assess_current_cast_1u_predictive,
+    reconcile_observed_cast_1u_sources)
 from mtgaplayer.decision_consumer import EXECUTION
 from mtgaplayer.rules_index import PreparedRulesIndex
 from mtgaplayer.shadow_runtime import LocalShadowRuntime
@@ -138,6 +139,132 @@ class Cast1UPredictiveTests(unittest.TestCase):
         self.assertNotEqual(after["status"], CONSISTENT)
         self.assertIsNone(after["reviewed_cast_option_key"])
         self.assert_no_authority(self, after)
+
+    def test_synthetic_conflicting_unique_ability_id_is_not_an_identity_proof(self):
+        sample = copy.deepcopy(self.sample)
+        mana = sample["message"]["actionsAvailableReq"]["actions"][8]
+        source = next(o for o in sample["initial"]["objects"]
+                      if o["instanceId"] == mana["instanceId"])
+        source["uniqueAbilities"].append({"id": mana["uniqueAbilityId"],
+                                          "grpId": mana["abilityGrpId"] + 1})
+        runtime, _, _, rules, _, _, frame = self.stream(sample)
+        self.assertEqual(frame["research_decision"]["status"], "research_preference")
+        report = self.evaluate(runtime, rules)
+        self.assertEqual(report["reason"], "public_source_or_ability_identity_unverified")
+        self.assertIs(report["predictive_source_identity_consistency_verified"], False)
+        self.assert_no_authority(self, report)
+
+    def test_synthetic_private_source_zone_is_not_public_payment_evidence(self):
+        sample = copy.deepcopy(self.sample)
+        mana = sample["message"]["actionsAvailableReq"]["actions"][8]
+        source = next(o for o in sample["initial"]["objects"]
+                      if o["instanceId"] == mana["instanceId"])
+        zone = next(z for z in sample["initial"]["zones"]
+                    if z["zoneId"] == source["zoneId"])
+        zone["visibility"] = "Visibility_Private"
+        runtime, _, _, rules, _, _, frame = self.stream(sample)
+        self.assertEqual(frame["research_decision"]["status"], "research_preference")
+        report = self.evaluate(runtime, rules)
+        self.assertEqual(report["reason"], "public_source_or_ability_identity_unverified")
+        self.assertIs(report["predictive_source_identity_consistency_verified"], False)
+        self.assert_no_authority(self, report)
+
+
+class Historical1UPaymentTests(unittest.TestCase):
+    def setUp(self):
+        self.fixture = json.loads((FIXTURES / "cast_1u_payment_real.json").read_text())
+        self.document = copy.deepcopy(self.fixture["document"])
+
+    def result(self):
+        return reconcile_observed_cast_1u_sources(self.document)["samples"][0]
+
+    def test_real_selected_cast_sources_match_mana_paid_links_not_full_payment(self):
+        from mtgaplayer.semantic_samples import replay_samples
+        self.assertEqual(self.fixture["origin"], "retained_scrubbed_real")
+        self.assertIs(self.fixture["raw_equivalent"], False)
+        self.assertEqual(self.fixture["source_opportunity"], 20)
+        sample = self.document["samples"][0]
+        self.assertEqual(len(sample["request"]["payload"]["actions"]), 11)
+        self.assertEqual(len(sample["trace"]["states"]), 38)
+        self.assertEqual(replay_samples(self.document)["samples"][0]["cast_evidence"]
+                         ["known_cost_and_predictive_payment"], "insufficient_evidence")
+        report = self.result()
+        self.assertEqual(report["status"], "historical_source_links_consistent")
+        self.assertEqual(report["observed_mana_paid_source_links"], 2)
+        self.assertEqual(report["observed_sources_tapped"], 2)
+        self.assertIs(report["actual_mana_paid_observed"], True)
+        self.assertEqual(report["time_scope"], "historical_only")
+        self.assertIsNone(report["request_binding"])
+        for k in ("current_available", "raw_source_auth_revalidated", "actual_color_count_verified",
+                  "payment_verified", "complete_payment_verified", "source_readiness_verified",
+                  "complete_legality_verified", "strategic_optimality_verified", *EXECUTION):
+            self.assertIs(report[k], False, k)
+
+    def test_synthetic_wrong_missing_duplicate_or_extra_actual_links_refuse(self):
+        original = copy.deepcopy(self.document)
+        for label in ("wrong_source", "wrong_spell", "missing", "duplicate", "extra"):
+            with self.subTest(control=label):
+                self.document = copy.deepcopy(original)
+                sample = self.document["samples"][0]
+                facts = sample["trace"]["states"][0]["facts"]
+                links = [f for f in facts if f["kind"] == "mana_paid"]
+                if label == "wrong_source":
+                    links[0]["source_object_ref"] = sample["response"]["payload"]["action"]["identifier_refs"]["instanceId"]
+                elif label == "wrong_spell":
+                    links[0]["spell_object_ref"] = links[0]["source_object_ref"]
+                elif label == "missing": facts.remove(links[0])
+                elif label == "duplicate": links[1].update(links[0])
+                else: facts.append(copy.deepcopy(links[0]))
+                report = self.result()
+                self.assertIs(report["historical_source_links_consistent"], False)
+                self.assertIs(report["actual_mana_paid_observed"], False)
+
+    def test_synthetic_selection_identity_continuity_and_termination_refuse(self):
+        original = copy.deepcopy(self.document)
+        for label in ("response_parameters", "source_identity", "seat", "interrupted", "predictive_color"):
+            with self.subTest(control=label):
+                self.document = copy.deepcopy(original)
+                sample = self.document["samples"][0]
+                chosen = sample["response"]["payload"]["action"]
+                if label == "response_parameters":
+                    chosen["flags"]["shouldStop"] = not chosen["flags"]["shouldStop"]
+                elif label == "source_identity":
+                    sid = chosen["parameters"]["autoTapSolution"]["autoTapActions"][0]["instanceId"]
+                    obj = next(o for o in sample["trace"]["states"][1]["snapshot"]["objects"] if o["object_ref"] == sid)
+                    obj["card_id"] += 1
+                elif label == "seat": sample["identity"]["self_seat"] = 3 - sample["identity"]["self_seat"]
+                elif label == "interrupted":
+                    sample["trace"].update(status="interrupted", next_request_ref=None)
+                else:
+                    offered = sample["request"]["payload"]["actions"][0]
+                    for row in (chosen, offered):
+                        row["parameters"]["autoTapSolution"]["autoTapActions"][0]["manaPaymentOption"]["mana"][0]["color"] = "ManaColor_Red"
+                self.assertIs(self.result()["historical_source_links_consistent"], False)
+
+    def test_synthetic_conflicting_cast_migration_identity_refuses(self):
+        original = copy.deepcopy(self.document)
+        for label in ("two_sources_one_spell", "old_source_still_visible", "spell_preexists", "payment_source_replaced"):
+            with self.subTest(control=label):
+                self.document = copy.deepcopy(original)
+                sample = self.document["samples"][0]
+                first = sample["trace"]["states"][0]
+                change = next(f for f in first["facts"] if f["kind"] == "object_id_changed")
+                if label == "two_sources_one_spell":
+                    sid = next(f["source_object_ref"] for f in first["facts"] if f["kind"] == "mana_paid")
+                    first["facts"].append({**change, "original_object_ref":sid})
+                elif label == "payment_source_replaced":
+                    unchosen = next(o["object_ref"] for o in sample["before"]["objects"]
+                        if o["zone"] == "ZoneType_Hand" and o["object_ref"] != change["original_object_ref"])
+                    sid = next(f["source_object_ref"] for f in first["facts"] if f["kind"] == "mana_paid")
+                    first["facts"].append({"kind":"object_id_changed", "original_object_ref":unchosen, "new_object_ref":sid})
+                elif label == "old_source_still_visible":
+                    first["snapshot"]["objects"].append(copy.deepcopy(next(o for o in sample["before"]["objects"]
+                        if o["object_ref"] == change["original_object_ref"])))
+                else:
+                    sample["before"]["objects"].append(copy.deepcopy(next(o for o in first["snapshot"]["objects"]
+                        if o["object_ref"] == change["new_object_ref"])))
+                sample["successor"]["snapshot"] = copy.deepcopy(first["snapshot"])
+                self.assertIs(self.result()["historical_source_links_consistent"], False)
 
 
 if __name__ == "__main__":
