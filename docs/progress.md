@@ -2044,49 +2044,6 @@ delivery gates. See docs/current-cost-stage.md and its safe source receipt.
 Historical qualification failure root cause remains unknown. input_sent=false;
 P10=NOT_RUN.
 
-## MP99 — version-bound historical ManaPaid fields (Issue110)
-
-Started from re-fetched main7a688ca6b54e589fc11f5bd2d0bbca5158cf9569,
-tree213912e682cceabbda58c3c72025c6a6fd127f28; no open PRs. Clean MP99
-worktree preserves MP94/95 uncommitted investigations and frozen MP96 bytes.
-Existing MP98 two-source replay remains unchanged.
-
-New finite static evidence: exact-build SharedClientCore ManaPaid parser reads
-detail id as old mana-pool lookup key/fallback ManaId and color as protocol enum
-(GreProtobuf Blue=2). Map-hit reuses old Count/Color; map-miss creates client
-Count1. Neither proves actual paid units, uniqueness/merge semantics or full1U.
-Owner reauthenticated only MP91op20/MP81op8, original hashes/first-current cuts,
-full active rows, strict selection/consumption and continuous38/3-state traces.
-Each has two distinct actual id literals and two Blue-encoded details. Missing
-prior manaPool fields leave the effective branch/color and actual units UNKNOWN.
-MP58 TapObserver on the same reducer leaves all four source witnesses UNKNOWN:
-MP91 has no prior tap events; MP81's prior typed tap/untap is invalidated by
-later source-row replacement. Later tapped=true is not prior readiness.
-
-Added only explicit historical verify_observed_cast_1u_mana_fields in the existing
-module, using old source-link replay and singleton detail parser. A separately
-aliased projection is canonically bound to the whole v2 document, exact sample,
-state/fact/source/spell and pinned version tuple. It reports observed, narrow
-verified_scope, unknown and profile-only contradicted; raw/source build auth is
-not revalidated by portable replay. No current binding/ref/lease or permissions.
-Real portable positive is MP91; MP81's unsupported other Cast row remains intact.
-See docs/cast-1u-payment.md and docs/evidence/mp99-owner.json.
-
-Six new focused tests plus nine MP98 methods PASS, including exact version tuple,
-whole-document/typed identity, color contrast, duplicate actual id/annotation,
-wrong Spell, invented amount and current consume/revoke. Four old replay return
-comparisons equal accepted main; protected MP94/95 and MP96 hashes unchanged.
-Twenty API calls including v2 replay: median6.0221ms/p956.5815ms/max7.2933ms;
-offline local only, not MTGA latency. Full Python3.11/doctor, final independent
-HEAD/tree, required PR CI and natural main push CI are delivery gates recorded
-against their actual revisions in PR and local safe receipts.
-Default/Unified v1-v3/Cardflow runtime is unchanged; frozen9/32/9 and14/20/8 are
-not recomputed. Actual units, complete payment and pre-source readiness remain
-core blockers. No new game, input, ledger, Reducer, solver or response encoding.
-complete_payment_verified=false; complete_legality_verified=false;
-strategic_optimality_verified=false; execution_ready=false; input_sent=false;
-P10=NOT_RUN.
-
 MP73 Verified Target Selection Stage Completion (base136edab6483c53f383a8f89f11381d9f07eafd72,
 tree5540a55492d7c423ad15ebdae4aef339fa6d4f98): authenticated both existing owner
 originals and the same164 distinct own requests. Existing schema4/10 historical
@@ -2856,5 +2813,48 @@ receipts. Existing default/Unified v1-v3/Cardflow code and frozen 9/32/9 and
 second reducer/ledger, full mana solver or response encoding. L1 predictive
 consistency and finite L3 source links do not establish L2 current readiness
 or L4 arbitrary legality. complete_legality_verified=false;
+strategic_optimality_verified=false; execution_ready=false; input_sent=false;
+P10=NOT_RUN.
+
+## MP99 — version-bound historical ManaPaid fields (Issue110)
+
+Started from re-fetched main7a688ca6b54e589fc11f5bd2d0bbca5158cf9569,
+tree213912e682cceabbda58c3c72025c6a6fd127f28; no open PRs. Clean MP99
+worktree preserves MP94/95 uncommitted investigations and frozen MP96 bytes.
+Existing MP98 two-source replay remains unchanged.
+
+New finite static evidence: exact-build SharedClientCore ManaPaid parser reads
+detail id as old mana-pool lookup key/fallback ManaId and color as protocol enum
+(GreProtobuf Blue=2). Map-hit reuses old Count/Color; map-miss creates client
+Count1. Neither proves actual paid units, uniqueness/merge semantics or full1U.
+Owner reauthenticated only MP91op20/MP81op8, original hashes/first-current cuts,
+full active rows, strict selection/consumption and continuous38/3-state traces.
+Each has two distinct actual id literals and two Blue-encoded details. Missing
+prior manaPool fields leave the effective branch/color and actual units UNKNOWN.
+MP58 TapObserver on the same reducer leaves all four source witnesses UNKNOWN:
+MP91 has no prior tap events; MP81's prior typed tap/untap is invalidated by
+later source-row replacement. Later tapped=true is not prior readiness.
+
+Added only explicit historical verify_observed_cast_1u_mana_fields in the existing
+module, using old source-link replay and singleton detail parser. A separately
+aliased projection is canonically bound to the whole v2 document, exact sample,
+state/fact/source/spell and pinned version tuple. It reports observed, narrow
+verified_scope, unknown and profile-only contradicted; raw/source build auth is
+not revalidated by portable replay. No current binding/ref/lease or permissions.
+Real portable positive is MP91; MP81's unsupported other Cast row remains intact.
+See docs/cast-1u-payment.md and docs/evidence/mp99-owner.json.
+
+Six new focused tests plus nine MP98 methods PASS, including exact version tuple,
+whole-document/typed identity, color contrast, duplicate actual id/annotation,
+wrong Spell, invented amount and current consume/revoke. Four old replay return
+comparisons equal accepted main; protected MP94/95 and MP96 hashes unchanged.
+Twenty API calls including v2 replay: median6.0221ms/p956.5815ms/max7.2933ms;
+offline local only, not MTGA latency. Full Python3.11/doctor, final independent
+HEAD/tree, required PR CI and natural main push CI are delivery gates recorded
+against their actual revisions in PR and local safe receipts.
+Default/Unified v1-v3/Cardflow runtime is unchanged; frozen9/32/9 and14/20/8 are
+not recomputed. Actual units, complete payment and pre-source readiness remain
+core blockers. No new game, input, ledger, Reducer, solver or response encoding.
+complete_payment_verified=false; complete_legality_verified=false;
 strategic_optimality_verified=false; execution_ready=false; input_sent=false;
 P10=NOT_RUN.
