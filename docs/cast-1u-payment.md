@@ -90,3 +90,84 @@ execution permissions remain false; `input_sent=false`, `P10=NOT_RUN`.
 The next higher-payment blocker is exact-build meaning/accounting of actual
 ManaPaid details and a complete resource/payment witness, not another strategy
 coverage audit or an assumption that unknown competing effects equal zero.
+
+## MP99: exact-build historical annotation fields
+
+`verify_observed_cast_1u_mana_fields(document, evidence)` is a separate opt-in
+portable check. It reuses the unchanged MP98 source-link replay and accepts one
+whole-document-bound field projection, version `mtgaplayer.cast-1u-mana-fields.v1`.
+The digest is SHA256 of UTF-8 `json.dumps(document, sort_keys=True,
+ensure_ascii=True, separators=(",", ":"), allow_nan=False)`, not raw file bytes.
+Sample identity, first Cast state, exact fact index, source and spell must match.
+Two annotation aliases and two **actual** mana aliases must be distinct; these
+aliases never join the predictive mana-ID namespace. The existing MP34 strict
+singleton-detail parser checks the retained `id/color` structure and types.
+Missing, additional, repeated, mistyped or transferred fields do not verify.
+This finite portable profile uses actual-mana aliases1/2 and annotation aliases
+`paid-annotation-1/2`; these are scrubbed representation limits, not restrictions
+on real GRE IDs or a claim that IDs themselves count mana units.
+
+The Owner inspected only relevant static methods and enum metadata in the same
+installed assemblies already authenticated by MP61/84/95. Their hashes and MVIDs
+still match those receipts, and the actual archive prelude supplies the matching
+full build `2026.64.0.14517.1329972`. No game assembly was executed or modified.
+The [MP99 safe receipt](evidence/mp99-owner.json) records the exact identities.
+
+In `SharedClientCore.dll`, `ManaPaidAnnotationParser.GetManaId` reads the first
+int32 under `id`; `GetColor` reads the first int32 under `color`. Its iterator
+`<Process>d__7.MoveNext` checks annotation type34 and takes `affectedIds[0]` as
+the consumer. It first looks up `id` in old LocalPlayer, then Opponent,
+`IdToManaMap`. A hit reuses that old `MtgMana`, including its Color and Count;
+the event producer is that player. A miss constructs `ManaInfo` with this id,
+the detail color and **client event Count=1**; its producer is `affectorId`.
+`MtgMana` copies those fields. Same-build GreProtobuf `ManaColor.Blue` is2.
+This is the protocol enum, independent of card-database Colors encodings.
+
+One parser invocation yields one event. The inspected client code provides no
+server guarantee of event uniqueness, amount splitting/merging, complete cost
+accounting or actual resource deduction. Client fallback Count1 is not a theorem
+that every annotation means one paid unit. In particular, the pool-hit branch
+does not even use the annotation color as the effective event color.
+
+Both original selected episodes were reauthenticated at the original completed
+poll boundaries, without recomputing a strategy. MP91 retains11 active/1 inactive
+rows and38 trace states; MP81 retains12 active/0 inactive and3 trace states.
+Each has two same-spell/source-linked annotations with two distinct actual id
+literals and `color=2`. The new portable positive uses MP91's existing unaltered
+v2 document plus `tests/fixtures/cast_1u_mana_fields_real.json`; its actual mana
+and annotation identifiers are independently scrubbed aliases. MP81's other
+Cast remains outside oldv2; no row was deleted to create another positive.
+
+Both preceding player projections omit `manaPool`. This check does not assume
+those omitted fields select a client branch. The verified scope is therefore
+**the encoded Blue annotation field and its source/spell association**, with
+distinct actual identifier aliases. Effective client event color, actual paid
+units, merged/duplicate engine accounting and full/additional payment remain
+unknown. A different reviewed color yields `contradicted` only for this finite
+two-Blue annotation profile; it does not mean payment failed. Unknown enum
+values remain unknown. No output supplies an actual amount or grants payment.
+
+The Owner also reused MP58's existing `TapObserver` on the same reducer. MP91 has
+no pre-request source tap events; MP81 has old typed tap/untap observations, but
+later source-row replacement invalidates their witnesses. All four current tap
+literals remain null and all four event witnesses unknown. A missing bool is
+not false; a later paid/tapped source does not establish prior readiness.
+
+The portable checker verifies consistency of a supplied artifact with the pinned
+version interpretation. Its exact version tuple is required, but it does not
+authenticate private bytes, a live build, or caller declarations. Those remain
+Owner evidence. It reports `observed`, `verified_scope`, `unknown` and narrowly
+scoped `contradicted`; `raw_source_auth_revalidated=false` and
+`source_build_reauthenticated=false`. It is historical_only, has no current
+request binding/ref/lease/option, and is never called by Runtime or a policy.
+Original APIs, schemas, default and Unified v1-v3 outputs remain unchanged.
+
+The next core blocker is a version-applicable engine accounting witness for
+units/merging plus continuous pre-request source availability. For a future
+**human-operated, read-only** capture, retain exact-build raw bytes from before
+both source identities through the request, strict response and payment states;
+include distinct-color and multi-unit/pooled-mana contrasts. For untap evidence,
+retain a same-source true+typed1 calibration, a fresh typed0 and an uninterrupted
+chain to the current request without source replacement/Full/gap. Keep actual
+mana IDs, pool contents/counts, costs and annotations owner-local. Such a capture
+would test a finite path, not establish universal legality. MP99 starts no game.
