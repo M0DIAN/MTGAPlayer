@@ -91,9 +91,10 @@ class LocalShadowRuntime:
     def __init__(self,path,*,interval=.25,samples=None,max_history_bytes=64*1024*1024,
                  max_observation_age_ns=5_000_000_000,max_event_silence_ns=5_000_000_000,
                  clock_ns=None,observation_mode='local_log_watch',player_target_stages=False,parent_target_lineage=False,
-                 research_policy=None,prepared_rules=None):
+                 research_policy=None,prepared_rules=None,prepared_references=None):
         from .land_development import POLICY as LAND_POLICY
         from .target_effect import POLICY as TARGET_POLICY
+        from .unified_research import POLICY as UNIFIED_POLICY
         from .rules_index import PreparedRulesIndex
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
@@ -101,8 +102,12 @@ class LocalShadowRuntime:
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
                 observation_mode not in ('local_log_watch','controlled_stream_replay') or
                 type(player_target_stages) is not bool or type(parent_target_lineage) is not bool or
-                research_policy not in (None,LAND_POLICY,TARGET_POLICY) or
-                prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex)):
+                research_policy not in (None,LAND_POLICY,TARGET_POLICY,UNIFIED_POLICY) or
+                prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex) or
+                prepared_references is not None and (research_policy != UNIFIED_POLICY or
+                    type(prepared_references) is not dict or not set(prepared_references) <= {'land','target_effect'} or
+                    any(not isinstance(value,PreparedRulesIndex) for value in prepared_references.values())) or
+                research_policy == UNIFIED_POLICY and prepared_rules is not None):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
         self.age=max_observation_age_ns;self.silence=max_event_silence_ns;self.clock=clock_ns or time.perf_counter_ns
@@ -111,6 +116,7 @@ class LocalShadowRuntime:
         self._in_poll=False;self._attempt_started=None;self._completed_stamp=None
         self.parent_target_lineage=parent_target_lineage
         self.research_policy=research_policy;self.prepared_rules=prepared_rules
+        self.prepared_references=dict(prepared_references or {})
         self._research_work=[];self._research_work_attempted=0
         self.player_target_stages=player_target_stages or parent_target_lineage
         self._stage_observer=None;self._player_freeze_attempted=False;self._parent_freeze_attempted=False
@@ -145,7 +151,11 @@ class LocalShadowRuntime:
 
     def current_frame(self):
         result=self._current_frame();result['observation_mode']=self.mode
-        if self.research_policy is not None and 'research_decision' not in result:
+        from .unified_research import POLICY as UNIFIED_POLICY, _unknown as unified_unknown
+        if self.research_policy==UNIFIED_POLICY:
+            if 'unified_research_decision' not in result:
+                result['unified_research_decision']=unified_unknown(result['reason'])
+        elif self.research_policy is not None and 'research_decision' not in result:
             from .land_development import POLICY as LAND_POLICY, _unknown as land_unknown
             from .target_effect import _unknown as target_unknown
             result['research_decision']=(land_unknown if self.research_policy==LAND_POLICY else target_unknown)(result['reason'])
@@ -220,20 +230,47 @@ class LocalShadowRuntime:
             _need(_equal(policy['request_binding'],binding) and _equal(policy['source_snapshot_ref'],ref),'frame_report_binding_invalid')
             if policy['status']=='research_preference':
                 _need(sum(_equal(o['option_key'],policy['preferred_option_key']) for o in options['options'])==1,'frame_report_binding_invalid')
-            research=None
+            research=None;unified=None
             if self.research_policy is not None:
                 from .land_development import POLICY as LAND_POLICY, assess_current_land_development
-                from .target_effect import assess_current_target_effect
-                assess=assess_current_land_development if self.research_policy==LAND_POLICY else assess_current_target_effect
-                research=self._timed('research_policy',lambda:assess(
-                    self.consumer,self._reducer,self._message,self.prepared_rules,policy_version=self.research_policy,
-                    completed_stamp=self._completed_stamp))
-                _bound(research,binding,ref)
-                if research['status']=='research_preference':
-                    reviewed=(options['options'] if self.research_policy==LAND_POLICY else
-                        local.get('current_target_evidence',{}).get('local_proposals',[]))
-                    _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in reviewed)==1,
-                        'frame_report_binding_invalid')
+                from .target_effect import POLICY as TARGET_POLICY, assess_current_target_effect
+                from .unified_research import POLICY as UNIFIED_POLICY, combine_current_research
+                selected_policy=self.research_policy;prepared=self.prepared_rules
+                dispatch_ns=0
+                if self.research_policy==UNIFIED_POLICY:
+                    dispatch_start=self.clock()
+                    selected_policy={'GREMessageType_ActionsAvailableReq':LAND_POLICY,
+                        'GREMessageType_SelectTargetsReq':TARGET_POLICY}.get(typ)
+                    prepared=self.prepared_references.get('land' if selected_policy==LAND_POLICY else 'target_effect')
+                    dispatch_ns=self.clock()-dispatch_start
+                if selected_policy is not None:
+                    assess=assess_current_land_development if selected_policy==LAND_POLICY else assess_current_target_effect
+                    def applicable_research():
+                        if self.research_policy==UNIFIED_POLICY and selected_policy==LAND_POLICY:
+                            from .target_build import current_resource
+                            from .land_development import _unknown as land_unknown
+                            # The legacy land API remains unchanged. The unified
+                            # exact-build runtime cannot inherit a prior catalog
+                            # capability for a new or unverified source build.
+                            if current_resource(self._reducer) is None:
+                                return land_unknown('exact_build_resource_provenance_unverified')
+                        return assess(self.consumer,self._reducer,self._message,prepared,
+                            policy_version=selected_policy,completed_stamp=self._completed_stamp)
+                    research=self._timed('research_policy',applicable_research)
+                    _bound(research,binding,ref)
+                    if research['status']=='research_preference':
+                        reviewed=(options['options'] if selected_policy==LAND_POLICY else
+                            local.get('current_target_evidence',{}).get('local_proposals',[]))
+                        _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in reviewed)==1,
+                            'frame_report_binding_invalid')
+                if self.research_policy==UNIFIED_POLICY:
+                    dispatch_start=self.clock()
+                    try:
+                        unified=combine_current_research(options,policy,research,
+                            local.get('current_target_evidence'))
+                        _bound(unified,binding,ref)
+                        _need(unified['status']!='expired','frame_report_binding_invalid')
+                    finally:self._timings['unified_dispatch']=dispatch_ns+self.clock()-dispatch_start
             _need(_equal(stamp,_stamp(self._reducer,self._message,state)),'raw_state_changed_during_frame')
             result=_unknown('current_request_research_only','current_at_completed_poll')
             result.update(request_binding=copy.deepcopy(binding),source_snapshot_ref=copy.deepcopy(ref),request_type=typ,
@@ -244,6 +281,7 @@ class LocalShadowRuntime:
                 abstention_reason=None if policy['status']=='research_preference' else policy['reason'],
                 unresolved_constraints={'options':copy.deepcopy(options['unresolved']),'policy':copy.deepcopy(policy['unresolved'])})
             if research is not None:result['research_decision']=research
+            if unified is not None:result['unified_research_decision']=unified
             _bounded_json(result);return result
         try:
             result=_assess_current_report(self.consumer,evaluate,_unknown)
@@ -281,11 +319,17 @@ class LocalShadowRuntime:
         self._counts['polls']+=1;self._counts[frame['time_scope']]+=1
         self._in_poll=False
         if frame['time_scope']=='current_at_completed_poll':self._counts['current_'+TYPES.get(frame['request_type'],'other')]+=1
+        from .unified_research import POLICY as UNIFIED_POLICY
+        stages=STAGES
+        if self.research_policy==UNIFIED_POLICY:
+            stages=(*STAGES,'research_policy','unified_dispatch')
+            labels=[*labels,'unified_'+(TYPES.get(frame.get('request_type'),'other')
+                if frame['time_scope']=='current_at_completed_poll' else 'failed_or_revoked')]
         for label in ('all_polls',*labels):
-            bucket=self._measurements.setdefault(label,{'poll_count':0,'timings':{k:[] for k in STAGES},'attempted':Counter()})
+            bucket=self._measurements.setdefault(label,{'poll_count':0,'timings':{k:[] for k in stages},'attempted':Counter()})
             bucket['poll_count']+=1
             for stage,value in self._timings.items():
-                if stage in STAGES and type(value) is int and value>=0:
+                if stage in stages and type(value) is int and value>=0:
                     bucket['attempted'][stage]+=1
                     if len(bucket['timings'][stage])<20000:bucket['timings'][stage].append(value/1e6)
 
@@ -468,16 +512,35 @@ def safe_summary(frame):
     if type(research) is dict:
         from .land_development import POLICY as LAND_POLICY,REASONS as LAND_REASONS
         from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
+        from .unified_research import REASONS as UNIFIED_REASONS
         policy=research.get('policy_version')
         names=(('active_action_rows','play_offers','verified_play_sources','verified_static_land_candidates','ordinary_profile_candidates')
             if policy==LAND_POLICY else ('reviewed_target_members','local_proposals','verified_player_targets',
                 'verified_public_object_targets','effect_identified') if policy==TARGET_POLICY else ())
         result['research_decision']={'policy_version':policy if policy in (LAND_POLICY,TARGET_POLICY) else 'unsupported',
             'status':research.get('status') if research.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
-            'reason':research.get('reason') if research.get('reason') in LAND_REASONS|TARGET_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'reason':research.get('reason') if research.get('reason') in LAND_REASONS|TARGET_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
             'coverage':{key:count(research.get('coverage',{}).get(key)) for key in names},
             'complete_legality_verified':False,'payment_verified':False,'strategic_optimality_verified':False,
             'read_only':True,**EXECUTION}
         elapsed=frame.get('timings_ns',{}).get('research_policy')
         if type(elapsed) is int and elapsed>=0:result['timings_ns']['research_policy']=elapsed
+    unified=frame.get('unified_research_decision')
+    if type(unified) is dict:
+        from .land_development import POLICY as LAND_POLICY,REASONS as LAND_REASONS
+        from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
+        from .shadow_decision import POLICY as SHADOW_POLICY
+        from .unified_research import POLICY as UNIFIED_POLICY,REASONS as UNIFIED_REASONS
+        policies=(SHADOW_POLICY,LAND_POLICY,TARGET_POLICY)
+        result['unified_research_decision']={'policy_version':UNIFIED_POLICY,
+            'selected_policy':unified.get('selected_policy') if unified.get('selected_policy') in policies else None,
+            'status':unified.get('status') if unified.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
+            'reason':unified.get('reason') if unified.get('reason') in
+                LAND_REASONS|TARGET_REASONS|UNIFIED_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'conflict':unified.get('reason')=='research_policy_conflict',
+            'complete_legality_verified':False,'strategic_optimality_verified':False,
+            'server_acceptance_verified':False,'read_only':True,**EXECUTION}
+        for key in ('research_policy','unified_dispatch'):
+            elapsed=frame.get('timings_ns',{}).get(key)
+            if type(elapsed) is int and elapsed>=0:result['timings_ns'][key]=elapsed
     return result
