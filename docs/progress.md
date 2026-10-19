@@ -2243,3 +2243,29 @@ completed-poll raw/source binding, stop-publication failure cleanup and unknown
 Cost-domain zero summaries. ExactHEAD tests/doctor/review and actual PR/main CI
 remain separate final delivery gates. See docs/poll-bound-shadow-runtime.md.
 input_sent=false; P10=NOT_RUN; historical Windows qualification root cause UNKNOWN.
+
+MP82 current choice-domain coverage on accepted5fd911f/tree3844f92: owner
+reverified the complete MP81 one-generation217-segment archive,3225997 bytes,
+SHA2561d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac.
+Original53 authenticated/42 distinct current/396 repeated observations remain
+separate; all14 Targets and7 SelectN freeze at original first-current poll byte
+offsets. The13 Target gaps all have unresolved member roles/identities, including
+two Unselect-only requests; no Target boundary is relaxed. Five previously
+unsupported TriggeredAbility/Stacking SelectN shapes supply24 unique unresolved
+request members and explicit min1/max2,3,3,6,10. New opt-in current_selectn_context
+and MP80 dispatch expose this structure, no object/card join, complete proposal,
+response encoding, legality or research preference. Two old Resolution requests
+retain their offered options. Existing strict post-consumption pairing finds5
+new and2 old SelectN pairs; full final-choice comparison remains null.
+Independent pre-review found and root repaired nonUI SelectN sticky interruption
+entry; runtime and standalone API now both revoke Cancel/Undo/unknown payloads.
+Additional independent calculation-time digest mutation now fails closed in
+the explicit API as well as the frame;73 independent pre-review controls pass.
+All42 full defaults remain1 preference/33 abstain/8 unsupported;10 real JSONL
+sources/1152 record observations,53 authenticated defaults and prior full history
+report match base across472380 leaf values after transport/version/timing
+normalization. Public projections omit raw auth; independent review uses safe
+receipts, not private bytes. Final exactHEAD tests/doctor/review and actual PR/
+main CI remain separate delivery gates. See docs/current-selectn-evidence.md.
+MP81 current_view_unavailable and historical Windows qualification causes remain
+UNKNOWN. input_sent=false; P10=NOT_RUN.

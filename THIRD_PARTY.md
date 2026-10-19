@@ -211,3 +211,20 @@ New State/Event12/params8/candidate6 retains the real prompt and typed string
 target highlights alongside the same request's 17 active rows and MP57 Activate6
 association; it does not claim old-profile acceptance or UI/payment/input authority.
 [Evidence, full hashes, routing and reuse boundaries](docs/current-cast-activate-associations.md).
+
+## MP82 request-only SelectN evidence (2026-10-19)
+
+The owner-authorized MP81 archive is projected into five aliased request-only
+observations in `tests/fixtures/current_selectn_triggered_real_v1.json`; its
+adjacent README pins source and fixture hashes and exact redactions. No raw
+authentication, player identity, hidden face, source path or response is
+redistributed. Synthetic authentication/Full wrappers and mutations are tests,
+not additional real positive samples. The original archive stays owner-local.
+
+The existing pinned ArcaneForge `45f27866c5dfd5891fc101c00e611a36254d2f49`
+`analysis/action-inventory/actions.json` enum descriptor (blob
+`67ee1165147d21a8cf34c901348be164ff14eeb9`, SHA256
+`52c2e3074d3487526c1266746b0adb3f846a175fcbabb7f15090051de65d6301`)
+confirms TriggeredAbility/Stacking labels only. No upstream implementation,
+decompiled client text, binary, card/game resource or runtime dependency is
+copied. [Current semantics and limits](docs/current-selectn-evidence.md).
