@@ -119,18 +119,21 @@ def _raw_child(observation, binding):
 
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
-    def __init__(self, reducer, *, include_revision=False, include_cast=False, include_target_completions=False):
+    def __init__(self, reducer, *, include_revision=False, include_cast=False, include_target_completions=False,
+                 include_player_target_stages=False):
         self.reducer = reducer
         self.include_target_completions = include_target_completions
+        self.include_player_target_stages = include_player_target_stages
         self.completion_work_ns = 0
         self.cast = None
         if include_cast:
             from .cast_continuation import CastStage
             self.cast = CastStage(reducer)
         self.revision = None
-        if include_revision or include_target_completions:
+        if include_revision or include_target_completions or include_player_target_stages:
             from .target_revision import RevisionStage
-            self.revision = RevisionStage(reducer, include_completions=include_target_completions)
+            self.revision = RevisionStage(reducer, include_completions=include_target_completions,
+                include_player_target_stages=include_player_target_stages)
         self.reset()
 
     def reset(self):
@@ -217,7 +220,7 @@ class StageObserver:
         if self.revision is not None: self._revise(self.revision.after_apply)
 
     def _revise(self, method, *args):
-        if not self.include_target_completions:
+        if not (self.include_target_completions or self.include_player_target_stages):
             method(*args); return
         import time
         start = time.perf_counter_ns()

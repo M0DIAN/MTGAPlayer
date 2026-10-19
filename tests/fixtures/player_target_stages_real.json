@@ -1,0 +1,451 @@
+{
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "owner_source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+  "source_client_build": "2026.64.0.14517.1329972",
+  "scope": "11 chronological response projections following existing MP84 first-current projections; two independently frozen revised requests and terminal submissions",
+  "redactions": [
+    "Reuse existing MP84 per-case aliases and self-seat permutation",
+    "Synthetic authentication/Full bootstrap supplied only by tests; no raw-byte authentication claim",
+    "Unrelated telemetry, timers, actions, hidden objects and state fields omitted",
+    "Diff type, typed predecessor and successor retained; owner reviewed absence of involved identity migration",
+    "First and revised freeze markers correspond to original completed-poll boundaries, not request_accepted callbacks"
+  ],
+  "cases": [
+    {
+      "case": "player-stage-1",
+      "initial_mp84_case": "unresolved-target-1",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 500,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 101,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_public_object",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-2",
+      "initial_mp84_case": "unresolved-target-2",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 501,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-3",
+      "initial_mp84_case": "unresolved-target-3",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 502,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-4",
+      "initial_mp84_case": "unresolved-target-4",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 503,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [
+        {
+          "greToClientEvent": {
+            "greToClientMessages": [
+              {
+                "type": "GREMessageType_GameStateMessage",
+                "systemSeatIds": [
+                  1
+                ],
+                "gameStateId": 11,
+                "gameStateMessage": {
+                  "type": "GameStateType_Diff",
+                  "gameStateId": 11,
+                  "prevGameStateId": 10,
+                  "update": "GameStateUpdate_Send"
+                }
+              },
+              {
+                "type": "GREMessageType_SelectTargetsReq",
+                "systemSeatIds": [
+                  1
+                ],
+                "msgId": 504,
+                "gameStateId": 11,
+                "prompt": {
+                  "promptId": 10
+                },
+                "selectTargetsReq": {
+                  "targets": [
+                    {
+                      "targetIdx": 1,
+                      "targets": [
+                        {
+                          "targetInstanceId": 2,
+                          "legalAction": "SelectAction_Unselect"
+                        }
+                      ],
+                      "minTargets": 1,
+                      "maxTargets": 1,
+                      "selectedTargets": 1,
+                      "prompt": {
+                        "promptId": 10,
+                        "parameters": [
+                          {
+                            "parameterName": "RedactedNumber",
+                            "type": "ParameterType_Number",
+                            "numberValue": 0
+                          }
+                        ]
+                      },
+                      "targetingAbilityGrpId": 1000,
+                      "targetingPlayer": 1
+                    }
+                  ],
+                  "sourceId": 100,
+                  "abilityGrpId": 1000
+                },
+                "allowCancel": "AllowCancel_Abort",
+                "allowUndo": true
+              }
+            ]
+          }
+        }
+      ],
+      "terminal_record": {
+        "payload": {
+          "type": "ClientMessageType_SubmitTargetsReq",
+          "gameStateId": 11,
+          "respId": 504
+        }
+      },
+      "expected_complete": true
+    },
+    {
+      "case": "player-stage-5",
+      "initial_mp84_case": "unresolved-target-6",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 505,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-6",
+      "initial_mp84_case": "unresolved-target-7",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 506,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [
+        {
+          "greToClientEvent": {
+            "greToClientMessages": [
+              {
+                "type": "GREMessageType_GameStateMessage",
+                "systemSeatIds": [
+                  1
+                ],
+                "gameStateId": 11,
+                "gameStateMessage": {
+                  "type": "GameStateType_Diff",
+                  "gameStateId": 11,
+                  "prevGameStateId": 10,
+                  "update": "GameStateUpdate_Send"
+                }
+              },
+              {
+                "type": "GREMessageType_SelectTargetsReq",
+                "systemSeatIds": [
+                  1
+                ],
+                "msgId": 507,
+                "gameStateId": 11,
+                "prompt": {
+                  "promptId": 10
+                },
+                "selectTargetsReq": {
+                  "targets": [
+                    {
+                      "targetIdx": 1,
+                      "targets": [
+                        {
+                          "targetInstanceId": 2,
+                          "legalAction": "SelectAction_Unselect"
+                        }
+                      ],
+                      "minTargets": 1,
+                      "maxTargets": 1,
+                      "selectedTargets": 1,
+                      "prompt": {
+                        "promptId": 10,
+                        "parameters": [
+                          {
+                            "parameterName": "RedactedNumber",
+                            "type": "ParameterType_Number",
+                            "numberValue": 0
+                          }
+                        ]
+                      },
+                      "targetingAbilityGrpId": 1000,
+                      "targetingPlayer": 1
+                    }
+                  ],
+                  "sourceId": 100,
+                  "abilityGrpId": 1000
+                },
+                "allowCancel": "AllowCancel_Abort",
+                "allowUndo": true
+              }
+            ]
+          }
+        }
+      ],
+      "terminal_record": {
+        "payload": {
+          "type": "ClientMessageType_SubmitTargetsReq",
+          "gameStateId": 11,
+          "respId": 507
+        }
+      },
+      "expected_complete": true
+    },
+    {
+      "case": "player-stage-7",
+      "initial_mp84_case": "unresolved-target-9",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 508,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-8",
+      "initial_mp84_case": "unresolved-target-10",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 509,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-9",
+      "initial_mp84_case": "unresolved-target-11",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 510,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-10",
+      "initial_mp84_case": "unresolved-target-12",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 511,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    },
+    {
+      "case": "player-stage-11",
+      "initial_mp84_case": "unresolved-target-13",
+      "update_record": {
+        "payload": {
+          "type": "ClientMessageType_SelectTargetsResp",
+          "gameStateId": 10,
+          "respId": 512,
+          "selectTargetsResp": {
+            "target": {
+              "targetIdx": 1,
+              "targets": [
+                {
+                  "targetInstanceId": 2,
+                  "legalAction": "SelectAction_Select",
+                  "highlight": "HighlightType_Hot"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected_selected_role": "verified_player",
+      "revision_records": [],
+      "terminal_record": null,
+      "expected_complete": false
+    }
+  ]
+}

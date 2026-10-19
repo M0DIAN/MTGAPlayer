@@ -2326,3 +2326,37 @@ no extra state projection or hidden-face read. Independent worktree review
 retains13/24/11/24 and783470equal leaves/41original rawdigests. Added-only n52
 ms=.4889/.7413/.7843/.7843; previous timing/CI are historical. Final ordinary
 candidate/full/doctor/exactHEAD review/Linux+Windows CI gates must run anew.
+
+MP85 on accepted9e9fae47/tree85dcd906: reverified MP77's one-generation217-segment
+archive,3225997bytes/SHA1d75cd1b.../367records and unchanged pinned MP84 build/hash
+evidence. Original53authenticated/42opportunities/14targets and actual41append
+completed-poll boundaries are preserved. Genuine gate11domains/24proposals gives
+11strictconsumedupdates(10player/1publicobject),2independentlycurrentrevisions,
+2strictterminals/2historicalplayerstages;9attempts remain unlinked. Comparison
+unavailable11, agreements/disagreements and completelegality null; parentaction
+causality/serveracceptance unknown. Logical historicalreplay does not establish
+historical wallclock leases or MTGA latency. Public scrubbed projections and
+owner-only attestations are explicitly separated.
+
+Explicit player_target_stages Runtime/CLI opt-in extends the SAME bounded
+RevisionStage/TargetStageCompletions. First/revised freezes use current Consumer
+MP84 evidence only after complete polls, live ref/lease/rawstamp/build/visibility
+gates; strict response/terminal consumption reuses existing checks. No second
+reader/Reducer/state/ledger/solver/encoder/input. Player IDs never enter Card
+identity lookup. Select and Unselect use stable typed role identity while each
+endpoint independently verifies operation/position/quantity. Synthetic migration
+conflicts involving players fail closed. Expired pending lineage cannot cross
+subscription renewal; foreign thread cannot tick Consumer/reset stage. Old MP73
+Card/Ability reports remain identical even with both flags enabled.
+
+22new tests and296focused PASS; Windows3.11doctor PASS. Actual default comparison:
+10realJSONL/1152record documents/options/policy/Candidate2-6, all53authenticated
+defaults, completeMP73/historyreport and41runtimeframes/safe summaries identical
+across825554leafvalues; policy1research/33abstain/8unsupported unchanged. Independent
+workingtree controls46scenarios/325assertionsPASS; final full tests/exactHEAD-tree
+review and actual PR/main Linux+Windows CI remain delivery gates. Added-only
+43poll replay ns timing converted to ms p50/p95/p99/max=.1255/10.7253/10.8755/
+10.8755; bounded nested RevisionStage+freeze work, not full MTGA-step latency.
+See docs/player-target-stage-evidence.md and safe owner receipt. MP81
+current_view_unavailable and historical Windows qualification roots remain
+UNKNOWN. input_sent=false; P10=NOT_RUN.

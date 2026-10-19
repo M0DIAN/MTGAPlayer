@@ -24,8 +24,8 @@ DENIALS = {**first.DENIALS, 'first_child_current': False, 'full_select_domain_ve
     'future_result_used_for_revised_constraints': False}
 
 
-def _selection(payload, binding, request):
-    """Preserve every reviewed field before calling the old response checker."""
+def _selection_shape(payload, binding):
+    """Shared strict envelope; target role validation remains explicit."""
     _keys(payload, ('type', 'respId', 'gameStateId', 'selectTargetsResp'))
     _need(payload['type'] == 'ClientMessageType_SelectTargetsResp' and
         type(payload['respId']) is int and payload['respId'] == binding['request_id'] and
@@ -39,10 +39,16 @@ def _selection(payload, binding, request):
     first._positive(entry['targetInstanceId'])
     _need(entry['legalAction'] == targets.SELECT and
         ('highlight' not in entry or type(entry['highlight']) is str and len(entry['highlight']) <= 128))
+    return {'request_binding': copy.deepcopy(binding), 'response_type': payload['type'],
+        'target': copy.deepcopy(target)}
+
+
+def _selection(payload, binding, request):
+    """Preserve every reviewed field before calling the old response checker."""
+    update = _selection_shape(payload, binding)
     reply = targets.response(payload, {'type': binding['request_type']}, request, LiteralRefs(), ())['payload']
     _need(reply['operation'] == 'selection_update')
-    return {'request_binding': copy.deepcopy(binding), 'response_type': payload['type'],
-        'target': copy.deepcopy(target)}, reply
+    return update, reply
 
 
 def _payload(update):
@@ -107,9 +113,14 @@ def _no_identity_migration(gs, tracked):
 
 
 class RevisionStage:
-    def __init__(self, reducer, *, include_completions=False):
+    def __init__(self, reducer, *, include_completions=False, include_player_target_stages=False):
         self.reducer = reducer
         self.include_completions = include_completions
+        self.include_player_target_stages = include_player_target_stages
+        self.player_completions = None
+        if include_player_target_stages:
+            from .target_stage_completions import TargetStageCompletions
+            self.player_completions = TargetStageCompletions()
         self.record_ordinal = 0
         self.reset()
 
@@ -142,7 +153,7 @@ class RevisionStage:
         if type(payload) is not dict:
             gre = record.get('greToClientEvent')
             messages = gre.get('greToClientMessages') if type(gre) is dict else None
-            if self.include_completions and type(messages) is list:
+            if (self.include_completions or self.include_player_target_stages) and type(messages) is list:
                 if len(messages) > 256: self._invalidate_record(); return
                 state_ids = set()
                 for message in messages:
@@ -165,6 +176,9 @@ class RevisionStage:
         if payload.get('type') == 'ClientMessageType_UIMessage': return
         try:
             _bounded_json(record)
+            if self.include_player_target_stages:
+                from .player_target_stages import prepare
+                if prepare(self, payload): return
             if self.active is not None:
                 request = _current_verified_raw_request(self.reducer, self.cached['message'])
                 if payload.get('type') == 'ClientMessageType_SubmitTargetsReq':
@@ -219,17 +233,33 @@ class RevisionStage:
             if (first._scope(r) == saved['scope'] and r.request is None and
                     _paired_response(r, saved['before'], saved['payload'], 'ClientMessageType_SelectTargetsResp')):
                 self.pending = saved; self.age = 0
+                if 'role_first' in saved:
+                    from .player_target_stages import updated
+                    updated(self, saved)
             else: self.reset()
         terminal = self.terminal; self.terminal = None
         if terminal is not None:
             self.client_submit_observed = (first._scope(r) == terminal['scope'] and
                 _paired_terminal_submit(r, terminal['before'], terminal['payload']))
+            if 'role_context' in terminal:
+                from .player_target_stages import submitted
+                submitted(self, terminal)
+                return
             if self.include_completions and self.client_submit_observed:
                 self.historical_completion = {**terminal['completion_context'],
                     'terminal_record': self.record_ordinal, 'terminal_request_consumed': True,
                     'status': 'historical_reviewed_target_set_submitted',
                     'current': False, 'server_acceptance_verified': False, 'complete_legality_verified': False,
                     'read_only': True, **EXECUTION}
+
+    def freeze_player_targets(self, consumer, message, evidence, policy):
+        """Owner calls only after a valid completed poll, never an accept callback."""
+        if self.include_player_target_stages:
+            from .player_target_stages import freeze
+            freeze(self, consumer, message, evidence, policy)
+
+    def player_stage_report(self, *, include_last=False):
+        return self.player_completions.player_report(include_last=include_last) if self.player_completions else None
 
     def freeze_shadow(self, binding, ref, decision, selected):
         """One prior-current policy observation in this existing bounded stage."""
@@ -253,6 +283,9 @@ class RevisionStage:
             if details['disposition'] != 'consumed': self._invalidate_record()
             return
         try:
+            if self.include_player_target_stages:
+                from .player_target_stages import observe
+                if observe(self, event, details): return
             if event == 'state_accepted':
                 if details['kind'] != 'diff': self._invalidate_record(); return
                 if self.pending is None: return

@@ -90,18 +90,20 @@ class LocalShadowRuntime:
     """
     def __init__(self,path,*,interval=.25,samples=None,max_history_bytes=64*1024*1024,
                  max_observation_age_ns=5_000_000_000,max_event_silence_ns=5_000_000_000,
-                 clock_ns=None,observation_mode='local_log_watch'):
+                 clock_ns=None,observation_mode='local_log_watch',player_target_stages=False):
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
                 type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
-                observation_mode not in ('local_log_watch','controlled_stream_replay')):
+                observation_mode not in ('local_log_watch','controlled_stream_replay') or type(player_target_stages) is not bool):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
         self.age=max_observation_age_ns;self.silence=max_event_silence_ns;self.clock=clock_ns or time.perf_counter_ns
         self.mode=observation_mode;self._owner=threading.get_ident();self._started=self._closed=False
         self._reducer=self._message=self._source=self._watch=None;self._metadata={};self._stop_reason='not_started'
         self._in_poll=False;self._attempt_started=None;self._completed_stamp=None
+        self.player_target_stages=player_target_stages;self._stage_observer=None;self._player_freeze_attempted=False
+        self._player_work=[];self._player_work_attempted=0;self._player_work_previous=0
         self._timings={};self._counts=Counter();self._measurements={};self._subscriptions=0;self._new_subscription()
 
     def _new_subscription(self):
@@ -116,16 +118,36 @@ class LocalShadowRuntime:
         try:return fn()
         finally:self._timings[name]=self.clock()-start
 
-    def _context(self,reducer,message,*,poll_started_ns=None,poll_completed=False):
+    def _context(self,reducer,message,*,poll_started_ns=None,poll_completed=False,stage_observer=None):
         self._reducer,self._message=reducer,message
         if poll_started_ns is not None:
+            if (self.player_target_stages and self._stage_observer is not None and
+                    self.consumer.current_view()['consumer_status']=='STALE'):
+                self._stage_observer.reset()
             self._attempt_started=poll_started_ns;self._in_poll=True;self._timings={};self._completed_stamp=None
+            self._player_freeze_attempted=False
         if poll_completed:
             self._completed_stamp=_raw_stamp(reducer) if message is not None else None
+            if self.player_target_stages:self._stage_observer=stage_observer
 
     def current_frame(self):
         result=self._current_frame();result['observation_mode']=self.mode
+        if (threading.get_ident()==self._owner and self.player_target_stages and self._stage_observer is not None):
+            stage=self._stage_observer;revision=stage.revision
+            if self.consumer.current_view()['consumer_status']=='STALE':revision.reset()
+            if (not self._closed and result['time_scope']=='current_at_completed_poll' and
+                    self._metadata.get('new_final_request') is True and not self._player_freeze_attempted):
+                self._player_freeze_attempted=True
+                evidence=result['local_evidence'].get('current_target_evidence',{})
+                stage._revise(revision.freeze_player_targets,self.consumer,self._message,evidence,result['shadow_decision'])
+            result['historical_player_target_stages']=revision.player_stage_report()
         return result
+
+    def player_target_stage_history(self,*,include_last=False):
+        """Owner-local historical facts; never an actionable current result."""
+        self._check_owner()
+        if not self.player_target_stages or self._stage_observer is None:return None
+        return self._stage_observer.revision.player_stage_report(include_last=include_last)
 
     def _current_frame(self):
         if threading.get_ident()!=self._owner:return _unknown('owner_thread_required')
@@ -224,16 +246,21 @@ class LocalShadowRuntime:
 
     def performance_report(self):
         self._check_owner()
-        return {'scope':'local completed-poll calculation only; nested stages overlap; not MTGA latency',
+        result={'scope':'local completed-poll calculation only; nested stages overlap; not MTGA latency',
             'phase_units':'polls; phase labels can overlap and must not be summed',
             'counts':dict(self._counts),'subscriptions':self._subscriptions,
             'phases':{label:{'poll_count':b['poll_count'],'timings_ms':{k:{**quantiles(v),
                 'attempted_samples':b['attempted'][k],'omitted_by_cap':b['attempted'][k]-len(v)} for k,v in b['timings'].items()}}
                 for label,b in self._measurements.items()},'read_only':True,**EXECUTION}
+        if self.player_target_stages:
+            result['player_target_stage_ms']={**quantiles(self._player_work),'attempted_samples':self._player_work_attempted,
+                'omitted_by_cap':self._player_work_attempted-len(self._player_work)}
+        return result
 
     def close(self,reason='session_stopped'):
         self._check_owner()
         if self._closed:return
+        if self._stage_observer is not None:self._stage_observer.reset()
         self._closed=True;self._stop_reason=reason;self._message=self._reducer=None
         try:
             events=self.publisher.stop(reason if reason in ('sample_limit','user_interrupt','source_error') else 'other_supported_reason')
@@ -255,13 +282,20 @@ class LocalShadowRuntime:
         def observed(metadata):self._metadata=metadata
         self._watch=watch(self.path,self.interval,self.samples,self.max_history_bytes,decision_state=True,
             decision_state_version=15,current_multi_slot_cast=True,_poll_observer=observed,
-            _clock_ns=self.clock,_owner_observer=self._context)
+            _clock_ns=self.clock,_owner_observer=self._context,
+            **({'_player_target_stages':True} if self.player_target_stages else {}))
         try:
             for document in self._watch:
                 self._source={k:document['source'][k] for k in ('phase','partial_record','stopped')}
                 self._timings={k:self._metadata[n] for k,n in (('poll_read_framing','poll_read_ns'),
                     ('reducer_apply','reducer_apply_ns'),('decision_state_assembly','decision_state_assembly_ns'))}
                 ready_start=self.clock();self._publish(document);frame=self.current_frame()
+                if self.player_target_stages and self._stage_observer is not None:
+                    total=self._stage_observer.completion_work_ns
+                    elapsed=total-self._player_work_previous;self._player_work_previous=total
+                    self._player_work_attempted+=1
+                    if len(self._player_work)<20000:self._player_work.append(elapsed/1e6)
+                    self._timings['player_target_stage']=elapsed
                 self._timings['decision_frame_ready']=self.clock()-ready_start
                 self._timings['poll_to_frame_ready']=self.clock()-self._metadata['poll_started_ns']
                 labels=['startup_history' if self._source['phase']=='history' else 'incremental_append' if self._metadata.get('owner_bytes_read',0) else 'empty_poll']
@@ -336,7 +370,7 @@ def safe_summary(frame):
             'payment_action_rows':len(value.get('payment_actions',[])) if observed else None,
             'predictive_solutions':len(value.get('predictive_auto_tap_solutions',[])) if observed else None,
             'local_candidate_memberships':len(value.get('local_candidates',[]))}
-    return {'schema_version':VERSION,'observation_mode':frame.get('observation_mode') if frame.get('observation_mode') in ('local_log_watch','controlled_stream_replay') else 'unknown',
+    result={'schema_version':VERSION,'observation_mode':frame.get('observation_mode') if frame.get('observation_mode') in ('local_log_watch','controlled_stream_replay') else 'unknown',
         'time_scope':frame.get('time_scope') if frame.get('time_scope') in ('current_at_completed_poll','observed_in_history','expired_or_revoked') else 'unknown',
         'request_type':TYPES.get(frame.get('request_type'),'unsupported_request'),
         'shadow_policy_status':frame.get('shadow_policy_status') if frame.get('shadow_policy_status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
@@ -350,3 +384,15 @@ def safe_summary(frame):
         'truncated':coverage.get('truncated') if type(coverage.get('truncated')) is bool else None,'local_evidence':evidence,
         'timings_ns':{k:v for k,v in frame.get('timings_ns',{}).items() if k in STAGES and type(v) is int and v>=0},
         'complete_legal_choices':None,'read_only':True,**EXECUTION}
+    history=frame.get('historical_player_target_stages')
+    if type(history) is dict:
+        result['historical_player_target_stages']={key:count(history.get(key)) for key in (
+            'frozen_reviewed_domains','frozen_local_proposals','strictly_paired_target_updates',
+            'historically_selected_player_targets','independently_revised_selections',
+            'strictly_paired_terminal_submits','fully_linked_historical_stages','unlinked_or_interrupted_stages',
+            'historical_comparison_unavailable')}
+        result['historical_player_target_stages'].update(historical_choice_agreements=None,
+            historical_choice_disagreements=None,complete_target_legality=None,complete_action_legality=None,historical_only=True)
+        elapsed=frame.get('timings_ns',{}).get('player_target_stage')
+        if type(elapsed) is int and elapsed>=0:result['timings_ns']['player_target_stage']=elapsed
+    return result
