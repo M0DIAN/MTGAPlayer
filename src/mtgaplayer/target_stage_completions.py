@@ -27,6 +27,28 @@ class TargetStageCompletions:
     def __init__(self):
         self.counts = Counter(); self.reasons = Counter(); self.completed_sources = Counter()
         self.elapsed_ns = 0
+        self.player_counts = Counter(); self.player_last = None
+
+    def player_report(self, *, include_last=False):
+        """Explicit role-history report; MP73's default report is unchanged."""
+        import copy
+        c = self.player_counts
+        result = {'schema_version': 'mtgaplayer.historical-player-target-stages.v1',
+            'units': {'domains': 'first-current complete MP84 domains at completed append polls',
+                'updates': 'strict unique consumed SelectTargetsResp envelopes',
+                'stages': 'one update, one typed Diff, independently current revised selection, consumed terminal',
+                'comparison': 'unavailable; MP84 proposals remain research_eligible=false'},
+            **{key: c[key] for key in ('frozen_reviewed_domains', 'frozen_local_proposals',
+                'strictly_paired_target_updates', 'historically_selected_player_targets',
+                'independently_revised_selections', 'strictly_paired_terminal_submits', 'fully_linked_historical_stages')},
+            'unlinked_or_interrupted_stages': c['frozen_reviewed_domains']-c['fully_linked_historical_stages'],
+            'historical_choice_agreements': None, 'historical_choice_disagreements': None,
+            'historical_comparison_unavailable': c['frozen_reviewed_domains'],
+            'complete_target_legality': None, 'complete_action_legality': None,
+            'server_acceptance_verified': False, 'parent_action_causality': 'unknown',
+            'historical_only': True, 'current': False, 'read_only': True, **EXECUTION}
+        if include_last: result['last_historical_fact'] = copy.deepcopy(self.player_last)
+        return result
 
     def freeze(self, request, options, decision, revision):
         start=time.perf_counter_ns();c=self.counts;c['target_requests_observed'] += 1
