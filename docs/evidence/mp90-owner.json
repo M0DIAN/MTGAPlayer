@@ -1,0 +1,819 @@
+{
+  "schema_version": "mtgaplayer.mp90-owner-evidence.v1",
+  "base_main": "ea3027e206fe9e5a91c323ff8c14bab99ab2a459",
+  "base_tree": "ad7ed80c13c90e0009946a630fa7a1373a58cbd8",
+  "actual_gap": "accepted Runtime has mutually exclusive None/land/target modes and one reference; no equivalent unified route",
+  "catalog_provenance": {
+    "client_build": "2026.64.0.14517.1329972",
+    "manifest_filename_md5": "c98372b34219b5c4aa478e8bf296f5ee",
+    "manifest_sha256": "908abd96f922ad0e90c802863640cc0ac1f9df25f40fa618171bf78ca9849a5e",
+    "catalog_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "catalog_bytes": 259883008,
+    "catalog_versions": {
+      "Data": "2026.64.0.280",
+      "GRP": "280.1327372"
+    }
+  },
+  "provenance_scope": "MP89 trusted local historical applicability retained; not signed runtime attestation",
+  "catalog_revalidated": "both native readonly factories hash-before/after exact catalog and Data/GRP before Consumer creation",
+  "actual_controlled_runs": {
+    "schema_version": "mtgaplayer.mp90-owner-controlled-modes.v1",
+    "base_main": "ea3027e206fe9e5a91c323ff8c14bab99ab2a459",
+    "mode": "candidate",
+    "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+    "source_bytes": 3225997,
+    "original_records": 367,
+    "original_authenticated_requests": 53,
+    "original_current_endpoints": 42,
+    "startup_arrangement": "authentic complete valid requestless prefix before first frozen Mulligan; then exact original 42 cutoffs; explicit offline simulation",
+    "original_runtime_startup_separately_compared": "one historical startup request +41 append frames",
+    "no_mid_poll_request_promoted": true,
+    "future_records_available_to_policy": false,
+    "original_A_B_C_outputs_unchanged": true,
+    "preparation_before_consumers_ms": {
+      "land": 403.4151,
+      "target_effect": 339.2308
+    },
+    "runs": {
+      "default": {
+        "authenticated_requests": 53,
+        "original_endpoint_count": 42,
+        "unique_endpoint_binding_count": 42,
+        "endpoint_digest_and_binding_equal": true,
+        "one_raw_follower": true,
+        "one_raw_reducer": true,
+        "publisher_consumer_subscriptions": 1,
+        "owner_threads": 1,
+        "evaluated_population": 42,
+        "status_distribution": {
+          "unsupported": 8,
+          "abstain": 33,
+          "research_preference": 1
+        },
+        "strict_frozen_requests_consumed": 41,
+        "immediate_revocations": 41,
+        "closed_result_revoked": true
+      },
+      "land": {
+        "authenticated_requests": 53,
+        "original_endpoint_count": 42,
+        "unique_endpoint_binding_count": 42,
+        "endpoint_digest_and_binding_equal": true,
+        "one_raw_follower": true,
+        "one_raw_reducer": true,
+        "publisher_consumer_subscriptions": 1,
+        "owner_threads": 1,
+        "evaluated_population": 13,
+        "status_distribution": {
+          "abstain": 12,
+          "research_preference": 1
+        },
+        "strict_frozen_requests_consumed": 41,
+        "immediate_revocations": 41,
+        "closed_result_revoked": true
+      },
+      "target": {
+        "authenticated_requests": 53,
+        "original_endpoint_count": 42,
+        "unique_endpoint_binding_count": 42,
+        "endpoint_digest_and_binding_equal": true,
+        "one_raw_follower": true,
+        "one_raw_reducer": true,
+        "publisher_consumer_subscriptions": 1,
+        "owner_threads": 1,
+        "evaluated_population": 14,
+        "status_distribution": {
+          "unsupported": 1,
+          "abstain": 4,
+          "research_preference": 9
+        },
+        "strict_frozen_requests_consumed": 41,
+        "immediate_revocations": 41,
+        "closed_result_revoked": true
+      },
+      "unified": {
+        "authenticated_requests": 53,
+        "original_endpoint_count": 42,
+        "unique_endpoint_binding_count": 42,
+        "endpoint_digest_and_binding_equal": true,
+        "one_raw_follower": true,
+        "one_raw_reducer": true,
+        "publisher_consumer_subscriptions": 1,
+        "owner_threads": 1,
+        "evaluated_population": 42,
+        "status_distribution": {
+          "unsupported": 8,
+          "abstain": 23,
+          "research_preference": 11
+        },
+        "strict_frozen_requests_consumed": 41,
+        "immediate_revocations": 41,
+        "closed_result_revoked": true,
+        "preference_sources": {
+          "deterministic_shadow.v1": 1,
+          "land_development_research.v1": 1,
+          "target_effect_research.v1": 9
+        },
+        "per_request_type": {
+          "GREMessageType_ActionsAvailableReq": {
+            "abstain": 12,
+            "research_preference": 1
+          },
+          "GREMessageType_CastingTimeOptionsReq": {
+            "unsupported": 3
+          },
+          "GREMessageType_MulliganReq": {
+            "unsupported": 1
+          },
+          "GREMessageType_OrderReq": {
+            "unsupported": 2
+          },
+          "GREMessageType_PayCostsReq": {
+            "unsupported": 1
+          },
+          "GREMessageType_SearchReq": {
+            "unsupported": 1
+          },
+          "GREMessageType_SelectNReq": {
+            "abstain": 7
+          },
+          "GREMessageType_SelectTargetsReq": {
+            "research_preference": 10,
+            "abstain": 4
+          }
+        },
+        "safe_summaries_have_no_full_refs": true,
+        "conflicts": 0,
+        "immediate_revocation_call_ms": {
+          "all": {
+            "sample_count": 41,
+            "p50_ms": 0.0079,
+            "p95_ms": 0.0109,
+            "p99_ms": 0.0125,
+            "max_ms": 0.0125
+          },
+          "ActionsAvailable": {
+            "sample_count": 13,
+            "p50_ms": 0.0083,
+            "p95_ms": 0.0111,
+            "p99_ms": 0.0111,
+            "max_ms": 0.0111
+          },
+          "SelectTargets": {
+            "sample_count": 14,
+            "p50_ms": 0.0082,
+            "p95_ms": 0.0125,
+            "p99_ms": 0.0125,
+            "max_ms": 0.0125
+          },
+          "other": {
+            "sample_count": 14,
+            "p50_ms": 0.0071,
+            "p95_ms": 0.0106,
+            "p99_ms": 0.0106,
+            "max_ms": 0.0106
+          }
+        },
+        "revocation_timing_scope": "actual current_frame call immediately after Reducer-consumed request; excludes log processing; instrumented correctness replay only",
+        "per_endpoint": [
+          {
+            "case": 1,
+            "request_type": "GREMessageType_MulliganReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 2,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "multiple_play_competitors",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 3,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "multiple_play_competitors",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 4,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 5,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "ordinary_land_profile_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 6,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 7,
+            "request_type": "GREMessageType_CastingTimeOptionsReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 8,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 9,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 10,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "active_action_structure_unreviewed",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 11,
+            "request_type": "GREMessageType_CastingTimeOptionsReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 12,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "unique_complete_proposal_for_reviewed_request_constraints",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 13,
+            "request_type": "GREMessageType_PayCostsReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 14,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "ordinary_land_profile_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 15,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 16,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 17,
+            "request_type": "GREMessageType_OrderReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 18,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 19,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "research_preference",
+            "selected_policy": "land_development_research.v1",
+            "reason": "verified_land_development_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 21,
+            "request_type": "GREMessageType_CastingTimeOptionsReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 22,
+            "request_type": "GREMessageType_SearchReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 23,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "no_play_offered",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 24,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 25,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "abstain",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "target_value_comparison_unreviewed",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 26,
+            "request_type": "GREMessageType_ActionsAvailableReq",
+            "status": "abstain",
+            "selected_policy": "land_development_research.v1",
+            "reason": "active_action_structure_unreviewed",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 27,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 28,
+            "request_type": "GREMessageType_OrderReq",
+            "status": "unsupported",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "request_strategy_unsupported",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 29,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 30,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "abstain",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "target_value_comparison_unreviewed",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 31,
+            "request_type": "GREMessageType_SelectNReq",
+            "status": "abstain",
+            "selected_policy": "deterministic_shadow.v1",
+            "reason": "combination_or_tactical_basis_unverified",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": null
+          },
+          {
+            "case": 32,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 33,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 34,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "abstain",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "current_selected_literal_not_complete_domain",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 35,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 36,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 37,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "abstain",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "current_selected_literal_not_complete_domain",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 38,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 39,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 40,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 41,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          },
+          {
+            "case": 42,
+            "request_type": "GREMessageType_SelectTargetsReq",
+            "status": "research_preference",
+            "selected_policy": "target_effect_research.v1",
+            "reason": "verified_opponent_base_damage_heuristic",
+            "binding_and_digest_equal_original": true,
+            "original_MP66_report_equal": true,
+            "original_routed_specialist_report_equal": true
+          }
+        ]
+      }
+    },
+    "historical_live_lease_or_latency_proven": false,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "default_compatibility": {
+    "base_main": "ea3027e206fe9e5a91c323ff8c14bab99ab2a459",
+    "public_real_sources": 10,
+    "recordwise_documents_options_policy_candidates2_to6": 1152,
+    "authenticated_requests": 53,
+    "full_mp73_and_existing_history_report_equal": true,
+    "default_runtime_frames_and_safe_summaries_equal": 41,
+    "equal_leaf_values": 825554,
+    "differences": 0,
+    "normalization": [
+      "transport snapshot refs",
+      "version/source digest",
+      "timings"
+    ],
+    "original42_policy": {
+      "research_preference": 1,
+      "abstain": 33,
+      "unsupported": 8
+    },
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "local_focused_tests": {
+    "check": "focused",
+    "exit_code": 0,
+    "wall_seconds": 2.262,
+    "log_sha256": "8895744bbdd4945f223239775aebbc63c9fa05197dffba26e8e8b20aee078776",
+    "tests": 16,
+    "unittest_seconds": 2.006,
+    "success": true,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "local_full_tests": {
+    "check": "full",
+    "exit_code": 0,
+    "wall_seconds": 187.494,
+    "log_sha256": "20eb6ace1af17c03942340661c4d54693f77489fb2cca132ca605ee1da2f0ec8",
+    "tests": 1223,
+    "unittest_seconds": 186.415,
+    "success": true,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "windows_doctor": {
+    "status": "PASS_READ_ONLY",
+    "python": "3.11.9",
+    "input_sent": false,
+    "LIVE_MTGA": "NOT_RUN"
+  },
+  "performance": {
+    "schema_version": "mtgaplayer.mp90-owner-local-performance.v1",
+    "clock": "actual perf_counter_ns; single controlled production runtime; no Reducer instrumentation",
+    "scope": "offline original accepted-prefix endpoints, not actual MTGA latency or historical leases",
+    "nested_stages_must_not_be_added": true,
+    "preparation_before_consumer_ms": {
+      "land": 392.1933,
+      "target_effect": 334.8215
+    },
+    "by_request_type": {
+      "ActionsAvailable": {
+        "unified_dispatch": {
+          "sample_count": 13,
+          "p50_ms": 0.0824,
+          "p95_ms": 0.1633,
+          "p99_ms": 0.1633,
+          "max_ms": 0.1633
+        },
+        "research_policy": {
+          "sample_count": 13,
+          "p50_ms": 7.6762,
+          "p95_ms": 14.4904,
+          "p99_ms": 14.4904,
+          "max_ms": 14.4904
+        },
+        "shadow_policy": {
+          "sample_count": 13,
+          "p50_ms": 7.5315,
+          "p95_ms": 11.6781,
+          "p99_ms": 11.6781,
+          "max_ms": 11.6781
+        },
+        "poll_to_frame_ready": {
+          "sample_count": 13,
+          "p50_ms": 59.8232,
+          "p95_ms": 137.3123,
+          "p99_ms": 137.3123,
+          "max_ms": 137.3123
+        }
+      },
+      "SelectTargets": {
+        "unified_dispatch": {
+          "sample_count": 14,
+          "p50_ms": 0.1221,
+          "p95_ms": 0.1329,
+          "p99_ms": 0.1329,
+          "max_ms": 0.1329
+        },
+        "research_policy": {
+          "sample_count": 14,
+          "p50_ms": 5.1235,
+          "p95_ms": 6.0093,
+          "p99_ms": 6.0093,
+          "max_ms": 6.0093
+        },
+        "shadow_policy": {
+          "sample_count": 14,
+          "p50_ms": 1.1914,
+          "p95_ms": 1.5657,
+          "p99_ms": 1.5657,
+          "max_ms": 1.5657
+        },
+        "poll_to_frame_ready": {
+          "sample_count": 14,
+          "p50_ms": 22.123,
+          "p95_ms": 27.8223,
+          "p99_ms": 27.8223,
+          "max_ms": 27.8223
+        }
+      },
+      "other": {
+        "unified_dispatch": {
+          "sample_count": 15,
+          "p50_ms": 0.0629,
+          "p95_ms": 0.1533,
+          "p99_ms": 0.1533,
+          "max_ms": 0.1533
+        },
+        "research_policy": {
+          "sample_count": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null,
+          "max_ms": null
+        },
+        "shadow_policy": {
+          "sample_count": 15,
+          "p50_ms": 0.9935,
+          "p95_ms": 1.2971,
+          "p99_ms": 1.2971,
+          "max_ms": 1.2971
+        },
+        "poll_to_frame_ready": {
+          "sample_count": 15,
+          "p50_ms": 15.5265,
+          "p95_ms": 38.223,
+          "p99_ms": 38.223,
+          "max_ms": 38.223
+        }
+      },
+      "failed_or_revoked": {
+        "unified_dispatch": {
+          "sample_count": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null,
+          "max_ms": null
+        },
+        "research_policy": {
+          "sample_count": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null,
+          "max_ms": null
+        },
+        "shadow_policy": {
+          "sample_count": 0,
+          "p50_ms": null,
+          "p95_ms": null,
+          "p99_ms": null,
+          "max_ms": null
+        },
+        "poll_to_frame_ready": {
+          "sample_count": 1,
+          "p50_ms": 55.1981,
+          "p95_ms": 55.1981,
+          "p99_ms": 55.1981,
+          "max_ms": 55.1981
+        }
+      }
+    },
+    "close_and_current_revocation_ms": {
+      "sample_count": 1,
+      "p50_ms": 0.1247,
+      "p95_ms": 0.1247,
+      "p99_ms": 0.1247,
+      "max_ms": 0.1247
+    },
+    "status_distribution": {
+      "unsupported": 8,
+      "abstain": 23,
+      "research_preference": 11
+    },
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "revocations": {
+    "strict_consumed_frozen_requests": 41,
+    "immediate_consumed_revocations": 41,
+    "stop_revocation_verified": true,
+    "cohort_not_observed_strictly_consumed": 1,
+    "meaning": "strict consumption and terminal stop are distinct evidence populations; no extra consumed event inferred"
+  },
+  "public_test_scope": "existing owner-retained real field projections plus explicitly synthetic transport and negative controls",
+  "review_and_CI": "independent exact committed candidate review and actual two-platform PR/main CI remain separate delivery gates",
+  "private_archive_authenticated_by_owner": true,
+  "private_archive_authenticated_by_independent_reviewer": false,
+  "no_private_log_database_or_absolute_path_exported": true,
+  "complete_legality_verified": false,
+  "strategic_optimality_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}

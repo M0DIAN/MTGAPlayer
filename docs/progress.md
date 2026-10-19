@@ -2495,3 +2495,51 @@ targetn14 addedpolicy p50/p95/p99/maxms=4.1632/6.4093/6.4093/6.4093; fullpollfra
 offline replay does not prove MTGA three-second performance or historicalleases.
 See docs/target-effect-research.md and docs/evidence/mp89-owner.json. Historical
 AutoTap/Windowsqualification/MP81unknown roots unchanged. input_sent=false; P10=NOT_RUN.
+
+
+MP90 on acceptedea3027e2/treead7ed80c: existing Runtime had only mutually
+exclusiveNone/land/target and a singleprepared_rules; no equivalent unified API.
+Explicitunified_research.v1 now routes AA→MP87, SelectTargets→MP89, others→MP66
+inside the same owner/RawFollower/Reducer/Publisher/Consumer/completedpoll frame.
+Distinct prepared_references preserve sourceformat/SHA/Data/GRP/scope; native
+factories rehash the pinned catalog before/after before Consumer creation.
+Unifiedland additionally gates MP89 exactbuild/resource capability; oldsingleland
+unchanged. No hotpathIO, secondstate/ledger/cache/parser/solver/response/input.
+
+Originalshadow_decision and applicable detailedresearch_decision remain separate;
+one unified_research_decision binds currentrequest/ref/digest/seat/match/game/lease/
+completedpoll. OriginalweakMP66 fallback keeps its own evidence and cannot borrow
+effectclaims. Simultaneous different candidate/namespace preferences abstain;
+only identical full same-namespace current candidates can agree. Globalinvalid
+request/ref/lease/continuity discards entire frame, never an oldcache fallback.
+Consumed/replaced/partial/Full/reset/gap/Cancel/Undo/expiry/stop/midcalc changes
+revoke. Missingrefs and unknownversions cannot grant specialist capability.
+
+Owner reauthenticated original3225997B/SHA1d75cd1b.../367records/53authenticated/
+42endpoints. Authentic complete valid requestless prefix after consumed transient
+request warms controlledreplay before firstMulligan, preserving42original bytecuts/
+digest/binding exactly without exposing midpoll requests or futurebytes. Original
+onehistory+41append arrangement separately retained in defaultcompat. A/B/C real
+full perrequest outputs match acceptedbase incl static sourceversions, and D is
+an actual singleRuntime run:11pref/23abstain/8unsupported, sourcesMP66=1/MP87=1/
+MP89=9, realconflicts0. All41strict consumed frozen requests immediately revoke;
+stoppedRuntime yields expired/nokey. Syntheticcontrols cover remaining lifecycles.
+OriginalMP66 stays1/33/8; MP87AA1/12/0; MP89targets9/4/1. Default10realJSONL/
+1152records,53requests/fullhistory,41runtimeframes/summaries match825554leafvalues,
+0differences. Singlepolicy A/B/C complete42frame outputs independently matchbase.
+
+New16focusedPASS; fullPython3.11 1223PASS; WindowsdoctorPASS/read-only. Independent
+directcontrols and exactHEAD/tree plus hostedCI/naturalmain remain separate gates.
+Actualclock pureproduction unifieddispatch p50/p95/p99/maxms:AA n13 .0824/.1633/
+.1633/.1633; targets n14 .1221/.1329/.1329/.1329; other n15 .0629/.1533/.1533/.1533.
+ApplicableAApolicy7.6762/14.4904/14.4904/14.4904; targetpolicy5.1235/6.0093/6.0093/
+6.0093; other specialistn0/null, MP66other n15 .9935/1.2971/1.2971/1.2971.
+FullpollframeAA59.8232/137.3123/137.3123/137.3123; targets22.123/27.8223/27.8223/
+27.8223; others15.5265/38.223/38.223/38.223. Failed/revokedpoll n1 55.1981;
+immediaterevocationcall n41 .0079/.0109/.0125/.0125, separate
+instrumentedcorrectness path; close+query n1 .1247ms. Preparations392.1933+334.8215ms
+beforeConsumer, excluded. Nestedstage times must not be added; localoffline
+measurements are not actualMTGA3second qualification or historicwallclock leases.
+See docs/unified-research-runtime.md and safeowner receipt. HistoryAutoTap,
+Windowsqualification andMP81current_view_unavailable causes remainUNKNOWN.
+completelegality/strategicoptimality/executionready=false; input_sent=false;P10=NOT_RUN.
