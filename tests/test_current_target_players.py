@@ -27,6 +27,7 @@ def rows_for(sample):
     """Synthetic bootstrap, including omitted empty public Battlefield zone."""
     rows = old_rows_for(sample)
     gs = raw_state(rows[2])
+    gs['gameStateId'] = sample['message']['gameStateId']
     gs['players'] = copy.deepcopy(sample['players'])
     if not any(z['type'] == 'ZoneType_Battlefield' for z in gs['zones']):
         gs['zones'].append({'zoneId': 2900, 'type': 'ZoneType_Battlefield',
@@ -324,6 +325,123 @@ class CurrentTargetPlayerTests(unittest.TestCase):
                 self.assertEqual(e.reducer.accepted_digest, digest)
                 self.assertEqual(e.reducer.document()['current']['objects'], visible)
                 self.denied(self.report(e, message))
+
+    def test_synthetic_uint32_target_identity_boundaries_keep_only_range_factor(self):
+        # Synthetic boundary aliases test the wire field types, not additional
+        # real target shapes. Both group fields must change with the source
+        # group: changing only one would fail identity equality independently
+        # of the uint32 boundary and would not test the reported defect.
+        for fields in (('sourceId',), ('abilityGrpId', 'targetingAbilityGrpId'), ('targetIdx',)):
+            for number in (2**32 - 1, 2**32):
+                with self.subTest(fields=fields, value=number):
+                    sample = copy.deepcopy(self.sample)
+                    body = sample['message']['selectTargetsReq']
+                    slot = body['targets'][0]
+                    if fields == ('sourceId',):
+                        original = body['sourceId']
+                        body['sourceId'] = sample['objects'][0]['instanceId'] = number
+                        for zone in sample['zones']:
+                            zone['objectInstanceIds'] = [number if ident == original else ident
+                                for ident in zone['objectInstanceIds']]
+                    elif fields == ('targetIdx',):
+                        slot['targetIdx'] = number
+                    else:
+                        body['abilityGrpId'] = slot['targetingAbilityGrpId'] = number
+                        sample['objects'][0]['grpId'] = number
+                    e, message = self.ready(sample)
+                    report = self.report(e, message)
+                    if number == 2**32:
+                        self.denied(report)
+                    else:
+                        self.assertEqual(report['status'], 'observed')
+                        self.assertEqual(report['returned_proposals'], 3)
+                        self.assertEqual(report['verified_player_memberships'], 2)
+                        self.assertTrue(report['complete_current_select_domain_verified'])
+                        self.safe(report)
+                        constraints = report['target_constraints']
+                        for field in fields:
+                            projected = {'sourceId': 'source_object_ref', 'abilityGrpId': 'ability_grp_ref',
+                                'targetingAbilityGrpId': 'targeting_ability_grp_ref', 'targetIdx': 'target_idx'}[field]
+                            self.assertEqual(constraints[projected], number)
+
+    def test_synthetic_request_header_uint32_boundaries_with_synchronized_full_state(self):
+        for field in ('msgId', 'gameStateId'):
+            for number in (2**32 - 1, 2**32):
+                with self.subTest(field=field, value=number):
+                    sample = copy.deepcopy(self.sample)
+                    sample['message'][field] = number
+                    # rows_for synchronizes Full gameStateId, so a rejected
+                    # state header is not merely a mismatched request binding.
+                    e, message = self.ready(sample)
+                    self.assertEqual(e.reducer.version, message['gameStateId'])
+                    report = self.report(e, message)
+                    if number == 2**32:
+                        self.denied(report)
+                    else:
+                        self.assertEqual(report['status'], 'observed')
+                        self.assertEqual(report['returned_proposals'], 3)
+                        self.safe(report)
+
+    def test_synthetic_raw_public_identity_uint32_boundaries_and_partial_domain(self):
+        for mode in ('source_zone', 'battlefield_zone', 'battlefield_group', 'source_parent'):
+            for number in (2**32 - 1, 2**32):
+                with self.subTest(mode=mode, value=number):
+                    sample = copy.deepcopy(self.sample)
+                    if mode in ('source_zone', 'battlefield_zone'):
+                        obj = sample['objects'][0 if mode == 'source_zone' else 1]
+                        original = obj['zoneId']
+                        obj['zoneId'] = number
+                        zone = next(z for z in sample['zones'] if z['zoneId'] == original)
+                        zone['zoneId'] = number
+                        self.assertIn(obj['instanceId'], zone['objectInstanceIds'])
+                    elif mode == 'battlefield_group':
+                        sample['objects'][1]['grpId'] = number
+                    else:
+                        sample['objects'][0]['parentId'] = number
+                    e, message = self.ready(sample)
+                    report = self.report(e, message)
+                    if number == 2**32 - 1:
+                        self.assertEqual(report['status'], 'observed')
+                        self.assertEqual(report['returned_proposals'], 3)
+                        self.assertEqual(report['verified_player_memberships'], 2)
+                        self.safe(report)
+                    elif mode in ('source_zone', 'source_parent'):
+                        self.denied(report)
+                    else:
+                        self.incomplete(report, 1)
+                        self.assertEqual(report['verified_player_memberships'], 2)
+                        self.assertEqual(report['verified_public_object_memberships'], 0)
+                        self.assertEqual(len(report['target_referents']), 3)
+
+    def test_synthetic_raw_source_zone_numeric_type_change_cannot_hide_behind_visible_shape(self):
+        e, message = self.ready()
+        self.assertEqual(self.report(e, message)['status'], 'observed')
+        digest = e.reducer.accepted_digest
+        visible = copy.deepcopy(e.reducer.document()['current']['objects'])
+        zone_key = e.reducer.objects[100]['zoneId']
+        self.assertEqual(zone_key, 2000)
+        e.reducer.zones[zone_key]['zoneId'] = float(zone_key)
+        self.assertIs(type(next(k for k in e.reducer.zones if k == zone_key)), int)
+        self.assertEqual(e.reducer.accepted_digest, digest)
+        self.assertEqual(e.reducer.document()['current']['objects'], visible)
+        self.denied(self.report(e, message))
+
+    def test_synthetic_optional_group_and_parent_zero_or_absence_keep_prior_identity_contract(self):
+        for mode in ('battlefield_group', 'source_parent'):
+            for present in (False, True):
+                with self.subTest(mode=mode, zero_present=present):
+                    sample = copy.deepcopy(self.sample)
+                    obj, field = ((sample['objects'][1], 'grpId') if mode == 'battlefield_group'
+                        else (sample['objects'][0], 'parentId'))
+                    if present:
+                        obj[field] = 0
+                    else:
+                        obj.pop(field, None)
+                    e, message = self.ready(sample)
+                    report = self.report(e, message)
+                    self.assertEqual(report['status'], 'observed')
+                    self.assertEqual(report['returned_proposals'], 3)
+                    self.safe(report)
 
     def test_synthetic_public_target_cannot_be_ability_hidden_or_wrong_zone(self):
         for mode in ('ability', 'hidden', 'zone', 'duplicate_zone', 'missing'):

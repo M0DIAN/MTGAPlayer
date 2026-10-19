@@ -164,16 +164,31 @@ def _collision_witness(reducer, ids):
         for ident in ids]
 
 
-def role_state_witness(reducer):
+def role_state_witness(reducer, visible_ids=()):
     """Private frame freshness dependency, without hidden object payloads.
 
-    Only the two reviewed player IDs can acquire this new role. Include their
-    raw existence/zone membership even when the offered domain changes later.
+    Include the two reviewed player IDs' raw existence/membership, plus the
+    already-visible entities' zone identities. No hidden object payload is read.
     """
     from .target_build import current_build
     if current_build(reducer) is None:
         return None
-    return copy.deepcopy((reducer.players, _collision_witness(reducer, (1, 2))))
+    zones = {reducer.objects[ident].get('zoneId') for ident in visible_ids}
+    visible_zone_witness = [(key, {field: row.get(field) for field in
+        ('zoneId', 'type', 'visibility', 'objectInstanceIds')})
+        for key, row in reducer.zones.items() if key in zones]
+    return copy.deepcopy((reducer.players, _collision_witness(reducer, (1, 2)), visible_zone_witness))
+
+
+def _role_identity(reducer, ident, kinds, zone_type):
+    """Use the legacy public identity gate plus this build's uint32 fields."""
+    signature = _identity(reducer, ident, kinds, zone_type)
+    obj = reducer.objects[ident]; zone = reducer.zones[obj['zoneId']]
+    _need(all(type(obj[k]) is int and 0 < obj[k] <= 2**32-1 for k in ('instanceId', 'zoneId')) and
+        _equal(zone['zoneId'], obj['zoneId']) and
+        all(type(obj[k]) is int and 0 <= obj[k] <= 2**32-1 for k in ('grpId', 'parentId') if k in obj) and
+        all(type(value) is int and 0 < value <= 2**32-1 for value in zone['objectInstanceIds']))
+    return signature
 
 
 def _project_referents(reducer, message, state, ref, limit, visible):
@@ -188,6 +203,10 @@ def _project_referents(reducer, message, state, ref, limit, visible):
     players = copy.deepcopy(reducer.players)
     valid_players = _players_verified(reducer)
     body = message['selectTargetsReq']; slot = body['targets'][0]
+    _need(all(type(value) is int and 0 < value <= 2**32-1 for value in
+        (message['msgId'], message['gameStateId'], body['sourceId'], body['abilityGrpId'],
+            slot['targetIdx'], slot['targetingAbilityGrpId'])))
+    _need(type(slot['targets']) is list and 1 <= len(slot['targets']) <= 64)
     raw_ids = [e['targetInstanceId'] for e in slot['targets']]
     _need(all(type(i) is int and 0 < i <= 2**32-1 for i in raw_ids))
     collision = _collision_witness(reducer, raw_ids)
@@ -207,7 +226,7 @@ def _project_referents(reducer, message, state, ref, limit, visible):
                     namespace='version_verified_player_instance', player_seat=ident, reason=None)
         elif ident in public:
             try:
-                signature = _identity(reducer, ident, ('GameObjectType_Card', 'GameObjectType_Token'), 'ZoneType_Battlefield')
+                signature = _role_identity(reducer, ident, ('GameObjectType_Card', 'GameObjectType_Token'), 'ZoneType_Battlefield')
             except (ValueError, KeyError, TypeError):
                 pass
             else:
@@ -221,7 +240,7 @@ def _project_referents(reducer, message, state, ref, limit, visible):
         state['binding']['self_seat'], allow_no_cancel=True, referent_roles=roles)
     constraints = observation['constraints']; source = constraints['source_object_ref']
     _need(source not in (1, 2))  # Same entity namespace; lookup priority is no proof.
-    signatures[source] = _identity(reducer, source, ('GameObjectType_Ability',), 'ZoneType_Stack')
+    signatures[source] = _role_identity(reducer, source, ('GameObjectType_Ability',), 'ZoneType_Stack')
     source_row = reducer.objects[source]
     _need(all(type(source_row[k]) is int and source_row[k] == state['binding']['self_seat'] for k in
         ('ownerSeatId', 'controllerSeatId')) and
@@ -262,7 +281,7 @@ def _project_referents(reducer, message, state, ref, limit, visible):
         _equal(version, current_build(reducer)) and _equal(players, reducer.players) and
         _equal(collision, _collision_witness(reducer, raw_ids)))
     for ident, signature in signatures.items():
-        _need(_equal(signature, _identity(reducer, ident,
+        _need(_equal(signature, _role_identity(reducer, ident,
             ('GameObjectType_Ability',) if ident == source else ('GameObjectType_Card', 'GameObjectType_Token'),
             'ZoneType_Stack' if ident == source else 'ZoneType_Battlefield')))
     result = unknown('version_bound_current_referent_roles_and_local_constraints_only')

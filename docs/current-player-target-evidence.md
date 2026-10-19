@@ -76,6 +76,12 @@ create an entity match or conflict. A source using either player ID is rejected.
 The source must independently be the current own public Stack Ability with
 unique zone membership and both group literals matching. Source, slot, targeting
 seat, explicit1/1 counts, prompts and operation structure retain strict checks.
+The new profile additionally checks the pinned uint32 bounds for message/state,
+source/group/slot and used public entity/zone/member IDs. Present group/parent
+identifiers retain the legacy allowance for zero or absence; zone-row identity
+uses type-sensitive equality. The older v1/State contracts are not widened or
+retroactively changed. Already-visible zone fingerprints also revoke a frame
+when those identity or membership dependencies change after its completed poll.
 
 Any unknown member remains in the result and prevents a complete Select domain.
 Only an entirely reviewed all-Select list with no selected-count literal can use
@@ -133,9 +139,9 @@ append current frames and safe summaries match after removing only the13 new
 explicit role sidecars; other target evidence and MP82 SelectN results remain.
 
 One controlled replay plus three warm checks per new request measures added role
-projection n52: p50 .4689ms, p95 .7227ms, p99/max .9201ms. Whole warm opt-in API
-n39: p50 1.6089ms, p95 2.0273ms, p99/max 2.4109ms. Target completed-poll frames
-n14: p50 13.4763ms, p95/p99/max17.8086ms. These nested same-process local samples
+projection n52: p50 .4889ms, p95 .7413ms, p99/max .7843ms. Whole warm opt-in API
+n39: p50 1.6189ms, p95 2.1002ms, p99/max 2.3575ms. Target completed-poll frames
+n14: p50 13.7954ms, p95/p99/max17.8426ms. These nested same-process local samples
 are not causal latency guarantees or a real MTGA three-second qualification.
 
 Focused synthetic counterproofs cover version/owner/generation, raw namespace
@@ -143,7 +149,8 @@ collisions, hidden visibility, Card/Token/Ability distinction, partial domains,
 typed proposal tampering, quantity/source/slot/seat, lifecycle and in-flight
 changes. Independent review found and repaired typed-role omission, source-seat
 ambiguity, late duplicate version headers, completed-frame hidden collision
-freshness and same-valued float/bool raw source-group identities. The last was
+freshness, same-valued float/bool raw source-group identities and new-profile
+wire uint32 bounds/typed zone-row dependencies. The latter two were
 found after the first candidate review, so that candidate's PASS/CI cannot
 substitute the repaired HEAD's gates. Full Python3.11, doctor, exact-HEAD review and actual PR/main CI are
 separate delivery gates; their precise revisions/results belong to PR receipts.

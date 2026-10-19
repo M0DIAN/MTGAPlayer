@@ -140,31 +140,31 @@
   "performance_ms": {
     "added_role_projection": {
       "sample_count": 52,
-      "p50_ms": 0.4689,
-      "p95_ms": 0.7227,
-      "p99_ms": 0.9201,
-      "max_ms": 0.9201
+      "p50_ms": 0.4889,
+      "p95_ms": 0.7413,
+      "p99_ms": 0.7843,
+      "max_ms": 0.7843
     },
     "warm_current_target_optin": {
       "sample_count": 39,
-      "p50_ms": 1.6089,
-      "p95_ms": 2.0273,
-      "p99_ms": 2.4109,
-      "max_ms": 2.4109
+      "p50_ms": 1.6189,
+      "p95_ms": 2.1002,
+      "p99_ms": 2.3575,
+      "max_ms": 2.3575
     },
     "affected_target_poll_to_frame": {
       "sample_count": 14,
-      "p50_ms": 13.4763,
-      "p95_ms": 17.8086,
-      "p99_ms": 17.8086,
-      "max_ms": 17.8086
+      "p50_ms": 13.7954,
+      "p95_ms": 17.8426,
+      "p99_ms": 17.8426,
+      "max_ms": 17.8426
     },
     "all_current_poll_to_frame": {
       "sample_count": 41,
-      "p50_ms": 16.3142,
-      "p95_ms": 76.5572,
-      "p99_ms": 134.0705,
-      "max_ms": 134.0705
+      "p50_ms": 16.4415,
+      "p95_ms": 80.8091,
+      "p99_ms": 130.7617,
+      "max_ms": 130.7617
     }
   },
   "measurement_scope": "one same-process controlled original-prefix replay and three warm API checks per new request; nested timings overlap; not MTGA latency",

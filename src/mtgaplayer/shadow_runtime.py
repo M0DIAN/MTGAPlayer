@@ -56,7 +56,8 @@ def _raw_stamp(reducer):
     current=reducer.document()['current']
     fields=('instanceId','grpId','type','parentId','zoneId','ownerSeatId','controllerSeatId',
         'visibility','viewers','isTapped','uniqueAbilities','power','toughness')
-    return copy.deepcopy((reducer.accepted_digest.hex(),current,current_build(reducer),role_state_witness(reducer),
+    return copy.deepcopy((reducer.accepted_digest.hex(),current,current_build(reducer),
+        role_state_witness(reducer,(o['id'] for o in current.get('objects',[]))),
         [{k:reducer.objects[o['id']].get(k) for k in fields} for o in current.get('objects',[])]))
 
 

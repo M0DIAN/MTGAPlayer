@@ -2315,3 +2315,14 @@ card_id=null and accepted digest. Reuse strict typed _equal for both groups;
 new direct tests cover1000→1000.0 and1→True. Prior candidate e84b84c2's1120PASS,
 review and CI are historical only; the repaired ordinary commit requires fresh
 full tests, exact-HEAD review and actual Linux/Windows CI before delivery.
+
+MP84 concentrated follow-up review also found new-profile wire identity bounds
+were inheriting the legacy JSON2**53 limit. Only the new role path now applies
+the pinned uint32 limits to used message/state/source/group/slot/entity/zone/
+member fields, retains optional zero/absent group/parent semantics, and checks
+typed zone-row identity. Visible-zone metadata joins the private frame stamp;
+no extra state projection or hidden-face read. Independent worktree review
+64scenarios/644assertionsPASS, review scope closed. New actual owner acceptance
+retains13/24/11/24 and783470equal leaves/41original rawdigests. Added-only n52
+ms=.4889/.7413/.7843/.7843; previous timing/CI are historical. Final ordinary
+candidate/full/doctor/exactHEAD review/Linux+Windows CI gates must run anew.
