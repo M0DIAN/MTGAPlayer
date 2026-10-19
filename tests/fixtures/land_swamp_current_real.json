@@ -1,0 +1,685 @@
+{
+  "origin": "retained_scrubbed_real_frozen_current_projection",
+  "raw_equivalent": false,
+  "archive_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+  "original_bytes": 8382052,
+  "opportunity_ordinal": 42,
+  "projection_scope": "Only current policy inputs retained; bindings/source object ID replaced; unrelated visible cards omitted. No invented GRE request or authentication.",
+  "current_options": {
+    "schema_version": "mtgaplayer.current-decision-options.v1",
+    "status": "partial",
+    "request_binding": {
+      "source_generation": 1,
+      "match": "mp92-public-projection",
+      "game": 1,
+      "self_seat": 1,
+      "game_state_id": 12,
+      "request_id": 20,
+      "request_type": "GREMessageType_ActionsAvailableReq"
+    },
+    "source_snapshot_ref": {
+      "session_id": "00000000-0000-0000-0000-000000000092",
+      "sequence": 1,
+      "binding": {
+        "source_generation": 1,
+        "match": "mp92-public-projection",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 12,
+        "request_id": 20,
+        "request_type": "GREMessageType_ActionsAvailableReq"
+      }
+    },
+    "visible_state": {
+      "game": {
+        "turn": {
+          "turnNumber": 6,
+          "activePlayer": 1,
+          "decisionPlayer": 1,
+          "phase": "Phase_Main1",
+          "step": null,
+          "priorityPlayer": 1
+        },
+        "stack": {
+          "availability": "unknown"
+        }
+      },
+      "visible_objects": [
+        {
+          "instance_id": 700,
+          "card_id": 106531,
+          "zone": "ZoneType_Hand",
+          "owner_seat": 1,
+          "controller_seat": 1,
+          "tapped": null,
+          "effective_power": null,
+          "effective_toughness": null
+        }
+      ]
+    },
+    "coverage": {
+      "engine_offered_count": 12,
+      "engine_offered_unit": "active_action_row",
+      "reviewed_candidate_count": 0,
+      "unknown_count": null,
+      "returned_options": 12,
+      "omitted_constructed_options": 0,
+      "truncated": false,
+      "count_basis": "separate_source_domains; reviewed_count_is_returned_options_only",
+      "sources": [
+        {
+          "source": "decision_advisor",
+          "scope": "engine_offered_inventory_only",
+          "unit": "active_action_row",
+          "observed": 12,
+          "constructed_options": 12,
+          "truncated": false,
+          "returned_options": 12,
+          "omitted_constructed_options": 0
+        }
+      ]
+    },
+    "options": [
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 0
+        },
+        "kind": "engine_action",
+        "list_position": 0,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 1
+        },
+        "kind": "engine_action",
+        "list_position": 1,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 2
+        },
+        "kind": "engine_action",
+        "list_position": 2,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 3
+        },
+        "kind": "engine_action",
+        "list_position": 3,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 4
+        },
+        "kind": "engine_action",
+        "list_position": 4,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 5
+        },
+        "kind": "engine_action",
+        "list_position": 5,
+        "observation": {
+          "engine_action_type": "ActionType_Cast"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 6
+        },
+        "kind": "engine_action",
+        "list_position": 6,
+        "observation": {
+          "engine_action_type": "ActionType_Play",
+          "visible_object_id": 700,
+          "source_card_identity_agreement": true,
+          "unknown_parameter_fields_present": false
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 7
+        },
+        "kind": "engine_action",
+        "list_position": 7,
+        "observation": {
+          "engine_action_type": "ActionType_Activate_Mana"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 8
+        },
+        "kind": "engine_action",
+        "list_position": 8,
+        "observation": {
+          "engine_action_type": "ActionType_Activate_Mana"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 9
+        },
+        "kind": "engine_action",
+        "list_position": 9,
+        "observation": {
+          "engine_action_type": "ActionType_Activate_Mana"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 10
+        },
+        "kind": "engine_action",
+        "list_position": 10,
+        "observation": {
+          "engine_action_type": "ActionType_Pass"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      },
+      {
+        "option_key": {
+          "kind": "engine_action",
+          "source": "decision_advisor",
+          "source_position": 11
+        },
+        "kind": "engine_action",
+        "list_position": 11,
+        "observation": {
+          "engine_action_type": "ActionType_FloatMana"
+        },
+        "request_binding": {
+          "source_generation": 1,
+          "match": "mp92-public-projection",
+          "game": 1,
+          "self_seat": 1,
+          "game_state_id": 12,
+          "request_id": 20,
+          "request_type": "GREMessageType_ActionsAvailableReq"
+        },
+        "source_snapshot_ref": {
+          "session_id": "00000000-0000-0000-0000-000000000092",
+          "sequence": 1,
+          "binding": {
+            "source_generation": 1,
+            "match": "mp92-public-projection",
+            "game": 1,
+            "self_seat": 1,
+            "game_state_id": 12,
+            "request_id": 20,
+            "request_type": "GREMessageType_ActionsAvailableReq"
+          }
+        },
+        "read_only": true,
+        "actionable": false,
+        "executor_connected": false,
+        "legal_choice_verified": false,
+        "complete_legality_verified": false,
+        "response_encoding_verified": false,
+        "server_acceptance_verified": false,
+        "execution_ready": false,
+        "input_sent": false
+      }
+    ],
+    "read_only": true,
+    "actionable": false,
+    "executor_connected": false,
+    "legal_choice_verified": false,
+    "complete_legality_verified": false,
+    "response_encoding_verified": false,
+    "server_acceptance_verified": false,
+    "execution_ready": false,
+    "input_sent": false
+  },
+  "reviewed_land_v1": {
+    "schema_version": "mtgaplayer.land-development-research.v1",
+    "policy_version": "land_development_research.v1",
+    "status": "abstain",
+    "reason": "static_land_identity_unverified",
+    "request_binding": {
+      "source_generation": 1,
+      "match": "mp92-public-projection",
+      "game": 1,
+      "self_seat": 1,
+      "game_state_id": 12,
+      "request_id": 20,
+      "request_type": "GREMessageType_ActionsAvailableReq"
+    },
+    "source_snapshot_ref": {
+      "session_id": "00000000-0000-0000-0000-000000000092",
+      "sequence": 1,
+      "binding": {
+        "source_generation": 1,
+        "match": "mp92-public-projection",
+        "game": 1,
+        "self_seat": 1,
+        "game_state_id": 12,
+        "request_id": 20,
+        "request_type": "GREMessageType_ActionsAvailableReq"
+      }
+    },
+    "preferred_option_key": null,
+    "preference_basis": null,
+    "source_identity": null,
+    "static_reference_source": {
+      "schema_version": "mtgaplayer.mtga-land-reference.v1",
+      "source_format": "mtga_official_sqlite_card_metadata",
+      "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+      "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+      "source_version_is_user_supplied": false
+    },
+    "phase_evidence": null,
+    "coverage": {
+      "active_action_rows": 12,
+      "play_offers": 1,
+      "verified_play_sources": 1,
+      "verified_static_land_candidates": 0,
+      "ordinary_profile_candidates": 0
+    },
+    "unresolved": [
+      "complete_legality_unknown",
+      "complete_payment_unknown",
+      "response_encoding_unknown",
+      "server_acceptance_unknown",
+      "full_action_domain_unknown",
+      "dynamic_land_restrictions_unknown",
+      "land_drop_limit_unverified",
+      "other_actions_tactical_value_not_compared",
+      "strategic_optimality_unverified",
+      "prompt_semantics_and_general_routing_unknown",
+      "step_unknown_not_defaulted",
+      "dataset_freshness_and_current_dynamic_characteristics_unverified",
+      "empty_explicit_ability_list_does_not_exclude_intrinsic_mana_abilities"
+    ],
+    "strategic_optimality_verified": false,
+    "payment_verified": false,
+    "read_only": true,
+    "actionable": false,
+    "executor_connected": false,
+    "legal_choice_verified": false,
+    "complete_legality_verified": false,
+    "response_encoding_verified": false,
+    "server_acceptance_verified": false,
+    "execution_ready": false,
+    "input_sent": false
+  }
+}

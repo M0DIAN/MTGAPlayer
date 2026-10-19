@@ -2543,3 +2543,55 @@ measurements are not actualMTGA3second qualification or historicwallclock leases
 See docs/unified-research-runtime.md and safeowner receipt. HistoryAutoTap,
 Windowsqualification andMP81current_view_unavailable causes remainUNKNOWN.
 completelegality/strategicoptimality/executionready=false; input_sent=false;P10=NOT_RUN.
+
+MP92 on accepted93e3ba713515f9cade8e0e83bfec4323961ecb71: MP91's preserved
+8382052-byte archive SHAaa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b
+and789segment hashes/ranges plus all50firstcurrent poll/request/ref/digest
+boundaries rechecked. Existing93request authentication reused; no GRE reparse,
+new game or second state. MP91 itself remains PARTIAL for missing per-family
+revocation latency; its one current_view_unavailable root remains UNKNOWN.
+
+All24AA and4target refusals reviewed. Of two static gaps, solePlay106531 at
+opportunity42 is exact native Basic Swamp; solePlay96828 at28 is nonbasic
+Plains/Swamp with pay2life-or-enter-tapped and other explicit abilities. Six
+actual Play CardIds resolve uniquely under pinned native source/Data/GRP.
+Eight multiPlay requests/25memberships retain competition, even six withSwamp;
+all8current mana pools unknown. Ten noPlay requests all retainCast/ActivateMana/
+Pass/FloatMana,3alsoActivate. Four strict structure refusals retain their first
+reason (two also multiPlay,two noPlay); frozen shapes do not localize the exact
+inner unreviewed branch and no general Cast/Activate strategy is invented.
+
+Four complete mixed target domains retain2players+2opponent public Cards86835,
+literal4/5, tappedtrue/unknown, selflife9/opponent20. Specific96854/191026 is
+version-bound leaves-battlefield base2damage; staticCreature/Elemental does not
+prove current dynamic type, damage/kill or comparative tactical value. All four
+MP89 abstentions remain; no object is discarded to manufacture preference.
+
+Explicit land_development_research.v2 extends only the exact unlinked primary
+Basic Swamp profile. Existing Island/v1/defaultMP66/targetMP89/unifiedMP90 remain
+unchanged. Same Consumer and invocation's source/structure audit, one options
+calculation, native PreparedRulesIndex, current exactbuild/resource capability
+and completedpoll rawstamp checks before/after; no cached prior report, state,
+request ledger, rules solver, response encoder or input. Multiple Play still
+abstains. Unknown Stack/dynamic land restrictions/mana benefit/opportunity cost
+remain unknown. Consumption/replacement/expiry/partial/reset/gap/Cancel/Undo/
+stop and mutation during lookup revoke. Safe summaries omit local identities.
+
+Original50 frozen MP66/MP90 each0preference/41abstain/9unsupported; MP87AA0/24/0,
+MP89targets0/4/0 preserved. Separate new land research on24AA:1preference/23abstain/
+0unsupported, onlyopportunity42, no future responses or historical tuning labels.
+Other26requests are outside land-only strategy, not a new unified total. Public
+real semantic projection is distinguished from separate synthetic Runtime
+transport/lifecycle controls; no replay is called historical wallclock proof.
+
+10new focused tests PASS; four-module62focused batch PASS. Complete old modes
+over2land+14target public samples/history/current frames/summaries match76210
+leafvalues,0differences, normalizing only snapshot transport session/sequence.
+Initial fullPython3.11 1233PASS; final exact-candidate full tests, independent
+HEAD/tree review and actual PR/Linux/Windows/naturalmainCI are delivery gates.
+Windowsdoctor PASS_READ_ONLY, Python3.11.9. Raw files/source databases remain
+private/ignored/read-only. MP91's2814query timings remain aggregate-only; no
+missing live categories fabricated and no unknown-failure product fix claimed.
+See docs/land-development-research.md, docs/evidence/mp92-owner.json and public
+land_swamp_real.README.md. All actual effect/legality/optimality/execution flags
+remainfalse; input_sent=false; P10=NOT_RUN.

@@ -154,3 +154,100 @@ review. Controlled replay proves neither historical wall-clock leases nor actual
 MTGA end-to-end timing. MP76 AutoTap evidence remains blocked; historical Windows
 qualification and MP81 current_view_unavailable causes remain UNKNOWN.
 `input_sent=false`; `P10=NOT_RUN`.
+
+## MP92: explicit Basic Swamp extension
+
+`land_development_research.v2` adds one independently reviewed profile to this
+same finite resource-development heuristic: unlinked primary Basic Land/Swamp,
+single Subtype69/Loc653, Types5/Supertypes1/Subtypes69, TypeText261494,
+SubtypeText653, empty RawFrameDetail, and the same strict empty ability/link/
+extra-text fields and zero token/digital/rebalance flags. It does not interpret
+every Land as an Island, support Mountain, rank competing land drops, or compare
+all Cast/Activate tactics. The v1 Island predicate and all original policies,
+including `unified_research.v1`, retain their existing outputs.
+
+MP91's existing authenticated source is8,382,052 bytes, SHA256
+`aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b`.
+Its93 accepted requests include39 startup history and54 append;50 distinct
+completed-poll live opportunities include24 ActionsAvailable and4 SelectTargets.
+Repeated frames are excluded. The owner rechecked all789 immutable segment
+hashes/ranges and all50 frozen poll/request/ref/digest boundaries, then reused
+the recorded current options/visible state/source audit. No GRE reparse, second
+Reducer, additional real game or future response was needed for this analysis.
+
+All24 first land refusals were reviewed. Two static identity gaps are different:
+the solePlay106531 in opportunity42 uniquely resolves to the reviewed Basic
+Swamp profile; solePlay96828 in opportunity28 is nonbasic Plains/Swamp with
+hybrid framing and three explicit abilities. The latter's version-specific
+static text includes paying2life or entering tapped, and is not supported.
+All six Play CardIds were resolved with the existing native factory, including
+its actual hash-before/after and unique typed enum/localization checks.
+
+Eight multiple-Play refusals contain25 Play memberships, not25 requests; six
+contain the new Swamp. They still abstain. Four structure refusals retain their
+original first reason; two also contain multiple Play and two contain no Play.
+Their frozen Activate shapes contain two mana-cost rows, one target slot and
+two predicted auto-tap actions. Frozen shapes alone do not identify the exact
+unreviewed inner semantic branch; no general action interpretation was added.
+All ten original no-Play requests contain Cast/ActivateMana/Pass/FloatMana;
+three also contain Activate. No automatic Pass inference follows.
+
+All four target requests have a version-bound96854/191026 leaves-battlefield
+fixed-base2damage instruction and complete mixed four-member domains: two
+players plus two opponent-controlled public Cards86835 with current GRE P/T4/5.
+One is tapped; the other has unknown tapped state. Corresponding static type is
+Creature/Elemental, but this is not a current dynamic-type proof. With selflife9
+and opponentlife20, absent reviewed marked damage/modification/tactical value,
+neither player damage nor object damage has a verified comparison advantage.
+MP89 retains all four abstentions; static toughness is not an actual-kill test.
+
+The new policy reuses the current invocation's original v1 source/structure
+audit and the same CurrentDecisionOptions. It extends only the two static/
+ordinary-profile refusal cases, requiring a complete unique Play inventory,
+matching request/ref, a unique own Hand source, exact native metadata, and the
+same ownMain1/Stack gates. It additionally requires the existing current exact
+build/resource capability. It runs inside the original Consumer owner and
+completed-poll raw-stamp checks before/after calculation. No saved v1 report is
+used in production. The pure internal extension can evaluate an old frozen
+options/audit pair for offline research, which grants no live lease authority.
+
+```python
+runtime = LocalShadowRuntime(
+    source,
+    research_policy="land_development_research.v2",  # explicit; no new default
+    prepared_rules=prepare_mtga_land_reference(
+        local_catalog_path,
+        [92359, 95062, 96828, 96839, 106531, 106533],
+        expected_sha256="1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+        expected_source_version={"Data": "2026.64.0.280", "GRP": "280.1327372"},
+    ),
+)
+```
+
+References must be prepared before creating the subscription. The explicit
+v2 report records the selected current option, request/ref, static profile and
+phase, while retaining unknown dynamic restrictions, land-drop limits, actual
+mana benefit, stack emptiness and tactical opportunity costs. Source CardId,
+list position and prior player choices are identity facts, never tie-breakers.
+Multiple Play always abstains, including identical copies. Consumption,
+replacement, expiry, partial/reset/gap, Cancel/Undo and stop revoke the result.
+
+On all original50 frozen opportunities, original MP66 and MP90 stay0preference/
+41abstain/9unsupported; original MP87 on24AA stays0/24/0 and MP89 on4targets
+stays0/4/0. The separate v2 frozen-input research comparison on24AA is1preference/
+23abstain/0unsupported. Its sole preference is opportunity42, before any later
+response is consulted. Other26 request families are outside this land policy;
+this is not a replacement unified-policy total. No historical agreement,
+winrate, legality or strategy-quality claim is made.
+
+See the [public retained projection](../tests/fixtures/land_swamp_real.README.md)
+and [owner evidence receipt](evidence/mp92-owner.json). Runtime wiring/lifecycle
+tests use explicitly synthetic transport separately from the real frozen
+semantic positive. The independent reviewer does not personally certify owner-
+private raw game bytes. MP91's2814 revocation-query samples still have aggregate
+timings only; request-family and history/terminal subdivisions remain
+NOT_RECORDED. No offline metric is relabeled as historical live performance.
+The one unknown current_view_unavailable cause does not justify a product fix.
+
+`complete_legality_verified=false`; `strategic_optimality_verified=false`;
+`execution_ready=false`; `input_sent=false`; `P10=NOT_RUN`.
