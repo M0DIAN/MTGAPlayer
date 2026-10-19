@@ -1,0 +1,943 @@
+{
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+  "source_opportunity": 20,
+  "scope": "same-current full active/inactive rows and required visible source/count facts only; no responses",
+  "redactions": [
+    "synthetic authentication/Full bootstrap and normalized own seat supplied by tests",
+    "all object/zone/facet/mana/unique ability/request/prompt identifiers aliased; only reviewed96626 and190898/190899 retain static identity",
+    "other catalog/ability IDs aliased; no names, accounts, hidden identities, raw log or absolute paths",
+    "opaque library placeholders represent actual counts only; unknown Stack remains unknown"
+  ],
+  "cases": [
+    {
+      "case": "mp91-opportunity20",
+      "message": {
+        "type": "GREMessageType_ActionsAvailableReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 500,
+        "gameStateId": 10,
+        "prompt": {
+          "promptId": 10
+        },
+        "actionsAvailableReq": {
+          "actions": [
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 96626,
+              "instanceId": 1001,
+              "facetId": 40001,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 1
+                },
+                {
+                  "color": [
+                    "ManaColor_Blue"
+                  ],
+                  "count": 1
+                }
+              ],
+              "shouldStop": true,
+              "autoTapSolution": {
+                "autoTapActions": [
+                  {
+                    "instanceId": 1009,
+                    "abilityGrpId": 10012,
+                    "manaPaymentOption": {
+                      "mana": [
+                        {
+                          "manaId": 50001,
+                          "color": "ManaColor_Blue",
+                          "srcInstanceId": 1009,
+                          "specs": [
+                            {
+                              "type": "ManaSpecType_Predictive"
+                            }
+                          ],
+                          "abilityGrpId": 10012,
+                          "count": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instanceId": 1015,
+                    "abilityGrpId": 10017,
+                    "manaPaymentOption": {
+                      "mana": [
+                        {
+                          "manaId": 50002,
+                          "color": "ManaColor_Blue",
+                          "srcInstanceId": 1015,
+                          "specs": [
+                            {
+                              "type": "ManaSpecType_Predictive"
+                            }
+                          ],
+                          "abilityGrpId": 10017,
+                          "count": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 30001,
+              "instanceId": 1002,
+              "facetId": 40002,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 1
+                },
+                {
+                  "color": [
+                    "ManaColor_White"
+                  ],
+                  "count": 2
+                }
+              ],
+              "shouldStop": true
+            },
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 30003,
+              "instanceId": 1004,
+              "facetId": 40003,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 3
+                },
+                {
+                  "color": [
+                    "ManaColor_White"
+                  ],
+                  "count": 1
+                }
+              ],
+              "shouldStop": true
+            },
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 30004,
+              "instanceId": 1005,
+              "facetId": 40004,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 1
+                },
+                {
+                  "color": [
+                    "ManaColor_Black"
+                  ],
+                  "count": 1
+                }
+              ],
+              "shouldStop": true
+            },
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 30004,
+              "instanceId": 1008,
+              "facetId": 40005,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 1
+                },
+                {
+                  "color": [
+                    "ManaColor_Black"
+                  ],
+                  "count": 1
+                }
+              ],
+              "shouldStop": true
+            },
+            {
+              "actionType": "ActionType_Cast",
+              "grpId": 30011,
+              "instanceId": 1014,
+              "facetId": 40006,
+              "manaCost": [
+                {
+                  "color": [
+                    "ManaColor_Generic"
+                  ],
+                  "count": 1
+                },
+                {
+                  "color": [
+                    "ManaColor_Red"
+                  ],
+                  "count": 1
+                }
+              ],
+              "shouldStop": true,
+              "autoTapSolution": {
+                "autoTapActions": [
+                  {
+                    "instanceId": 1009,
+                    "abilityGrpId": 10012,
+                    "manaPaymentOption": {
+                      "mana": [
+                        {
+                          "manaId": 50001,
+                          "color": "ManaColor_Blue",
+                          "srcInstanceId": 1009,
+                          "specs": [
+                            {
+                              "type": "ManaSpecType_Predictive"
+                            }
+                          ],
+                          "abilityGrpId": 10012,
+                          "count": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instanceId": 1015,
+                    "abilityGrpId": 10013,
+                    "manaPaymentOption": {
+                      "mana": [
+                        {
+                          "manaId": 50003,
+                          "color": "ManaColor_Red",
+                          "srcInstanceId": 1015,
+                          "specs": [
+                            {
+                              "type": "ManaSpecType_Predictive"
+                            }
+                          ],
+                          "abilityGrpId": 10013,
+                          "count": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "actionType": "ActionType_Activate_Mana",
+              "grpId": 30007,
+              "instanceId": 1009,
+              "facetId": 40007,
+              "abilityGrpId": 10012,
+              "manaPaymentOptions": [
+                {
+                  "mana": [
+                    {
+                      "manaId": 50001,
+                      "color": "ManaColor_Blue",
+                      "srcInstanceId": 1009,
+                      "specs": [
+                        {
+                          "type": "ManaSpecType_Predictive"
+                        }
+                      ],
+                      "abilityGrpId": 10012,
+                      "count": 1
+                    }
+                  ]
+                }
+              ],
+              "isBatchable": true,
+              "uniqueAbilityId": 20016,
+              "manaSelections": [
+                {
+                  "instanceId": 1009,
+                  "abilityGrpId": 10012,
+                  "options": [
+                    {
+                      "mana": [
+                        {
+                          "color": "ManaColor_Blue",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "actionType": "ActionType_Activate_Mana",
+              "grpId": 30012,
+              "instanceId": 1015,
+              "facetId": 40008,
+              "abilityGrpId": 10013,
+              "manaPaymentOptions": [
+                {
+                  "mana": [
+                    {
+                      "manaId": 50003,
+                      "color": "ManaColor_Red",
+                      "srcInstanceId": 1015,
+                      "specs": [
+                        {
+                          "type": "ManaSpecType_Predictive"
+                        }
+                      ],
+                      "abilityGrpId": 10013,
+                      "count": 1
+                    }
+                  ]
+                }
+              ],
+              "isBatchable": true,
+              "uniqueAbilityId": 20023,
+              "manaSelections": [
+                {
+                  "instanceId": 1015,
+                  "abilityGrpId": 10013,
+                  "options": [
+                    {
+                      "mana": [
+                        {
+                          "color": "ManaColor_Red",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "actionType": "ActionType_Activate_Mana",
+              "grpId": 30012,
+              "instanceId": 1015,
+              "facetId": 40008,
+              "abilityGrpId": 10017,
+              "manaPaymentOptions": [
+                {
+                  "mana": [
+                    {
+                      "manaId": 50002,
+                      "color": "ManaColor_Blue",
+                      "srcInstanceId": 1015,
+                      "specs": [
+                        {
+                          "type": "ManaSpecType_Predictive"
+                        }
+                      ],
+                      "abilityGrpId": 10017,
+                      "count": 1
+                    }
+                  ]
+                }
+              ],
+              "isBatchable": true,
+              "uniqueAbilityId": 20024,
+              "manaSelections": [
+                {
+                  "instanceId": 1015,
+                  "abilityGrpId": 10017,
+                  "options": [
+                    {
+                      "mana": [
+                        {
+                          "color": "ManaColor_Blue",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "actionType": "ActionType_Pass"
+            },
+            {
+              "actionType": "ActionType_FloatMana"
+            }
+          ],
+          "inactiveActions": [
+            {
+              "actionType": "ActionType_Play",
+              "grpId": 30002,
+              "instanceId": 1003,
+              "facetId": 40009
+            }
+          ]
+        }
+      },
+      "initial": {
+        "state_id": 10,
+        "objects": [
+          {
+            "instanceId": 1001,
+            "grpId": 96626,
+            "overlayGrpId": 96626,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20001,
+                "grpId": 190898
+              },
+              {
+                "id": 20002,
+                "grpId": 190899
+              }
+            ],
+            "cardTypes": [
+              "CardType_Artifact"
+            ],
+            "color": [
+              "CardColor_Blue"
+            ]
+          },
+          {
+            "instanceId": 1002,
+            "grpId": 30001,
+            "overlayGrpId": 30001,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20003,
+                "grpId": 10001
+              },
+              {
+                "id": 20004,
+                "grpId": 10002
+              }
+            ],
+            "cardTypes": [
+              "CardType_Artifact"
+            ],
+            "color": [
+              "CardColor_White"
+            ]
+          },
+          {
+            "instanceId": 1003,
+            "grpId": 30002,
+            "overlayGrpId": 30002,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20005,
+                "grpId": 10003
+              },
+              {
+                "id": 20006,
+                "grpId": 10004
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ]
+          },
+          {
+            "instanceId": 1004,
+            "grpId": 30003,
+            "overlayGrpId": 30003,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20007,
+                "grpId": 10005
+              }
+            ],
+            "cardTypes": [
+              "CardType_Sorcery"
+            ],
+            "color": [
+              "CardColor_White"
+            ]
+          },
+          {
+            "instanceId": 1005,
+            "grpId": 30004,
+            "overlayGrpId": 30004,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20008,
+                "grpId": 10006
+              },
+              {
+                "id": 20009,
+                "grpId": 10007
+              }
+            ],
+            "cardTypes": [
+              "CardType_Artifact"
+            ],
+            "color": [
+              "CardColor_Black"
+            ]
+          },
+          {
+            "instanceId": 1006,
+            "grpId": 30005,
+            "overlayGrpId": 30005,
+            "type": "GameObjectType_Card",
+            "zoneId": 3002,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20010,
+                "grpId": 10008
+              },
+              {
+                "id": 20011,
+                "grpId": 10009
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ],
+            "isTapped": true
+          },
+          {
+            "instanceId": 1007,
+            "grpId": 30006,
+            "overlayGrpId": 30006,
+            "type": "GameObjectType_Card",
+            "zoneId": 3003,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20012,
+                "grpId": 10010
+              },
+              {
+                "id": 20013,
+                "grpId": 10011
+              }
+            ],
+            "cardTypes": [
+              "CardType_Instant"
+            ],
+            "color": [
+              "CardColor_Blue"
+            ]
+          },
+          {
+            "instanceId": 1008,
+            "grpId": 30004,
+            "overlayGrpId": 30004,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20014,
+                "grpId": 10006
+              },
+              {
+                "id": 20015,
+                "grpId": 10007
+              }
+            ],
+            "cardTypes": [
+              "CardType_Artifact"
+            ],
+            "color": [
+              "CardColor_Black"
+            ]
+          },
+          {
+            "instanceId": 1009,
+            "grpId": 30007,
+            "overlayGrpId": 30007,
+            "type": "GameObjectType_Card",
+            "zoneId": 3002,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20016,
+                "grpId": 10012
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ]
+          },
+          {
+            "instanceId": 1010,
+            "grpId": 30008,
+            "overlayGrpId": 30008,
+            "type": "GameObjectType_Card",
+            "zoneId": 3002,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20017,
+                "grpId": 10013
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ],
+            "isTapped": true
+          },
+          {
+            "instanceId": 1011,
+            "grpId": 30008,
+            "overlayGrpId": 30008,
+            "type": "GameObjectType_Card",
+            "zoneId": 3003,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20018,
+                "grpId": 10013
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ]
+          },
+          {
+            "instanceId": 1012,
+            "grpId": 30009,
+            "overlayGrpId": 30009,
+            "type": "GameObjectType_Card",
+            "zoneId": 3003,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20019,
+                "grpId": 10012
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ]
+          },
+          {
+            "instanceId": 1013,
+            "grpId": 30010,
+            "overlayGrpId": 30010,
+            "type": "GameObjectType_Card",
+            "zoneId": 3003,
+            "ownerSeatId": 2,
+            "controllerSeatId": 2,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20020,
+                "grpId": 10014
+              }
+            ],
+            "cardTypes": [
+              "CardType_Instant"
+            ],
+            "color": [
+              "CardColor_Blue",
+              "CardColor_Red"
+            ]
+          },
+          {
+            "instanceId": 1014,
+            "grpId": 30011,
+            "overlayGrpId": 30011,
+            "type": "GameObjectType_Card",
+            "zoneId": 3001,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "viewers": [
+              1
+            ],
+            "uniqueAbilities": [
+              {
+                "id": 20021,
+                "grpId": 10015
+              },
+              {
+                "id": 20022,
+                "grpId": 10016
+              }
+            ],
+            "cardTypes": [
+              "CardType_Artifact"
+            ],
+            "color": [
+              "CardColor_Red"
+            ]
+          },
+          {
+            "instanceId": 1015,
+            "grpId": 30012,
+            "overlayGrpId": 30012,
+            "type": "GameObjectType_Card",
+            "zoneId": 3002,
+            "ownerSeatId": 1,
+            "controllerSeatId": 1,
+            "visibility": "Visibility_Public",
+            "uniqueAbilities": [
+              {
+                "id": 20023,
+                "grpId": 10013
+              },
+              {
+                "id": 20024,
+                "grpId": 10017
+              }
+            ],
+            "cardTypes": [
+              "CardType_Land"
+            ]
+          }
+        ],
+        "zones": [
+          {
+            "zoneId": 3001,
+            "type": "ZoneType_Hand",
+            "visibility": "Visibility_Private",
+            "objectInstanceIds": [
+              1001,
+              1002,
+              1003,
+              1004,
+              1005,
+              1008,
+              1014
+            ],
+            "ownerSeatId": 1,
+            "viewers": [
+              1
+            ]
+          },
+          {
+            "zoneId": 3002,
+            "type": "ZoneType_Battlefield",
+            "visibility": "Visibility_Public",
+            "objectInstanceIds": [
+              1006,
+              1009,
+              1010,
+              1015
+            ]
+          },
+          {
+            "zoneId": 3003,
+            "type": "ZoneType_Graveyard",
+            "visibility": "Visibility_Public",
+            "objectInstanceIds": [
+              1007,
+              1011,
+              1012,
+              1013
+            ]
+          },
+          {
+            "zoneId": 8002,
+            "type": "ZoneType_Library",
+            "ownerSeatId": 2,
+            "visibility": "Visibility_Private",
+            "objectInstanceIds": [
+              902000,
+              902001,
+              902002,
+              902003,
+              902004,
+              902005,
+              902006,
+              902007,
+              902008,
+              902009,
+              902010,
+              902011,
+              902012,
+              902013,
+              902014,
+              902015,
+              902016,
+              902017,
+              902018,
+              902019,
+              902020,
+              902021,
+              902022,
+              902023,
+              902024,
+              902025,
+              902026,
+              902027,
+              902028,
+              902029,
+              902030,
+              902031,
+              902032,
+              902033,
+              902034,
+              902035,
+              902036,
+              902037,
+              902038,
+              902039,
+              902040,
+              902041,
+              902042,
+              902043,
+              902044,
+              902045,
+              902046,
+              902047
+            ]
+          },
+          {
+            "zoneId": 8001,
+            "type": "ZoneType_Library",
+            "ownerSeatId": 1,
+            "visibility": "Visibility_Private",
+            "objectInstanceIds": [
+              901000,
+              901001,
+              901002,
+              901003,
+              901004,
+              901005,
+              901006,
+              901007,
+              901008,
+              901009,
+              901010,
+              901011,
+              901012,
+              901013,
+              901014,
+              901015,
+              901016,
+              901017,
+              901018,
+              901019,
+              901020,
+              901021,
+              901022,
+              901023,
+              901024,
+              901025,
+              901026,
+              901027,
+              901028,
+              901029,
+              901030,
+              901031,
+              901032,
+              901033,
+              901034,
+              901035,
+              901036,
+              901037,
+              901038,
+              901039,
+              901040,
+              901041,
+              901042,
+              901043,
+              901044,
+              901045,
+              901046,
+              901047,
+              901048,
+              901049,
+              901050
+            ]
+          },
+          {
+            "zoneId": 8998,
+            "type": "ZoneType_Stack",
+            "visibility": "Visibility_Public"
+          }
+        ],
+        "players": [
+          {
+            "systemSeatNumber": 2,
+            "lifeTotal": 20
+          },
+          {
+            "systemSeatNumber": 1,
+            "lifeTotal": 20
+          }
+        ],
+        "turn_info": {
+          "turnNumber": 4,
+          "activePlayer": 1,
+          "decisionPlayer": 1,
+          "phase": "Phase_Main1",
+          "priorityPlayer": 1
+        }
+      }
+    }
+  ]
+}

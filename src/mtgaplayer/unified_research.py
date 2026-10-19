@@ -12,10 +12,12 @@ from .semantic_samples import _need
 from .shadow_decision import POLICY as SHADOW_POLICY
 from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY
 from .target_effect import POLICY as TARGET_POLICY
+from .cast_cardflow import POLICY as CAST_POLICY, validate_current_preference
 
 POLICY = 'unified_research.v1'
 V2_POLICY = 'unified_research.v2'
-POLICIES = (POLICY, V2_POLICY)
+V3_POLICY = 'unified_research.v3'
+POLICIES = (POLICY, V2_POLICY, V3_POLICY)
 VERSION = 'mtgaplayer.unified-research-decision.v1'
 REASONS = frozenset(('research_policy_conflict', 'current_candidate_unverified',
     'current_policy_binding_invalid', 'exact_build_resource_provenance_unverified'))
@@ -43,7 +45,8 @@ def _unknown(reason, ref=None, *, policy_version=POLICY):
         'read_only': True, **EXECUTION}
 
 
-def combine_current_research(options, shadow, research=None, target_evidence=None, *, policy_version=POLICY):
+def combine_current_research(options, shadow, research=None, target_evidence=None, *, policy_version=POLICY,
+                             cast_research=None):
     """One result from the same frame's reports; conflicting candidates abstain.
 
     Matching numeric positions across inventories never establishes identity.
@@ -61,6 +64,10 @@ def combine_current_research(options, shadow, research=None, target_evidence=Non
     if research is not None:
         _need(applicable is not None, 'current_policy_binding_invalid')
         reports.append((applicable, research))
+    if cast_research is not None:
+        _need(policy_version == V3_POLICY and typ == 'GREMessageType_ActionsAvailableReq',
+            'current_policy_binding_invalid')
+        reports.append((CAST_POLICY, cast_research))
     preferences = []
     unresolved = []
     for policy, report in reports:
@@ -105,6 +112,8 @@ def combine_current_research(options, shadow, research=None, target_evidence=Non
             _need(candidate['kind'] == 'reviewed_role_target_set' and
                 candidate['local_validation']['status'] == 'verified_known_constraints' and
                 candidate['proposal'] is not None, 'current_candidate_unverified')
+        elif policy == CAST_POLICY:
+            validate_current_preference(options, report, candidate)
         else:
             _need(candidate['research_eligible'] is True, 'current_candidate_unverified')
         if policy == SHADOW_POLICY:

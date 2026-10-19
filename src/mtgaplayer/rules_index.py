@@ -566,3 +566,91 @@ def prepare_mtga_target_effect_reference(db_path, arena_ids, *, expected_sha256,
             'unique_arena_ids':len(cards),'ambiguous_arena_ids':0},cards)
     except (OSError,sqlite3.Error,ValueError,TypeError,RecursionError,KeyError,OverflowError):
         raise RulesIndexError('mtga_target_effect_reference_unavailable_or_invalid') from None
+
+
+MTGA_CARDFLOW_VERSION = 'mtgaplayer.mtga-cardflow-reference.v1'
+MTGA_CARDFLOW_FORMAT = 'mtga_official_sqlite_conditional_cardflow_metadata'
+
+
+def _expected_cardflow_card():
+    """One reviewed native profile; neither a text parser nor effective rules."""
+    profile = dict.fromkeys(MTGA_PROFILE_FIELDS, '')
+    profile.update(Types='1', TypeTextId=7, SubtypeTextId=0, OldSchoolManaText='o1oU',
+        LinkedFaceType=0, IsToken=0, IsPrimaryCard=1, IsDigitalOnly=0, IsRebalanced=0,
+        RebalancedCardGrpId=0, DefunctRebalancedCardGrpId=0,
+        AbilityIds='190898:1055624,190899:1055625')
+    definitions = []
+    for ident, generic, specific, text, specific_text in (
+        (190898, 1055623, 1055624,
+         'When CARDNAME enters or leaves the battlefield, draw a card.',
+         'When this artifact enters or leaves the battlefield, draw a card.'),
+        (190899, 1092, 1055625,
+         '{o1oU}, Sacrifice CARDNAME: Put a stun counter on up to one target tapped creature.',
+         '{o1oU}, Sacrifice this artifact: Put a stun counter on up to one target tapped creature.')):
+        row = dict.fromkeys(_ABILITY_INTS, 0)
+        row.update(dict.fromkeys(_ABILITY_NULLS))
+        row.update(Id=ident, TextId=generic, Category=2 if ident == 190898 else 1,
+            SubCategory=10 if ident == 190898 else 0, FullyParsed=1)
+        if ident == 190899:
+            row.update(OldSchoolManaText='o1oU', RequiresConfirmation=5,
+                MiscellaneousTerms='25', CostTypes='4')
+        definitions.append({'row': row,
+            'generic_text': {'LocId': generic, 'Formatted': 1, 'Loc': text},
+            'specific_text': {'LocId': specific, 'Formatted': 1, 'Loc': specific_text}})
+    return {'schema_version': MTGA_CARDFLOW_VERSION, 'card_id': 96626, 'profile': profile,
+        'ability_definitions': definitions,
+        'conditional_instruction': {'ability_id': 190898, 'category': 'conditional_card_flow',
+            'trigger_events': ['enters_battlefield', 'leaves_battlefield'],
+            'base_cards_drawn_per_trigger': 1, 'researched_branch': 'prospective_enters_only',
+            'cast_direct_draw': False, 'leaves_branch_counted_as_cast_benefit': False},
+        'effective_in_game': False, 'complete_legality_verified': False}
+
+
+def reviewed_cast_cardflow(card):
+    """Recheck exact detached definition, including the distinct activated ability."""
+    expected = _expected_cardflow_card()
+    _require(json.dumps(card, sort_keys=True, ensure_ascii=False) ==
+        json.dumps(expected, sort_keys=True, ensure_ascii=False))
+    return copy.deepcopy(expected['conditional_instruction'])
+
+
+def prepare_mtga_cardflow_reference(db_path, arena_ids, *, expected_sha256, expected_source_version):
+    """Explicit offline preparation; reuse native metadata and the prepared container.
+
+    Only two ability rows and four localizations supplement the existing metadata
+    loader. Current policy lookups perform no file, database or text interpretation.
+    """
+    ids = _lookup_ids(arena_ids)
+    _require(ids == {96626} and type(expected_sha256) is str and expected_sha256 == TARGET_EFFECT_SHA256 and
+        expected_source_version == TARGET_EFFECT_VERSIONS and type(expected_source_version) is dict and
+        all(type(k) is str and type(v) is str for k, v in expected_source_version.items()))
+    try:
+        base = prepare_mtga_land_reference(db_path, ids, expected_sha256=expected_sha256,
+            expected_source_version=expected_source_version)
+        metadata, found = base.lookup(ids)
+        expected = _expected_cardflow_card()
+        _require(found[96626]['status'] == 'resolved' and
+            json.dumps(found[96626]['card']['profile'], sort_keys=True) == json.dumps(expected['profile'], sort_keys=True) and
+            found[96626]['card']['reverse_face_link_observed'] is False)
+        path = Path(db_path).resolve(); before = path.stat()
+        _require(_file_sha256(path) == expected_sha256)
+        actual = copy.deepcopy(expected)
+        with closing(sqlite3.connect(path.as_uri()+'?mode=ro&immutable=1', uri=True)) as db:
+            db.execute('PRAGMA query_only=ON'); db.row_factory = sqlite3.Row
+            for definition in actual['ability_definitions']:
+                rows = db.execute('SELECT '+','.join(definition['row'])+
+                    ' FROM Abilities WHERE Id=? LIMIT 2', (definition['row']['Id'],)).fetchall()
+                _require(len(rows) == 1); definition['row'] = dict(rows[0])
+                for key in ('generic_text', 'specific_text'):
+                    rows = db.execute('SELECT LocId,Formatted,Loc FROM Localizations_enUS WHERE LocId=? LIMIT 2',
+                        (definition[key]['LocId'],)).fetchall()
+                    _require(len(rows) == 1); definition[key] = dict(rows[0])
+        reviewed_cast_cardflow(actual)
+        after = path.stat()
+        _require(_file_sha256(path) == expected_sha256 and
+            (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns) ==
+            (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns))
+        metadata.update(schema_version=MTGA_CARDFLOW_VERSION, source_format=MTGA_CARDFLOW_FORMAT)
+        return PreparedRulesIndex(metadata, {96626: {'status': 'resolved', 'card': actual}})
+    except (OSError,sqlite3.Error,ValueError,TypeError,RecursionError,KeyError,OverflowError):
+        raise RulesIndexError('mtga_cardflow_reference_unavailable_or_invalid') from None
