@@ -2361,3 +2361,42 @@ remain delivery gates. Added-only
 See docs/player-target-stage-evidence.md and safe owner receipt. MP81
 current_view_unavailable and historical Windows qualification roots remain
 UNKNOWN. input_sent=false; P10=NOT_RUN.
+
+MP86 on accepted0d9fa092/tree7060cdf7: owner reverified the original MP77
+one-generation217-segment archive3225997bytes/SHA1d75cd1b.../367records, pinned
+MP84 DLL hashes and actual first-current completed-poll cuts. All53authenticated
+requests/42opportunities remain separate from old164. All13ActionsAvailable
+have unique exact full-row strictly consumed responses:8Cast,5Play,0Activate.
+Only one new source genealogy satisfies four typed Diffs: own Hand Card explicit
+ID/CastSpell transfer to Stack, stable Card, Resolve to Battlefield plus unique
+public Pending Ability creation, explicit same-Ability Pending/Stack membership
+updates. The intermediate strict consumed SelectN zero/arbitrary-once envelope
+is opaque, never an object-identity/ordering/legality proof. Child independently
+freezes current with same source/group: two players plus one public object.
+Actual target update selects the object; new links are1mixed request/1object
+update/0actual player selections/0complete MP85 stages. Other10source ancestry
+relationships stay unknown. ExistingMP85 11domains/24proposals/11updates/10player/
+2revisions/2terminals/2full/9unlinked stay unchanged; eight partial Cast transfers,
+two resolves/creations are not eight completed lineages.
+
+Explicit Runtime/CLI parent_target_lineage opt-in reuses existing CastStage and
+RevisionStage contexts, one RawFollower/Reducer/Publisher/Consumer. No new state
+version/ledger/solver/input. Parent and child independently check current
+ref/lease/build/rawstamp; future domain/results never fill parent choices.
+Known real client/GRE transport wrappers are typed separately; unknown wrappers
+fail closed. Independent predecessor-Ability counterproof was red then green:
+bounded prior-ID presence excludes an already-existing Ability from creation.
+Hidden identities never expand visible strategy projection. Historical source
+genealogy does not verify rules triggers, payment, server acceptance or legality.
+
+23new direct tests/329focused PASS, local full3.11 1171PASS/187.330s, Windows
+doctor/CLI opt-in smoke PASS. Ten JSONL/1152record documents/options/policy/
+Candidate2-6,53authenticated defaults/fullMP73history/41runtimeframes+safesummaries
+match825554leafvalues with0diff; original policy1research/33abstain/8unsupported.
+Independent workingtree controls57scenarios/506assertions PASS; committed exact
+HEAD/tree review and actual two-platform CI/main naturalpush remain delivery
+gates. Added-only43poll p50/p95/p99/maxms=.4102/29.3033/77.8687/77.8687 is controlled
+local replay, not historical leases or actual MTGA latency. See
+docs/parent-player-target-lineage.md and safe owner receipt. HistoricalMP81
+current_view_unavailable and Windows qualification roots stayUNKNOWN.
+input_sent=false; P10=NOT_RUN.

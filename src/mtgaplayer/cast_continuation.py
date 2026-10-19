@@ -5,6 +5,8 @@ Transfer/selection attestations belong to the producer; portable checks establis
 consistency, not raw authentication, complete legality, payment or acceptance.
 """
 import copy
+from collections import Counter
+import time
 
 from .semantic_samples import _need, _keys, _snapshot
 from .request_parameters import LiteralRefs
@@ -47,9 +49,30 @@ def _child(message, binding, visible):
 
 class CastStage:
     """Bounded subordinate context; one selected row, one Diff, one first child."""
-    def __init__(self, reducer):
+    def __init__(self, reducer, *, include_parent_target_lineage=False):
+        if type(include_parent_target_lineage) is not bool:
+            raise ValueError('invalid_parent_target_lineage_flag')
         self.reducer = reducer
+        self.include_parent_target_lineage = include_parent_target_lineage
+        self.lineage_counts = Counter(); self.lineage_last = None
+        self.lineage_work_ns = 0; self.record_ordinal = 0
         self.reset()
+
+    def _lineage(self, method, *args, **kwargs):
+        start = time.perf_counter_ns()
+        try:
+            return method(self, *args, **kwargs)
+        finally:
+            self.lineage_work_ns += time.perf_counter_ns()-start
+
+    def freeze_parent_target_lineage(self, consumer, message, options, policy, *, child_evidence=None, revision=None):
+        if self.include_parent_target_lineage:
+            from .parent_target_lineage import freeze
+            self._lineage(freeze, consumer, message, options, policy, child_evidence=child_evidence, revision=revision)
+
+    def parent_target_lineage_history(self, *, include_last=False):
+        from .parent_target_lineage import report
+        return report(self, include_last=include_last)
 
     def clear(self):
         if self.reducer.request is not None: self.reducer.request.pop(PRIVATE, None)
@@ -61,6 +84,10 @@ class CastStage:
         self.clear()
 
     def prepare(self, record):
+        self.record_ordinal += 1
+        if self.include_parent_target_lineage:
+            from .parent_target_lineage import prepare
+            if self._lineage(prepare, record): return
         from .decision_consumer import _bounded_json
         self.suppressed = False
         self.prepared = None
@@ -121,6 +148,9 @@ class CastStage:
             self.clear(); self.suppressed = True
 
     def after_apply(self):
+        if self.include_parent_target_lineage and self.prepared is not None and 'lineage_kind' in self.prepared:
+            from .parent_target_lineage import after_apply
+            self._lineage(after_apply); return
         prepared = self.prepared; self.prepared = None
         if prepared is not None:
             if (_scope(self.reducer) == prepared['scope'] and self.reducer.request is None and
@@ -129,6 +159,9 @@ class CastStage:
             else: self.clear()
 
     def observe(self, event, details):
+        if self.include_parent_target_lineage:
+            from .parent_target_lineage import observe
+            if self._lineage(observe, event, details): return
         r = self.reducer
         if event in ('continuity_error', 'unsupported_broadcast_request'):
             self.clear(); self.suppressed = True; return

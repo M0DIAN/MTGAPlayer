@@ -90,20 +90,24 @@ class LocalShadowRuntime:
     """
     def __init__(self,path,*,interval=.25,samples=None,max_history_bytes=64*1024*1024,
                  max_observation_age_ns=5_000_000_000,max_event_silence_ns=5_000_000_000,
-                 clock_ns=None,observation_mode='local_log_watch',player_target_stages=False):
+                 clock_ns=None,observation_mode='local_log_watch',player_target_stages=False,parent_target_lineage=False):
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
                 type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
-                observation_mode not in ('local_log_watch','controlled_stream_replay') or type(player_target_stages) is not bool):
+                observation_mode not in ('local_log_watch','controlled_stream_replay') or
+                type(player_target_stages) is not bool or type(parent_target_lineage) is not bool):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
         self.age=max_observation_age_ns;self.silence=max_event_silence_ns;self.clock=clock_ns or time.perf_counter_ns
         self.mode=observation_mode;self._owner=threading.get_ident();self._started=self._closed=False
         self._reducer=self._message=self._source=self._watch=None;self._metadata={};self._stop_reason='not_started'
         self._in_poll=False;self._attempt_started=None;self._completed_stamp=None
-        self.player_target_stages=player_target_stages;self._stage_observer=None;self._player_freeze_attempted=False
+        self.parent_target_lineage=parent_target_lineage
+        self.player_target_stages=player_target_stages or parent_target_lineage
+        self._stage_observer=None;self._player_freeze_attempted=False;self._parent_freeze_attempted=False
         self._player_work=[];self._player_work_attempted=0;self._player_work_previous=0
+        self._parent_work=[];self._parent_work_attempted=0;self._parent_work_previous=0
         self._timings={};self._counts=Counter();self._measurements={};self._subscriptions=0;self._new_subscription()
 
     def _new_subscription(self):
@@ -126,6 +130,7 @@ class LocalShadowRuntime:
                 self._stage_observer.reset()
             self._attempt_started=poll_started_ns;self._in_poll=True;self._timings={};self._completed_stamp=None
             self._player_freeze_attempted=False
+            self._parent_freeze_attempted=False
         if poll_completed:
             self._completed_stamp=_raw_stamp(reducer) if message is not None else None
             if self.player_target_stages:self._stage_observer=stage_observer
@@ -140,8 +145,20 @@ class LocalShadowRuntime:
                 self._player_freeze_attempted=True
                 evidence=result['local_evidence'].get('current_target_evidence',{})
                 stage._revise(revision.freeze_player_targets,self.consumer,self._message,evidence,result['shadow_decision'])
+            if (self.parent_target_lineage and not self._closed and result['time_scope']=='current_at_completed_poll' and
+                    self._metadata.get('new_final_request') is True and not self._parent_freeze_attempted):
+                self._parent_freeze_attempted=True
+                stage.freeze_parent_target_lineage(self.consumer,self._message,result['current_options'],
+                    result['shadow_decision'],child_evidence=result['local_evidence'].get('current_target_evidence'))
             result['historical_player_target_stages']=revision.player_stage_report()
+            if self.parent_target_lineage:
+                result['historical_parent_target_lineage']=stage.cast.parent_target_lineage_history()
         return result
+
+    def parent_target_lineage_history(self,*,include_last=False):
+        self._check_owner()
+        if not self.parent_target_lineage or self._stage_observer is None:return None
+        return self._stage_observer.cast.parent_target_lineage_history(include_last=include_last)
 
     def player_target_stage_history(self,*,include_last=False):
         """Owner-local historical facts; never an actionable current result."""
@@ -255,6 +272,9 @@ class LocalShadowRuntime:
         if self.player_target_stages:
             result['player_target_stage_ms']={**quantiles(self._player_work),'attempted_samples':self._player_work_attempted,
                 'omitted_by_cap':self._player_work_attempted-len(self._player_work)}
+        if self.parent_target_lineage:
+            result['parent_target_lineage_ms']={**quantiles(self._parent_work),'attempted_samples':self._parent_work_attempted,
+                'omitted_by_cap':self._parent_work_attempted-len(self._parent_work)}
         return result
 
     def close(self,reason='session_stopped'):
@@ -283,7 +303,8 @@ class LocalShadowRuntime:
         self._watch=watch(self.path,self.interval,self.samples,self.max_history_bytes,decision_state=True,
             decision_state_version=15,current_multi_slot_cast=True,_poll_observer=observed,
             _clock_ns=self.clock,_owner_observer=self._context,
-            **({'_player_target_stages':True} if self.player_target_stages else {}))
+            **({'_player_target_stages':True} if self.player_target_stages else {}),
+            **({'_parent_target_lineage':True} if self.parent_target_lineage else {}))
         try:
             for document in self._watch:
                 self._source={k:document['source'][k] for k in ('phase','partial_record','stopped')}
@@ -296,6 +317,12 @@ class LocalShadowRuntime:
                     self._player_work_attempted+=1
                     if len(self._player_work)<20000:self._player_work.append(elapsed/1e6)
                     self._timings['player_target_stage']=elapsed
+                if self.parent_target_lineage and self._stage_observer is not None:
+                    total=self._stage_observer.cast.lineage_work_ns
+                    elapsed=total-self._parent_work_previous;self._parent_work_previous=total
+                    self._parent_work_attempted+=1
+                    if len(self._parent_work)<20000:self._parent_work.append(elapsed/1e6)
+                    self._timings['parent_target_lineage']=elapsed
                 self._timings['decision_frame_ready']=self.clock()-ready_start
                 self._timings['poll_to_frame_ready']=self.clock()-self._metadata['poll_started_ns']
                 labels=['startup_history' if self._source['phase']=='history' else 'incremental_append' if self._metadata.get('owner_bytes_read',0) else 'empty_poll']
@@ -395,4 +422,12 @@ def safe_summary(frame):
             historical_choice_disagreements=None,complete_target_legality=None,complete_action_legality=None,historical_only=True)
         elapsed=frame.get('timings_ns',{}).get('player_target_stage')
         if type(elapsed) is int and elapsed>=0:result['timings_ns']['player_target_stage']=elapsed
+    history=frame.get('historical_parent_target_lineage')
+    if type(history) is dict:
+        from .parent_target_lineage import COUNTS
+        result['historical_parent_target_lineage']={key:count(history.get(key)) for key in (*COUNTS,'unlinked_or_interrupted_attempts')}
+        result['historical_parent_target_lineage'].update(activate_source_transitions=None,
+            complete_target_legality=None,complete_action_legality=None,historical_only=True)
+        elapsed=frame.get('timings_ns',{}).get('parent_target_lineage')
+        if type(elapsed) is int and elapsed>=0:result['timings_ns']['parent_target_lineage']=elapsed
     return result
