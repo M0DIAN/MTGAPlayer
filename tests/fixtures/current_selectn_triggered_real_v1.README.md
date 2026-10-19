@@ -10,9 +10,12 @@ Source metadata retained in the JSON:
 - Original source bytes: 3,225,997.
 - Original source SHA256:
   `1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac`.
-- This JSON fixture bytes: 5,178.
-- This JSON fixture SHA256, computed from the actual retained file:
-  `890859a9f47745a92dd82887ea5772f9ad924a4314bfe9a654f7f7b74df84cf9`.
+- This JSON fixture canonical Git/LF bytes: 5,003.
+- This JSON fixture canonical Git/LF SHA256, checked against the actual Git blob:
+  `765b40422eb01deb988ff5cab5bf460b10221e16f56fca14fdaef4cc73668f8d`.
+- The owner's Windows CRLF checkout is 5,178 bytes, SHA256
+  `890859a9f47745a92dd82887ea5772f9ad924a4314bfe9a654f7f7b74df84cf9`;
+  normalizing only CRLF to LF reproduces the canonical fixture above.
 
 | Retained case | Offered references | Explicit minSel | Explicit maxSel |
 | --- | ---: | ---: | ---: |
