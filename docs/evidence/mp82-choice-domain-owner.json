@@ -1,0 +1,1464 @@
+{
+  "schema_version": "mtgaplayer.mp82-owner-evidence.v1",
+  "authentication_scope": "owner authenticated original bytes; independent reviewer uses public projections and this safe receipt only",
+  "attribution": {
+    "base_main": "5fd911f1f78defa4c4a054abe43d3528589df646",
+    "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+    "bytes": 3225997,
+    "framed_records": 367,
+    "authenticated_requests": 53,
+    "original_current_opportunities": 42,
+    "current_freeze_boundary": "MP81 first current source byte offset, original bytes through that completed poll only",
+    "archive_verified": true,
+    "options_equal_controlled_prefixes": 41,
+    "policy_equal_controlled_prefixes": 41,
+    "first_mulligan_history_baseline_not_a_new_opportunity": true,
+    "rows": [
+      {
+        "case": "selectn-1",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 2,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 2,
+        "observed_counts": {
+          "minSel": 1,
+          "maxSel": 2
+        },
+        "weight_shape": {
+          "minWeight": "absent",
+          "maxWeight": "absent"
+        },
+        "known_payload_fields": {
+          "minSel": "int",
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "idType": "str",
+          "validationType": "str"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": false,
+        "baseline_reason": "unsupported_selectn_shape",
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure_in_previous_profile"
+        ]
+      },
+      {
+        "case": "target-1",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 1,
+        "baseline_local_proposals": 1,
+        "policy_status": "research_preference",
+        "policy_reason": null,
+        "source_visible": true,
+        "source_type": "GameObjectType_Card",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": false,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_Abort",
+        "allow_undo_presence": true,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 1,
+        "operations": {
+          "SelectAction_Select": 1
+        },
+        "members": {
+          "visible_ZoneType_Battlefield": 1
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_pass": 1
+        },
+        "baseline_parameter_projection": true,
+        "sidecar_reason": "existing_profile_already_supported",
+        "original_field_check": true,
+        "existing_allow_no_field_check": true,
+        "existing_absent_prompts_and_no_field_check": true,
+        "semantic_classification": [
+          "current_offered_select_domain"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "selectn-2",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 3,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_Resolution",
+          "optionContext": "OptionContext_Resolution",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 3,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_counts": {
+          "minSel": null,
+          "maxSel": 2
+        },
+        "weight_shape": {
+          "minWeight": "sentinel",
+          "maxWeight": "sentinel"
+        },
+        "known_payload_fields": {
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "prompt": "dict",
+          "idType": "str",
+          "unfilteredIds": "list",
+          "sourceId": "int",
+          "validationType": "str",
+          "minWeight": "int",
+          "maxWeight": "int"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": true,
+        "baseline_reason": null,
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown"
+        ]
+      },
+      {
+        "case": "selectn-3",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 3,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_counts": {
+          "minSel": 1,
+          "maxSel": 3
+        },
+        "weight_shape": {
+          "minWeight": "absent",
+          "maxWeight": "absent"
+        },
+        "known_payload_fields": {
+          "minSel": "int",
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "idType": "str",
+          "validationType": "str"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": false,
+        "baseline_reason": "unsupported_selectn_shape",
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure_in_previous_profile"
+        ]
+      },
+      {
+        "case": "selectn-4",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 3,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_counts": {
+          "minSel": 1,
+          "maxSel": 3
+        },
+        "weight_shape": {
+          "minWeight": "absent",
+          "maxWeight": "absent"
+        },
+        "known_payload_fields": {
+          "minSel": "int",
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "idType": "str",
+          "validationType": "str"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": false,
+        "baseline_reason": "unsupported_selectn_shape",
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure_in_previous_profile"
+        ]
+      },
+      {
+        "case": "target-2",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 3,
+        "operations": {
+          "SelectAction_Select": 3
+        },
+        "members": {
+          "unresolved_reference": 2,
+          "visible_ZoneType_Battlefield": 1
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2,
+          "member_strict_public_join_pass": 1
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "selectn-5",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 3,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_Resolution",
+          "optionContext": "OptionContext_Resolution",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 3,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_counts": {
+          "minSel": null,
+          "maxSel": 2
+        },
+        "weight_shape": {
+          "minWeight": "sentinel",
+          "maxWeight": "sentinel"
+        },
+        "known_payload_fields": {
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "prompt": "dict",
+          "idType": "str",
+          "unfilteredIds": "list",
+          "sourceId": "int",
+          "validationType": "str",
+          "minWeight": "int",
+          "maxWeight": "int"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": true,
+        "baseline_reason": null,
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown"
+        ]
+      },
+      {
+        "case": "selectn-6",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 6,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 6,
+        "observed_counts": {
+          "minSel": 1,
+          "maxSel": 6
+        },
+        "weight_shape": {
+          "minWeight": "absent",
+          "maxWeight": "absent"
+        },
+        "known_payload_fields": {
+          "minSel": "int",
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "idType": "str",
+          "validationType": "str"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": false,
+        "baseline_reason": "unsupported_selectn_shape",
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure_in_previous_profile"
+        ]
+      },
+      {
+        "case": "target-3",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 3,
+        "operations": {
+          "SelectAction_Select": 3
+        },
+        "members": {
+          "unresolved_reference": 2,
+          "visible_ZoneType_Battlefield": 1
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2,
+          "member_strict_public_join_pass": 1
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "selectn-7",
+        "request_type": "GREMessageType_SelectNReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "combination_or_tactical_basis_unverified",
+        "protocol_enums": {
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "idType": "IdType_InstanceId",
+          "listType": "SelectionListType_Dynamic",
+          "validationType": "SelectionValidationType_NonRepeatable"
+        },
+        "ids_count": 10,
+        "ids_unique": true,
+        "visible_member_count": 0,
+        "unresolved_member_count": 10,
+        "observed_counts": {
+          "minSel": 1,
+          "maxSel": 10
+        },
+        "weight_shape": {
+          "minWeight": "absent",
+          "maxWeight": "absent"
+        },
+        "known_payload_fields": {
+          "minSel": "int",
+          "maxSel": "int",
+          "context": "str",
+          "optionContext": "str",
+          "listType": "str",
+          "ids": "list",
+          "idType": "str",
+          "validationType": "str"
+        },
+        "unknown_payload_fields_count": 0,
+        "baseline_supported": false,
+        "baseline_reason": "unsupported_selectn_shape",
+        "semantic_classification": [
+          "current_offered_request_scoped_members",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure_in_previous_profile"
+        ]
+      },
+      {
+        "case": "target-4",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-5",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-6",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_Abort",
+        "allow_undo_presence": true,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 1,
+        "operations": {
+          "SelectAction_Unselect": 1
+        },
+        "members": {
+          "unresolved_reference": 1
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": 1
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "int"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 1
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "new_no_cancel_profile_not_observed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "current_selected_literal",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": true
+      },
+      {
+        "case": "target-7",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-8",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-9",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_Abort",
+        "allow_undo_presence": true,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 1,
+        "operations": {
+          "SelectAction_Unselect": 1
+        },
+        "members": {
+          "unresolved_reference": 1
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": 1
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "int"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 1
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "new_no_cancel_profile_not_observed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "current_selected_literal",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": true
+      },
+      {
+        "case": "target-10",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-11",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-12",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-13",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      },
+      {
+        "case": "target-14",
+        "request_type": "GREMessageType_SelectTargetsReq",
+        "authenticated": true,
+        "baseline_returned_options": 0,
+        "baseline_local_proposals": 0,
+        "policy_status": "abstain",
+        "policy_reason": "multiple_or_unresolved_target_choices",
+        "source_visible": true,
+        "source_type": "GameObjectType_Ability",
+        "source_zone": "ZoneType_Stack",
+        "source_group_equals_body": true,
+        "source_group_equals_slot": true,
+        "slot_count": 1,
+        "target_idx_type": "int",
+        "targeting_player_self": true,
+        "allow_cancel": "AllowCancel_No",
+        "allow_undo_presence": false,
+        "envelope_prompt_present": true,
+        "slot_prompt_present": true,
+        "entries": 2,
+        "operations": {
+          "SelectAction_Select": 2
+        },
+        "members": {
+          "unresolved_reference": 2
+        },
+        "duplicate_member_count": 0,
+        "observed_counts": {
+          "minTargets": 1,
+          "maxTargets": 1,
+          "selectedTargets": null
+        },
+        "quantity_types": {
+          "minTargets": "int",
+          "maxTargets": "int",
+          "selectedTargets": "NoneType"
+        },
+        "identities": {
+          "source_strict_public_join_pass": 1,
+          "member_strict_public_join_failed": 2
+        },
+        "baseline_parameter_projection": false,
+        "sidecar_reason": "current_target_shape_or_visible_identity_unreviewed",
+        "original_field_check": false,
+        "existing_allow_no_field_check": false,
+        "existing_absent_prompts_and_no_field_check": false,
+        "semantic_classification": [
+          "partially_observed_target_domain",
+          "identity_unverified",
+          "combination_constraints_unknown",
+          "unsupported_structure"
+        ],
+        "selected_quantity_observed": false
+      }
+    ],
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "candidate_acceptance": {
+    "code": "candidate",
+    "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+    "source_bytes": 3225997,
+    "authenticated_requests": 53,
+    "distinct_current_opportunities": 42,
+    "all42_full_default_options_policy_equal": true,
+    "controlled_current_prefix_frames": 41,
+    "first_mulligan_is_history_baseline_not_recounted": true,
+    "current_frame_families": {
+      "GREMessageType_ActionsAvailableReq": 13,
+      "GREMessageType_CastingTimeOptionsReq": 3,
+      "GREMessageType_SelectNReq": 7,
+      "GREMessageType_SelectTargetsReq": 14,
+      "GREMessageType_PayCostsReq": 1,
+      "GREMessageType_OrderReq": 2,
+      "GREMessageType_SearchReq": 1
+    },
+    "new_structures": [
+      {
+        "status": "observed",
+        "engine_offered_member_count": 2,
+        "reviewed_visible_member_count": 0,
+        "unresolved_member_count": 2,
+        "observed_quantity_bounds": {
+          "minimum": 1,
+          "maximum": 2,
+          "basis": "explicit_current_minSel_maxSel_only"
+        },
+        "complete_proposal_count": null,
+        "complete_legal_actions": null
+      },
+      {
+        "status": "observed",
+        "engine_offered_member_count": 3,
+        "reviewed_visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_quantity_bounds": {
+          "minimum": 1,
+          "maximum": 3,
+          "basis": "explicit_current_minSel_maxSel_only"
+        },
+        "complete_proposal_count": null,
+        "complete_legal_actions": null
+      },
+      {
+        "status": "observed",
+        "engine_offered_member_count": 3,
+        "reviewed_visible_member_count": 0,
+        "unresolved_member_count": 3,
+        "observed_quantity_bounds": {
+          "minimum": 1,
+          "maximum": 3,
+          "basis": "explicit_current_minSel_maxSel_only"
+        },
+        "complete_proposal_count": null,
+        "complete_legal_actions": null
+      },
+      {
+        "status": "observed",
+        "engine_offered_member_count": 6,
+        "reviewed_visible_member_count": 0,
+        "unresolved_member_count": 6,
+        "observed_quantity_bounds": {
+          "minimum": 1,
+          "maximum": 6,
+          "basis": "explicit_current_minSel_maxSel_only"
+        },
+        "complete_proposal_count": null,
+        "complete_legal_actions": null
+      },
+      {
+        "status": "observed",
+        "engine_offered_member_count": 10,
+        "reviewed_visible_member_count": 0,
+        "unresolved_member_count": 10,
+        "observed_quantity_bounds": {
+          "minimum": 1,
+          "maximum": 10,
+          "basis": "explicit_current_minSel_maxSel_only"
+        },
+        "complete_proposal_count": null,
+        "complete_legal_actions": null
+      }
+    ],
+    "new_request_scoped_members": 24,
+    "strict_historical_pairs": {
+      "selectn_new": 5,
+      "selectn_legacy": 2
+    },
+    "historical_final_choice_comparison": null,
+    "complete_legal_actions": null,
+    "local_frame_ms": {
+      "all_current": {
+        "sample_count": 41,
+        "p50_ms": 17.4642,
+        "p95_ms": 84.7401,
+        "p99_ms": 135.2366,
+        "max_ms": 135.2366
+      },
+      "selectn_new": {
+        "sample_count": 5,
+        "p50_ms": 17.0971,
+        "p95_ms": 38.3655,
+        "p99_ms": 38.3655,
+        "max_ms": 38.3655
+      },
+      "selectn_legacy": {
+        "sample_count": 2,
+        "p50_ms": 15.3823,
+        "p95_ms": 20.3141,
+        "p99_ms": 20.3141,
+        "max_ms": 20.3141
+      },
+      "targets": {
+        "sample_count": 14,
+        "p50_ms": 14.3554,
+        "p95_ms": 18.9833,
+        "p99_ms": 18.9833,
+        "max_ms": 18.9833
+      },
+      "abstain": {
+        "sample_count": 33,
+        "p50_ms": 18.5962,
+        "p95_ms": 125.499,
+        "p99_ms": 135.2366,
+        "max_ms": 135.2366
+      },
+      "unsupported": {
+        "sample_count": 7,
+        "p50_ms": 12.3302,
+        "p95_ms": 18.7192,
+        "p99_ms": 18.7192,
+        "max_ms": 18.7192
+      },
+      "research_preference": {
+        "sample_count": 1,
+        "p50_ms": 10.1706,
+        "p95_ms": 10.1706,
+        "p99_ms": 10.1706,
+        "max_ms": 10.1706
+      },
+      "expired_or_failed": {
+        "sample_count": 2,
+        "p50_ms": 2.4539,
+        "p95_ms": 63.3589,
+        "p99_ms": 63.3589,
+        "max_ms": 63.3589
+      }
+    },
+    "added_warm_optin_api_ms": {
+      "sample_count": 25,
+      "p50_ms": 1.5143,
+      "p95_ms": 2.061,
+      "p99_ms": 2.0995,
+      "max_ms": 2.0995
+    },
+    "added_only_semantic_projection_ms": {
+      "observed": {
+        "sample_count": 30,
+        "p50_ms": 0.7005,
+        "p95_ms": 1.1659,
+        "p99_ms": 1.4701,
+        "max_ms": 1.4701
+      },
+      "insufficient_evidence": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      },
+      "unreviewed_shape_rejected": {
+        "sample_count": 2,
+        "p50_ms": 0.2534,
+        "p95_ms": 0.3483,
+        "p99_ms": 0.3483,
+        "max_ms": 0.3483
+      },
+      "unexpected_failure": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      }
+    },
+    "measurement_scope": "controlled original-byte prefix replay; nested stages overlap; not live MTGA latency",
+    "invalid_or_failed_computations": 0,
+    "revoked_tail_observations": 2,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "base_acceptance": {
+    "code": "base",
+    "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+    "source_bytes": 3225997,
+    "authenticated_requests": 53,
+    "distinct_current_opportunities": 42,
+    "all42_full_default_options_policy_equal": true,
+    "controlled_current_prefix_frames": 41,
+    "first_mulligan_is_history_baseline_not_recounted": true,
+    "current_frame_families": {
+      "GREMessageType_ActionsAvailableReq": 13,
+      "GREMessageType_CastingTimeOptionsReq": 3,
+      "GREMessageType_SelectNReq": 7,
+      "GREMessageType_SelectTargetsReq": 14,
+      "GREMessageType_PayCostsReq": 1,
+      "GREMessageType_OrderReq": 2,
+      "GREMessageType_SearchReq": 1
+    },
+    "new_structures": [],
+    "new_request_scoped_members": 0,
+    "strict_historical_pairs": {},
+    "historical_final_choice_comparison": null,
+    "complete_legal_actions": null,
+    "local_frame_ms": {
+      "all_current": {
+        "sample_count": 41,
+        "p50_ms": 18.5275,
+        "p95_ms": 96.2986,
+        "p99_ms": 138.162,
+        "max_ms": 138.162
+      },
+      "selectn_new": {
+        "sample_count": 5,
+        "p50_ms": 16.0267,
+        "p95_ms": 43.184,
+        "p99_ms": 43.184,
+        "max_ms": 43.184
+      },
+      "selectn_legacy": {
+        "sample_count": 2,
+        "p50_ms": 15.7229,
+        "p95_ms": 20.4092,
+        "p99_ms": 20.4092,
+        "max_ms": 20.4092
+      },
+      "targets": {
+        "sample_count": 14,
+        "p50_ms": 17.1225,
+        "p95_ms": 20.4181,
+        "p99_ms": 20.4181,
+        "max_ms": 20.4181
+      },
+      "abstain": {
+        "sample_count": 33,
+        "p50_ms": 18.7257,
+        "p95_ms": 132.7491,
+        "p99_ms": 138.162,
+        "max_ms": 138.162
+      },
+      "unsupported": {
+        "sample_count": 7,
+        "p50_ms": 14.9997,
+        "p95_ms": 21.3209,
+        "p99_ms": 21.3209,
+        "max_ms": 21.3209
+      },
+      "research_preference": {
+        "sample_count": 1,
+        "p50_ms": 10.8587,
+        "p95_ms": 10.8587,
+        "p99_ms": 10.8587,
+        "max_ms": 10.8587
+      },
+      "expired_or_failed": {
+        "sample_count": 2,
+        "p50_ms": 1.8843,
+        "p95_ms": 63.2455,
+        "p99_ms": 63.2455,
+        "max_ms": 63.2455
+      }
+    },
+    "added_warm_optin_api_ms": {
+      "sample_count": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "max_ms": null
+    },
+    "added_only_semantic_projection_ms": {
+      "observed": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      },
+      "insufficient_evidence": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      },
+      "unreviewed_shape_rejected": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      },
+      "unexpected_failure": {
+        "sample_count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null,
+        "max_ms": null
+      }
+    },
+    "measurement_scope": "controlled original-byte prefix replay; nested stages overlap; not live MTGA latency",
+    "invalid_or_failed_computations": 0,
+    "revoked_tail_observations": 2,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "compatibility": {
+    "base_main": "5fd911f1f78defa4c4a054abe43d3528589df646",
+    "public_real_jsonl_sources": 10,
+    "public_record_documents_options_policy": 1152,
+    "authenticated_defaults_compared": 53,
+    "live42_full_defaults_equal": 42,
+    "complete_default_history_report_equal": true,
+    "complete_runtime_frames_equal_except_new_explicit_sidecar": 41,
+    "normalization": [
+      "transport snapshot ref",
+      "version/source digest",
+      "timing measurements"
+    ],
+    "equal_leaf_values": 472380,
+    "differences": 0,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "historical_windows_qualification_cause": "UNKNOWN",
+  "mp81_current_view_unavailable_cause": "UNKNOWN"
+}

@@ -64,7 +64,7 @@ def _stamp(reducer,message,state):
     _need(request is not None and _equal(_binding(reducer,request),state['binding']) and
         request.get('_continuity_verified') is True and reducer._target_state_continuity_verified is True and
         not any(request.get(k) is True for k in ('_target_evidence_interrupted','_cost_evidence_interrupted',
-            '_search_evidence_interrupted','_group_evidence_interrupted')), 'raw_current_binding_unverified')
+            '_search_evidence_interrupted','_group_evidence_interrupted','_selectn_evidence_interrupted')), 'raw_current_binding_unverified')
     # A visible projection/fingerprint, not a second State or hidden-object lookup.
     return _raw_stamp(reducer)
 
@@ -147,6 +147,12 @@ class LocalShadowRuntime:
                     'GREMessageType_SelectTargetsReq':('current_target_evidence',{'current_target_context':(self._reducer,self._message)}),
                     'GREMessageType_SearchReq':('current_search_evidence',{'current_search_context':(self._reducer,self._message)}),
                     'GREMessageType_GroupReq':('current_group_evidence',{'current_group_context':(self._reducer,self._message)})}
+                # Preserve the existing Resolution frame; only route the newly
+                # reviewed context to its explicit evidence projection.
+                selectn=self._message.get('selectNReq')
+                if type(selectn) is dict and selectn.get('context')=='SelectionContext_TriggeredAbility':
+                    contexts['GREMessageType_SelectNReq']=('current_selectn_evidence',
+                        {'current_selectn_context':(self._reducer,self._message)})
                 if typ in contexts:
                     key,kwargs=contexts[typ];enriched=self.consumer.current_decision_options(**kwargs)
                     local[key]=enriched.pop(key);_need(_equal(enriched,options),'frame_report_binding_invalid')
@@ -310,7 +316,9 @@ def safe_summary(frame):
     fields={'complex_action_intents':('returned_parent_rows','reviewed_target_rows','finite_stage_intent_rows'),
         'current_target_evidence':('returned_proposals','candidate_total_for_reviewed_constraints'),
         'current_search_evidence':('offered_item_count','returned_members','items_to_search_count'),
-        'current_group_evidence':('observed_item_count','reviewed_member_count','unresolved_item_count','returned_members')}
+        'current_group_evidence':('observed_item_count','reviewed_member_count','unresolved_item_count','returned_members'),
+        'current_selectn_evidence':('engine_offered_member_count','reviewed_visible_member_count',
+            'unresolved_member_count','returned_members','omitted_members')}
     for key,names in fields.items():
         if key not in local:continue
         value=local[key];source=value.get('coverage',{}) if key=='complex_action_intents' else value

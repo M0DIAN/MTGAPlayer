@@ -1,0 +1,175 @@
+{
+  "schema_version": "mtgaplayer.current-selectn-real-fixture.v1",
+  "origin": "retained_scrubbed_real",
+  "raw_equivalent": false,
+  "authentication_envelope_retained": false,
+  "future_response_used_for_request": false,
+  "original_source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+  "original_source_bytes": 3225997,
+  "redactions": [
+    "all request/member/seat/state/prompt identifiers aliased; no sourceId supplied",
+    "authentication/room/raw envelope and unrelated objects omitted",
+    "tests reconstruct synthetic bootstrap and must not claim original-current authentication"
+  ],
+  "samples": [
+    {
+      "case": "selectn-1",
+      "aliased_request": {
+        "type": "GREMessageType_SelectNReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 990,
+        "gameStateId": 1,
+        "prompt": {
+          "promptId": 123456789
+        },
+        "selectNReq": {
+          "minSel": 1,
+          "maxSel": 2,
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "listType": "SelectionListType_Dynamic",
+          "idType": "IdType_InstanceId",
+          "validationType": "SelectionValidationType_NonRepeatable",
+          "ids": [
+            1001,
+            1002
+          ]
+        }
+      },
+      "member_count": 2,
+      "original_boundary": "MP81 first-current complete-poll prefix; future response excluded"
+    },
+    {
+      "case": "selectn-3",
+      "aliased_request": {
+        "type": "GREMessageType_SelectNReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 990,
+        "gameStateId": 1,
+        "prompt": {
+          "promptId": 123456789
+        },
+        "selectNReq": {
+          "minSel": 1,
+          "maxSel": 3,
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "listType": "SelectionListType_Dynamic",
+          "idType": "IdType_InstanceId",
+          "validationType": "SelectionValidationType_NonRepeatable",
+          "ids": [
+            1001,
+            1002,
+            1003
+          ]
+        }
+      },
+      "member_count": 3,
+      "original_boundary": "MP81 first-current complete-poll prefix; future response excluded"
+    },
+    {
+      "case": "selectn-4",
+      "aliased_request": {
+        "type": "GREMessageType_SelectNReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 990,
+        "gameStateId": 1,
+        "prompt": {
+          "promptId": 123456789
+        },
+        "selectNReq": {
+          "minSel": 1,
+          "maxSel": 3,
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "listType": "SelectionListType_Dynamic",
+          "idType": "IdType_InstanceId",
+          "validationType": "SelectionValidationType_NonRepeatable",
+          "ids": [
+            1001,
+            1002,
+            1003
+          ]
+        }
+      },
+      "member_count": 3,
+      "original_boundary": "MP81 first-current complete-poll prefix; future response excluded"
+    },
+    {
+      "case": "selectn-6",
+      "aliased_request": {
+        "type": "GREMessageType_SelectNReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 990,
+        "gameStateId": 1,
+        "prompt": {
+          "promptId": 123456789
+        },
+        "selectNReq": {
+          "minSel": 1,
+          "maxSel": 6,
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "listType": "SelectionListType_Dynamic",
+          "idType": "IdType_InstanceId",
+          "validationType": "SelectionValidationType_NonRepeatable",
+          "ids": [
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006
+          ]
+        }
+      },
+      "member_count": 6,
+      "original_boundary": "MP81 first-current complete-poll prefix; future response excluded"
+    },
+    {
+      "case": "selectn-7",
+      "aliased_request": {
+        "type": "GREMessageType_SelectNReq",
+        "systemSeatIds": [
+          1
+        ],
+        "msgId": 990,
+        "gameStateId": 1,
+        "prompt": {
+          "promptId": 123456789
+        },
+        "selectNReq": {
+          "minSel": 1,
+          "maxSel": 10,
+          "context": "SelectionContext_TriggeredAbility",
+          "optionContext": "OptionContext_Stacking",
+          "listType": "SelectionListType_Dynamic",
+          "idType": "IdType_InstanceId",
+          "validationType": "SelectionValidationType_NonRepeatable",
+          "ids": [
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010
+          ]
+        }
+      },
+      "member_count": 10,
+      "original_boundary": "MP81 first-current complete-poll prefix; future response excluded"
+    }
+  ]
+}
