@@ -2728,3 +2728,43 @@ gates, not inferred from this local test. No game input/response encoding,
 new parser/state/request ledger or rules engine. complete_legality_verified=false;
 strategic_optimality_verified=false; execution_ready=false; input_sent=false;
 P10=NOT_RUN.
+
+## MP98 — 1U Cast predictive-source consistency (draft candidate, 2026-10-20)
+
+Starts from accepted MP96 main221ba6a52d4fc72ddc914f2aeaad37eb8efba4e0,
+tree751fe70be827dcc6fc60f02a020574c6a36b3045; MP97 has PASS_AUDIT
+only and no product commit. The strictly bounded first implementation slice
+adds an opt-in `assess_current_cast_1u_predictive` owner-thread API. It
+reuses MP96's existing Cast Cardflow reference/goal/current binding and the
+same current RawReducer/Consumer/completed-poll stamp. It verifies literal
+Generic1+Blue1 against two distinct current public own Battlefield sources,
+two separate predictive Blue1 mana units and their unique original offered
+Activate_Mana rows/ability/option/selection equality. It returns a count-only
+observed **predicted route amount and source consistency** report. It does not
+construct/send a payment, certify untapped readiness or claim server acceptance.
+
+The supported positive is the pre-existing MP91 opportunity20 field projection
+in tests/fixtures/cast_cardflow_real.json (owner-retained real-field aliases;
+raw_equivalent=false, synthetic bootstrap). Current source tap literals are
+unknown; both remain counted unknown, not false. Source repetition, mana unit
+repetition/quantity, wrong offer/ability, explicit tapped source, wrong Cast
+cost and consumption are discriminating negative/revocation controls. None
+of these synthetic mutations is an independently observed positive. This is
+not the owner-private original episode payment/ManaPaid examination: the
+MP97 two same-selected histories preserve full_payment=UNKNOWN, and generic1
+MP34 cannot prove literal1U.
+
+The new API is inert unless directly called; there is no new CLI flag, runtime
+policy, decision output version, parser, request ledger, state version or
+InputAdapter connection. Existing default/Unified v1-v3 output is unchanged.
+This narrow Stage-A product experiment is **not MP98 complete payment or legal
+choice acceptance**. All full-payment/action-legality/strategy/execution and
+input flags remain false. The owner-original MP91/MP81 actual payment source
+trace must still be examined to move beyond this evidence level; if absent,
+that higher gate remains EVIDENCE_BLOCKED rather than invented.
+
+Draft feature PR, required exact HEAD Python3.11 full unittest, Windows
+read-only doctor, Linux/Windows PR CI and independent reviewer are separate
+checks; until proven no PASS_IMPLEMENTED/merge acceptance is claimed. No
+original private log access, game, screenshots, packet injection, real input,
+P10 repair or 3s end-to-end qualification. input_sent=false; P10=NOT_RUN.
