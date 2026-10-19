@@ -2442,3 +2442,56 @@ These are local replay metrics, not realMTGA three-second qualification.
 See docs/land-development-research.md and safe owner receipt. MP76AutoTap
 evidence remainsblocked, historicalWindowsqualification andMP81
 current_view_unavailable rootcauses remainUNKNOWN. input_sent=false; P10=NOT_RUN.
+
+
+MP89 on accepted1b7e7f71/treee2937ab6: recovered the real exact-build resource
+bridge previously overlooked by MP88. Original authenticated archive startup
+lines59/78/84/85/86 record build2026.64.0.14517.1329972, matching official External
+pointer, one Automatic Manifest_c983..., completion. Retained manifest MD5 exactly
+reproduces that content identity; SHA908abd96... and unique catalog entry bind
+259883008bytes/SHA1be01054.../Data2026.64.0.280/GRP280.1327372. Independent bounded
+startup/manifest/database review PASS. Pointer response not separately preserved;
+this is trusted historical resource applicability via recorded MD5 identity,
+not signed historical runtime attestation. MP88's38uncommitted progress lines
+remain byte-identical in its separate worktree; this task supersedes the old
+negative investigation conclusion without erasing it. New finite MP61-80 and
+installer/cache searches closed once; DLLs/time/prefix alone remain insufficient.
+
+Same original53authenticated/42opportunities/14targets/12complete domains. All11
+current public StackAbility complete domains independently bind exact ability,
+objectSource catalog, source/request/slot/group/ownership/typedlife/team and
+version-specific complete native ability/card-specific text profile. Fixed BASE
+2damage is the sole effect category:1553/card90673 enters,191026/token96854 leaves.
+Distinct172054 same-card Golem ability cannot borrow damage;191027creator embedding
+retained. No hidden parent face, promptCardId catalog guess, mode/X guess or future
+response/result establishes current effect. Actual damage/prevention/replacement,
+dynamic effects, opportunity cost/fulllegality/optimality remain unknown.
+
+Explicit target_effect_research.v1 uses existing PreparedRulesIndex/MP84 current
+evidence/Consumer/Runtime and original completed-poll rawstamp/ref/lease, no second
+reader/Reducer/state/ledger/cache/solver/encoder. Public sourcecatalog and resource
+facts join internal freshness witness. New resource capability reuses same byte
+observer; unknown/duplicate/late selections revoke it, preserving MP84 build-only
+contract. Direct independent Manual-selection P2 was red then green; actual two
+early General Audio/Localization selections retained with exact finite whitelist.
+
+Actual14target policy results9research/4abstain/1unsupported:9players-only domains
+prefer relative opponent under fixed-base instruction;2mixed domains retain all
+objects and abstain,2Unselect literals abstain,legacyCard unsupported. All14strict
+consumed target responses/terminals immediately revoke. Only2frozen preferences
+have full linked update/revision/terminal comparison:2agreements/0disagreements,
+7of9preferences and12of14requests uncomparable. No historical choice is a tuning
+label; agreement is not correctness/winrate/optimality. MP85 11/24/11/10/2/2/2 and
+MP86sourceLineage1/objectupdate1/actualplayer0/fullstage0 unchanged.
+
+New18focusedPASS; fullPython3.11 1207PASS/187.689s; WindowsdoctorPASS/noinput.
+825554legacy leafvalues match acceptedbase with0differences across10realJSONL/
+1152record observations,53default requests/fullhistory and41runtimeframes/summaries.
+DefaultMP66 remains1research/33abstain/8unsupported; MP87real13AA remains1/12/0.
+Independent preliminary28controls PASS; committedexactHEAD/tree review and actual
+Linux/Windows PR+naturalmainCI remain delivery gates. Pureproduction local replay
+targetn14 addedpolicy p50/p95/p99/maxms=4.1632/6.4093/6.4093/6.4093; fullpollframe
+19.0272/23.1138/23.1138/23.1138. Reference preparation338.2237ms beforeConsumer;
+offline replay does not prove MTGA three-second performance or historicalleases.
+See docs/target-effect-research.md and docs/evidence/mp89-owner.json. Historical
+AutoTap/Windowsqualification/MP81unknown roots unchanged. input_sent=false; P10=NOT_RUN.

@@ -51,12 +51,12 @@ def _unknown(reason,scope='expired_or_revoked'):
 
 
 def _raw_stamp(reducer):
-    from .target_build import current_build
+    from .target_build import current_build, current_resource
     from .current_target_request import role_state_witness
     current=reducer.document()['current']
     fields=('instanceId','grpId','type','parentId','zoneId','ownerSeatId','controllerSeatId',
-        'visibility','viewers','isTapped','uniqueAbilities','power','toughness')
-    return copy.deepcopy((reducer.accepted_digest.hex(),current,current_build(reducer),
+        'visibility','viewers','isTapped','uniqueAbilities','power','toughness','objectSourceGrpId')
+    return copy.deepcopy((reducer.accepted_digest.hex(),current,current_build(reducer),current_resource(reducer),
         role_state_witness(reducer,(o['id'] for o in current.get('objects',[]))),
         [{k:reducer.objects[o['id']].get(k) for k in fields} for o in current.get('objects',[])]))
 
@@ -93,6 +93,7 @@ class LocalShadowRuntime:
                  clock_ns=None,observation_mode='local_log_watch',player_target_stages=False,parent_target_lineage=False,
                  research_policy=None,prepared_rules=None):
         from .land_development import POLICY as LAND_POLICY
+        from .target_effect import POLICY as TARGET_POLICY
         from .rules_index import PreparedRulesIndex
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
@@ -100,7 +101,7 @@ class LocalShadowRuntime:
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
                 observation_mode not in ('local_log_watch','controlled_stream_replay') or
                 type(player_target_stages) is not bool or type(parent_target_lineage) is not bool or
-                research_policy not in (None,LAND_POLICY) or
+                research_policy not in (None,LAND_POLICY,TARGET_POLICY) or
                 prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex)):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
@@ -145,8 +146,9 @@ class LocalShadowRuntime:
     def current_frame(self):
         result=self._current_frame();result['observation_mode']=self.mode
         if self.research_policy is not None and 'research_decision' not in result:
-            from .land_development import _unknown as land_unknown
-            result['research_decision']=land_unknown(result['reason'])
+            from .land_development import POLICY as LAND_POLICY, _unknown as land_unknown
+            from .target_effect import _unknown as target_unknown
+            result['research_decision']=(land_unknown if self.research_policy==LAND_POLICY else target_unknown)(result['reason'])
             result['research_decision']['status']='expired'
         if (threading.get_ident()==self._owner and self.player_target_stages and self._stage_observer is not None):
             stage=self._stage_observer;revision=stage.revision
@@ -220,13 +222,17 @@ class LocalShadowRuntime:
                 _need(sum(_equal(o['option_key'],policy['preferred_option_key']) for o in options['options'])==1,'frame_report_binding_invalid')
             research=None
             if self.research_policy is not None:
-                from .land_development import assess_current_land_development
-                research=self._timed('research_policy',lambda:assess_current_land_development(
+                from .land_development import POLICY as LAND_POLICY, assess_current_land_development
+                from .target_effect import assess_current_target_effect
+                assess=assess_current_land_development if self.research_policy==LAND_POLICY else assess_current_target_effect
+                research=self._timed('research_policy',lambda:assess(
                     self.consumer,self._reducer,self._message,self.prepared_rules,policy_version=self.research_policy,
                     completed_stamp=self._completed_stamp))
                 _bound(research,binding,ref)
                 if research['status']=='research_preference':
-                    _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in options['options'])==1,
+                    reviewed=(options['options'] if self.research_policy==LAND_POLICY else
+                        local.get('current_target_evidence',{}).get('local_proposals',[]))
+                    _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in reviewed)==1,
                         'frame_report_binding_invalid')
             _need(_equal(stamp,_stamp(self._reducer,self._message,state)),'raw_state_changed_during_frame')
             result=_unknown('current_request_research_only','current_at_completed_poll')
@@ -460,12 +466,16 @@ def safe_summary(frame):
         if type(elapsed) is int and elapsed>=0:result['timings_ns']['parent_target_lineage']=elapsed
     research=frame.get('research_decision')
     if type(research) is dict:
-        from .land_development import POLICY as LAND_POLICY,REASONS
-        result['research_decision']={'policy_version':LAND_POLICY if research.get('policy_version')==LAND_POLICY else 'unsupported',
+        from .land_development import POLICY as LAND_POLICY,REASONS as LAND_REASONS
+        from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
+        policy=research.get('policy_version')
+        names=(('active_action_rows','play_offers','verified_play_sources','verified_static_land_candidates','ordinary_profile_candidates')
+            if policy==LAND_POLICY else ('reviewed_target_members','local_proposals','verified_player_targets',
+                'verified_public_object_targets','effect_identified') if policy==TARGET_POLICY else ())
+        result['research_decision']={'policy_version':policy if policy in (LAND_POLICY,TARGET_POLICY) else 'unsupported',
             'status':research.get('status') if research.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
-            'reason':research.get('reason') if research.get('reason') in REASONS|PUBLIC_REASONS else 'unreviewed_reason',
-            'coverage':{key:count(research.get('coverage',{}).get(key)) for key in ('active_action_rows','play_offers',
-                'verified_play_sources','verified_static_land_candidates','ordinary_profile_candidates')},
+            'reason':research.get('reason') if research.get('reason') in LAND_REASONS|TARGET_REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'coverage':{key:count(research.get('coverage',{}).get(key)) for key in names},
             'complete_legality_verified':False,'payment_verified':False,'strategic_optimality_verified':False,
             'read_only':True,**EXECUTION}
         elapsed=frame.get('timings_ns',{}).get('research_policy')

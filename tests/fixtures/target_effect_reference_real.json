@@ -1,0 +1,295 @@
+{
+  "origin": "actual_production_factory_official_version_bound_subset",
+  "source_authentication": "owner plus independent phase1 static hash/version review; portable projection does not authenticate original database bytes",
+  "scope": "exact source catalog/ability/generic and card-specific text records, fixed BASE definition only",
+  "metadata": {
+    "schema_version": "mtgaplayer.mtga-target-effect-reference.v1",
+    "source_format": "mtga_official_sqlite_target_effect_metadata",
+    "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+    "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+    "source_version_is_user_supplied": false,
+    "card_records": 2,
+    "records_without_arena_id": 0,
+    "unique_arena_ids": 2,
+    "ambiguous_arena_ids": 0
+  },
+  "matches": {
+    "90673": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-target-effect-reference.v1",
+        "card_id": 90673,
+        "profile": {
+          "GrpId": 90673,
+          "TitleId": 757062,
+          "Types": "1",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 7,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "o1oR",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 0,
+          "IsPrimaryCard": 1,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "1553:943760,172054:757065",
+          "HiddenAbilityIds": ""
+        },
+        "ability_definitions": [
+          {
+            "row": {
+              "Id": 1553,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 839352,
+              "Category": 2,
+              "SubCategory": 10,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 0,
+              "PaymentType": 0,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": null,
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": null,
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": null,
+              "HiddenByAbilityIds": null,
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": null,
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 839352,
+              "Formatted": 1,
+              "Loc": "When CARDNAME enters, it deals 2 damage to any target."
+            }
+          },
+          {
+            "row": {
+              "Id": 172054,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 757065,
+              "Category": 1,
+              "SubCategory": 0,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 6,
+              "PaymentType": 1,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": "o2",
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": null,
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": null,
+              "HiddenByAbilityIds": null,
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": "2,4",
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 757065,
+              "Formatted": 1,
+              "Loc": "{o2}, {oT}, Sacrifice another artifact: Create a 3/3 colorless Golem artifact creature token."
+            }
+          }
+        ],
+        "specific_ability_texts": [
+          {
+            "ability_id": 1553,
+            "text": {
+              "LocId": 943760,
+              "Formatted": 1,
+              "Loc": "When this artifact enters, it deals 2 damage to any target."
+            }
+          },
+          {
+            "ability_id": 172054,
+            "text": {
+              "LocId": 757065,
+              "Formatted": 1,
+              "Loc": "{o2}, {oT}, Sacrifice another artifact: Create a 3/3 colorless Golem artifact creature token."
+            }
+          }
+        ],
+        "base_effect_instruction": {
+          "ability_id": 1553,
+          "category": "fixed_base_damage",
+          "base_damage": 2,
+          "trigger": "enters",
+          "target_text_scope": "any_target"
+        },
+        "effective_in_game": false,
+        "complete_legality_verified": false
+      }
+    },
+    "96854": {
+      "status": "resolved",
+      "card": {
+        "schema_version": "mtgaplayer.mtga-target-effect-reference.v1",
+        "card_id": 96854,
+        "profile": {
+          "GrpId": 96854,
+          "TitleId": 1056259,
+          "Types": "1",
+          "Supertypes": "",
+          "Subtypes": "",
+          "TypeTextId": 262981,
+          "SubtypeTextId": 0,
+          "OldSchoolManaText": "",
+          "LinkedFaceType": 0,
+          "LinkedFaceGrpIds": "",
+          "LinkedAbilityTemplateCardGrpIds": "",
+          "IsToken": 1,
+          "IsPrimaryCard": 0,
+          "IsDigitalOnly": 0,
+          "IsRebalanced": 0,
+          "RebalancedCardGrpId": 0,
+          "DefunctRebalancedCardGrpId": 0,
+          "RawFrameDetail": "",
+          "AdditionalFrameDetails": "",
+          "ExtraFrameDetails": "",
+          "TextChangeData": "",
+          "AbilityIds": "191026:1055994",
+          "HiddenAbilityIds": ""
+        },
+        "ability_definitions": [
+          {
+            "row": {
+              "Id": 191026,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 1055993,
+              "Category": 2,
+              "SubCategory": 0,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 0,
+              "PaymentType": 0,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": null,
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": null,
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": null,
+              "HiddenByAbilityIds": "191027",
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": null,
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 1055993,
+              "Formatted": 1,
+              "Loc": "When CARDNAME leaves the battlefield, it deals 2 damage to any target."
+            }
+          },
+          {
+            "row": {
+              "Id": 191027,
+              "BaseId": 0,
+              "BaseIdNumeral": 0,
+              "FakeBaseIdNumeral": 0,
+              "TextId": 1055995,
+              "Category": 2,
+              "SubCategory": 0,
+              "AbilityWord": 0,
+              "NumericAid": 0,
+              "RequiresConfirmation": 0,
+              "PaymentType": 0,
+              "FullyParsed": 1,
+              "IsIntrinsicAbility": 0,
+              "OldSchoolManaText": null,
+              "LoyaltyCost": null,
+              "LevelRequirement": null,
+              "Power": null,
+              "Toughness": null,
+              "MiscellaneousTerms": null,
+              "EmbeddedActiveAbilityIds": null,
+              "EmbeddedIntoAbilityIds": null,
+              "HiddenAbilityIds": "191026",
+              "HiddenByAbilityIds": null,
+              "ReferencedAbilityIds": null,
+              "ReferencedKeywordNumerals": null,
+              "ReferencedAbilityTypes": null,
+              "ModalChildIds": null,
+              "ModalParentIds": null,
+              "CostTypes": null,
+              "Tags": null,
+              "ReferencedAbilityManaText": null
+            },
+            "generic_text": {
+              "LocId": 1055995,
+              "Formatted": 1,
+              "Loc": "Whenever a nontoken artifact you control enters, create a colorless artifact token named Munitions with \"When this token leaves the battlefield, it deals 2 damage to any target.\""
+            }
+          }
+        ],
+        "specific_ability_texts": [
+          {
+            "ability_id": 191026,
+            "text": {
+              "LocId": 1055994,
+              "Formatted": 1,
+              "Loc": "When this token leaves the battlefield, it deals 2 damage to any target."
+            }
+          }
+        ],
+        "base_effect_instruction": {
+          "ability_id": 191026,
+          "category": "fixed_base_damage",
+          "base_damage": 2,
+          "trigger": "leaves_battlefield",
+          "target_text_scope": "any_target"
+        },
+        "effective_in_game": false,
+        "complete_legality_verified": false
+      }
+    }
+  },
+  "dynamic_effects_verified": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}
