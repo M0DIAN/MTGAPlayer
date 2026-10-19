@@ -322,7 +322,10 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('action_frontier_requires_decision_input')
     if choice_graph and not action_frontier:
         raise ValueError('choice_graph_requires_action_frontier')
-    follower, reducer = RawFollower(path, max_history_bytes), RawReducer(include_request_parameters=decision_state_version >= 5,
+    from .target_build import TargetBuildObserver, PREFIX_BYTES
+    target_build = TargetBuildObserver() if _owner_observer is not None else None
+    follower, reducer = RawFollower(path, max_history_bytes,
+        byte_observer=target_build, identity_prefix_bytes=PREFIX_BYTES if target_build is not None else 256), RawReducer(include_request_parameters=decision_state_version >= 5,
                                                                      include_targeted_activate=decision_state_version >= 7,
                                                                      include_current_discard=decision_state_version >= 8,
                                                                      include_target_payment_relation=decision_state_version >= 9,
@@ -404,6 +407,8 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
             if _poll_observer is not None:
                 history_pending = True
         phase = 'history' if index == 0 or reset or history_pending else 'append'
+        if target_build is not None:
+            target_build.bind(reducer)
         newly_accepted = set()
         for record in records:
             if tap is not None: tap.prepare(record)

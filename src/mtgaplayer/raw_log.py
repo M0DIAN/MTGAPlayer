@@ -505,12 +505,15 @@ class RawFramer:
 
 class RawFollower:
     def __init__(self, path, max_history_bytes=64 * 1024 * 1024, *, byte_observer=None,
-                 max_poll_bytes=None):
+                 max_poll_bytes=None, identity_prefix_bytes=256):
         if max_poll_bytes is not None and (type(max_poll_bytes) is not int or not 1 <= max_poll_bytes <= 16*1024*1024):
             raise ValueError('invalid_raw_poll_byte_limit')
+        if type(identity_prefix_bytes) is not int or not 1 <= identity_prefix_bytes <= 16384:
+            raise ValueError('invalid_raw_identity_prefix_limit')
         self.path = Path(path)
         self.max_history_bytes = max_history_bytes
         self.byte_observer, self.max_poll_bytes = byte_observer, max_poll_bytes
+        self.identity_prefix_bytes = identity_prefix_bytes
         self.byte_observer_error = None
         self.identity = None
         self.offset = self.generation = 0
@@ -569,15 +572,17 @@ class RawFollower:
                 self.offset += len(chunk)
                 remaining -= len(chunk)
             stream.seek(0)
-            self.prefix = stream.read(min(256, self.offset))
+            self.prefix = stream.read(min(self.identity_prefix_bytes, self.offset))
             self.anchor_start = max(0, self.offset - 64)
             stream.seek(self.anchor_start)
             self.anchor = stream.read(self.offset - self.anchor_start)
             final = os.fstat(stream.fileno())
+            prefix_fact = ({'identity_prefix_sha256': hashlib.sha256(self.prefix).hexdigest()}
+                if self.identity_prefix_bytes != 256 else {})
             self._bytes('end', {'byte_end': self.offset, 'source_size': stat.st_size,
                 'source_size_after': final.st_size, 'source_changed_during_poll':
                     (stat.st_size, stat.st_mtime_ns) != (final.st_size, final.st_mtime_ns),
-                'partial_record': self.framer.partial, 'framing_errors': self.framer.errors})
+                'partial_record': self.framer.partial, 'framing_errors': self.framer.errors, **prefix_fact})
         return reset, records
 
 
@@ -625,6 +630,8 @@ class RawReducer:
                           disposition=disposition)
 
     def reset(self, generation):
+        self._target_build_epoch = object()
+        self._target_build_context = None
         self.generation = generation
         self.client_id = None
         self.match = self.game = self.seat = None

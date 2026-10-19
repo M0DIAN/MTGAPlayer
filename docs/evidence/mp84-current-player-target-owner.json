@@ -1,0 +1,202 @@
+{
+  "code": "candidate",
+  "base_main": "8cf6e624f01b5d2598d51a0a065868f29f83fa33",
+  "source_bytes": 3225997,
+  "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+  "authenticated_requests": 53,
+  "current_opportunities": 42,
+  "current_completed_poll_original_prefixes": 41,
+  "first_mulligan_remains_history_baseline": true,
+  "all42_full_default_options_policy_equal": true,
+  "original42_policy": {
+    "unsupported": 8,
+    "abstain": 33,
+    "research_preference": 1
+  },
+  "new_target_requests": 13,
+  "player_memberships": 24,
+  "new_complete_select_domains": 11,
+  "new_local_proposals": 24,
+  "new_request_rows": [
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 1,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 3,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 1,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 3,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 1,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": false,
+      "returned_proposals": 0,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 1,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": false,
+      "returned_proposals": 0,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    },
+    {
+      "verified_player_memberships": 2,
+      "verified_public_object_memberships": 0,
+      "unresolved_memberships": 0,
+      "complete_current_select_domain_verified": true,
+      "returned_proposals": 2,
+      "truncated": false
+    }
+  ],
+  "compatibility": {
+    "public_real_jsonl_sources": 10,
+    "record_documents_options_policies_and_candidates2_to6": 1152,
+    "all53_default_options_policy_equal": true,
+    "complete_default_history_report_equal": true,
+    "complete_runtime_frames_and_safe_summaries_equal_except13_new_explicit_role_sidecars": 41,
+    "equal_leaf_values": 783470,
+    "differences": 0,
+    "normalization": [
+      "transport snapshot refs",
+      "version/source digest",
+      "timings"
+    ]
+  },
+  "performance_ms": {
+    "added_role_projection": {
+      "sample_count": 52,
+      "p50_ms": 0.4689,
+      "p95_ms": 0.7227,
+      "p99_ms": 0.9201,
+      "max_ms": 0.9201
+    },
+    "warm_current_target_optin": {
+      "sample_count": 39,
+      "p50_ms": 1.6089,
+      "p95_ms": 2.0273,
+      "p99_ms": 2.4109,
+      "max_ms": 2.4109
+    },
+    "affected_target_poll_to_frame": {
+      "sample_count": 14,
+      "p50_ms": 13.4763,
+      "p95_ms": 17.8086,
+      "p99_ms": 17.8086,
+      "max_ms": 17.8086
+    },
+    "all_current_poll_to_frame": {
+      "sample_count": 41,
+      "p50_ms": 16.3142,
+      "p95_ms": 76.5572,
+      "p99_ms": 134.0705,
+      "max_ms": 134.0705
+    }
+  },
+  "measurement_scope": "one same-process controlled original-prefix replay and three warm API checks per new request; nested timings overlap; not MTGA latency",
+  "input_sent": false,
+  "P10": "NOT_RUN",
+  "schema_version": "mtgaplayer.mp84-current-player-target-owner.v1",
+  "authentication_scope": "owner verifies original bytes and archive; reviewer uses public field projections and safe receipts only",
+  "archive_generations": 1,
+  "archive_segments": 217,
+  "archive_complete_clean_stop": true,
+  "framed_records": 367,
+  "select_targets_opportunities": 14,
+  "previously_unresolved_requests": 13,
+  "previously_unresolved_memberships": 24,
+  "distinct_verified_player_referents": 2,
+  "remaining_unknown_memberships": 0,
+  "verified_public_object_memberships_alongside_players": 2,
+  "unselect_only_requests": 2,
+  "unselect_converted_to_select_domains": 0,
+  "truncated_domains": 0,
+  "complete_target_legality": null,
+  "complete_action_legality": null,
+  "first_current_boundary": "original MP81 first-current completed-poll byte offset; no future bytes admitted per opportunity",
+  "later_response_used_for_player_identity": false,
+  "per_request_checks": [
+    "current authenticated typed binding",
+    "valid unique current player list",
+    "reviewed source build",
+    "no raw object or zone-member collision for player IDs",
+    "own unique public Stack Ability and both groups",
+    "current source/slot/count",
+    "same Consumer snapshot ref and lease before/after"
+  ],
+  "compatibility_base_main": "8cf6e624f01b5d2598d51a0a065868f29f83fa33"
+}

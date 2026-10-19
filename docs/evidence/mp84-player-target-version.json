@@ -1,0 +1,378 @@
+{
+  "schema_version": "mtgaplayer.mp84-version-gate-owner.v1",
+  "phase": "owner_authenticated_version_gate_before_positive_implementation",
+  "capture_source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+  "capture_bytes": 3225997,
+  "captured_client_version": "2026.64.0.14517",
+  "captured_full_client_build": "2026.64.0.14517.1329972",
+  "header_line": 59,
+  "header_within_first_16KiB": true,
+  "header_before_all42_first_current_boundaries": true,
+  "header_shape": "Version: short / full / trailing empty component",
+  "installed_live_release": "0.1.14517.1329972",
+  "capture_branch_and_build_equal_installed_release": true,
+  "assemblies": [
+    {
+      "name": "Core.dll",
+      "bytes": 12856320,
+      "sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "matches_pre_MP81_MP61_receipt": true,
+      "matches_pinned_newer_actions_manifest": true
+    },
+    {
+      "name": "SharedClientCore.dll",
+      "bytes": 1569792,
+      "sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "matches_pre_MP81_MP61_receipt": true,
+      "matches_pinned_newer_actions_manifest": true
+    },
+    {
+      "name": "Wizards.MDN.GreProtobuf.dll",
+      "bytes": 1431040,
+      "sha256": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+      "matches_pre_MP81_MP61_receipt": true,
+      "matches_pinned_newer_actions_manifest": true
+    }
+  ],
+  "inspected_as_PE_metadata_IL_only": true,
+  "client_code_loaded_or_executed": false,
+  "research_only_dependencies": {
+    "dnfile": "0.18.0",
+    "dncil": "1.0.2",
+    "product_dependencies_changed": false
+  },
+  "reviewed_method_count": 14,
+  "review_file_sha256": "37d34f246ebf0d98faf708451d685c97db6aab2fe4245fa5869c212edc31e113",
+  "method_identities": [
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.GreInterface",
+      "name": "MergeDiffMessageIntoFullMessage",
+      "token": "0x60008e1",
+      "rva": 161392,
+      "il_sha256": "d130a657cd6c2b3782e08b6906272089ac661bc1d2c38d1d009f6f3d58365582",
+      "code_bytes": 564
+    },
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.GreInterface",
+      "name": "ParseFullGameStateMessage",
+      "token": "0x60008e4",
+      "rva": 162276,
+      "il_sha256": "8578faa1440dab212572e0eff5cc4af98f1f5ee507d23cf4fffd7cee651894c0",
+      "code_bytes": 4303
+    },
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.MtgGameState",
+      "name": "TryGetCard",
+      "token": "0x60009b4",
+      "rva": 197884,
+      "il_sha256": "702ecc33af4a54621d0c389c759addaa890baa61e14bf4348c0b9489fa1f2b0a",
+      "code_bytes": 235
+    },
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.MtgGameState",
+      "name": "TryGetPlayer",
+      "token": "0x60009b7",
+      "rva": 198344,
+      "il_sha256": "83437665ce1cc9695458916beb9a487000cc96c53f4e7dee0810e76d5ab5afe8",
+      "code_bytes": 51
+    },
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.MtgGameState",
+      "name": "TryGetEntity",
+      "token": "0x60009ba",
+      "rva": 198448,
+      "il_sha256": "7ebd0b0cd4aeae2ec0cfadfcafa6c811ca5ce07ce4beb6d064c3b16d4ac2f32d",
+      "code_bytes": 37
+    },
+    {
+      "assembly": "SharedClientCore.dll",
+      "assembly_sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+      "type": "GreClient.Rules.MtgGameState/<>c",
+      "name": "<TryGetPlayer>b__64_0",
+      "token": "0x6001a80",
+      "rva": 444583,
+      "il_sha256": "3d0a87c07239f873049aa392cba629acc1aa65c4b64f67a1d25b42501800a80d",
+      "code_bytes": 10
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".DuelScene_AvatarView",
+      "name": "get_Model",
+      "token": "0x600031f",
+      "rva": 74607,
+      "il_sha256": "972ba35502ff6cab2f122a9d1af9da118062c6022a8e5c18e9dd3c4e5b037767",
+      "code_bytes": 7
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".DuelScene_AvatarView",
+      "name": "set_Model",
+      "token": "0x6000320",
+      "rva": 74615,
+      "il_sha256": "9ba252eae74262c640b8ae7e3dade6b538de38b75d46f18f58e2ee3d4cc9b01c",
+      "code_bytes": 8
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".DuelScene_AvatarView",
+      "name": "get_InstanceId",
+      "token": "0x6000321",
+      "rva": 74624,
+      "il_sha256": "735ce6c3b5f8cacdb322e8e71d4678669f9ceb80325c9364e717bf995d25c229",
+      "code_bytes": 18
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".DuelScene_AvatarView",
+      "name": "Init",
+      "token": "0x6000324",
+      "rva": 74836,
+      "il_sha256": "2615f79b58f0afd0d7fede4ca1b6f740eac3fadec89ff3c11d76cc8df259ee4f",
+      "code_bytes": 223
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".DuelScene_AvatarView",
+      "name": "SetModel",
+      "token": "0x6000326",
+      "rva": 75336,
+      "il_sha256": "a537713f1c2892247c3b2cb5cfe232d4deb833f4b18becc5cebd29880478d795",
+      "code_bytes": 25
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".SelectTargetsWorkflow",
+      "name": "CanClick",
+      "token": "0x6000e43",
+      "rva": 328836,
+      "il_sha256": "4783ab305b93ea6565c07582aa5239c92a766ce57efc5326079c94ba08f136a2",
+      "code_bytes": 116
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".SelectTargetsWorkflow",
+      "name": "GetTargetForId",
+      "token": "0x6000e47",
+      "rva": 329056,
+      "il_sha256": "5d62165c724ffee5ba4ec9d5046683e6580026146dadc6feb66530e01bb97f2a",
+      "code_bytes": 63
+    },
+    {
+      "assembly": "Core.dll",
+      "assembly_sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+      "type": ".SelectTargetsWorkflow",
+      "name": "OnClick",
+      "token": "0x6000e54",
+      "rva": 331320,
+      "il_sha256": "f1574281f395c3a890b3e27939311ff51b796f8ef2bf5b1ac3479d974c71aba8",
+      "code_bytes": 319
+    }
+  ],
+  "owner_method_conclusions": {
+    "SystemSeatNumber_to_player_InstanceId": true,
+    "same_build_avatar_model_InstanceId": true,
+    "same_build_target_entity_InstanceId_match": true,
+    "same_build_TryGetPlayer_card_entity_lookup": true,
+    "lookup_priority_proves_no_collision": false
+  },
+  "public_source_directory_label_alone_used_as_version_proof": false,
+  "date_proximity_used_as_version_proof": false,
+  "Unity_executable_version_used_as_client_build": false,
+  "historical_exact_binary_bytes_captured_at_MP81": false,
+  "binding_scope": "archived exact full client build matches installed Live release; fresh three assembly hashes match accepted pre-MP81 receipt and pinned newer manifest; mapping and UI/entity methods directly inspected in those installed assemblies",
+  "not_proven": [
+    "historical runtime in-memory patch absence",
+    "all client versions",
+    "complete legal target constraints",
+    "response execution authority"
+  ],
+  "requires_current_source_build_witness": true,
+  "requires_per_request_player_and_entity_collision_checks": true,
+  "input_sent": false,
+  "P10": "NOT_RUN",
+  "avatar_model_metadata": {
+    "assemblies": [
+      {
+        "assembly": "Core.dll",
+        "sha256": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a",
+        "mvid": "ee80c82e-c3e1-4b1f-a368-411a84d10f78"
+      },
+      {
+        "assembly": "SharedClientCore.dll",
+        "sha256": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+        "mvid": "c162c20f-ba79-438b-abd6-058f915926a3"
+      },
+      {
+        "assembly": "Wizards.MDN.GreProtobuf.dll",
+        "sha256": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+        "mvid": "3acc2830-eab7-4327-be16-8969a71eb3aa"
+      }
+    ],
+    "avatar_model_signatures": [
+      {
+        "member": "DuelScene_AvatarView::<Model>k__BackingField",
+        "signature_hex": "0612815d",
+        "field_type": "GreClient.Rules.MtgPlayer"
+      },
+      {
+        "member": "DuelScene_AvatarView::get_Model",
+        "signature_hex": "200012815d",
+        "return_type": "GreClient.Rules.MtgPlayer"
+      }
+    ]
+  },
+  "public_reference": {
+    "public_repository": "ettrue124/ArcaneForge",
+    "public_commit": "45f27866c5dfd5891fc101c00e611a36254d2f49",
+    "public_tree": "8098d545963eff4ed2cdad2e555e55d27116f4be",
+    "authenticated_public_sources": [
+      {
+        "public_path": "analysis/action-inventory/README.md",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/README.md",
+        "git_blob": "5781f1863314ca3dc9af123de5ca7a2b49e1fb3c",
+        "bytes": 14015,
+        "sha256": "3085719b3da9780546b525e378151001e98e8eaae33c1b0db367f7f83af3521d",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/action-inventory/actions.json",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/actions.json",
+        "git_blob": "67ee1165147d21a8cf34c901348be164ff14eeb9",
+        "bytes": 1247232,
+        "sha256": "52c2e3074d3487526c1266746b0adb3f846a175fcbabb7f15090051de65d6301",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/action-inventory/adapter-coverage.json",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/adapter-coverage.json",
+        "git_blob": "911485e4d1c18e6fc7f20a981e3023c49305fe36",
+        "bytes": 15435,
+        "sha256": "271bdbf2071d310db1496b9343537431d8dce0751fda5b7005e22f6a9dda873a",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.GreInterface.cs",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.GreInterface.cs",
+        "git_blob": "63c8e7f8eb8bb89d9c52dae58e0803e1bea27f1d",
+        "bytes": 91279,
+        "sha256": "73d759f41bf7258bd103936834a72bd76f4b4d5fc720b28b17482dd771089dc9",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/MtgGameState.cs",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/MtgGameState.cs",
+        "git_blob": "32c2c740bdee584ca2ab58162f1b74db0329b1b4",
+        "bytes": 10617,
+        "sha256": "336ba946843f16b6b30897f62807348b1dce14cf1bb7dc23d7264191de463b51",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/arena-request-catalog-20261010/request-menu-mapping.json",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/arena-request-catalog-20261010/request-menu-mapping.json",
+        "git_blob": "edd3ff280a2b4a4d1540cce5a9aa895cb290f2c5",
+        "bytes": 203561,
+        "sha256": "219e7335183c180577bf86be99b06b041e49ff5512aadc0b1a2b42a05b8b3f3b",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/arena-request-catalog-20261010/ui-sources/SelectTargetsWorkflow.cs",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/arena-request-catalog-20261010/ui-sources/SelectTargetsWorkflow.cs",
+        "git_blob": "e3468e312e3873a61de1eb375d7c41917e156cfa",
+        "bytes": 47037,
+        "sha256": "2e50300c499112d7c0d4ffb77f5b45eeb268c692bdd481d2cc9ec4943b1693e6",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.SelectTargetsRequest.cs",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.SelectTargetsRequest.cs",
+        "git_blob": "7314caa8aeb290f825eda54f6f5eb96a7f3db6fc",
+        "bytes": 889,
+        "sha256": "ce7d18da2ab916dab590b11df143ab44af20a6d54cead31fc148353367dcd87b",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      },
+      {
+        "public_path": "analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.SelectTargetsRequestTranslator.cs",
+        "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.SelectTargetsRequestTranslator.cs",
+        "git_blob": "b341aca423e4d5124c3d7f0153a8ea00e6f11ee0",
+        "bytes": 1381,
+        "sha256": "69fa1e46c773c98e885eb7954bd6c4dc4c6af4352702cdc298b78ad9f508dc1f",
+        "byte_authentication": "github_blob_content_and_git_object_hash"
+      }
+    ],
+    "mapping": {
+      "verified_in_public_text": true,
+      "url": "https://github.com/ettrue124/ArcaneForge/blob/45f27866c5dfd5891fc101c00e611a36254d2f49/analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.GreInterface.cs#L269-L292",
+      "method": "GreClient.Rules.GreInterface.ParseFullGameStateMessage",
+      "input": "PlayerInfo.SystemSeatNumber",
+      "output": "MtgPlayer.InstanceId",
+      "assignment_lines": [
+        272,
+        291
+      ],
+      "mapping_git_blob": "63c8e7f8eb8bb89d9c52dae58e0803e1bea27f1d",
+      "same_blob_paths": [
+        "analysis/GreInterface-current.cs",
+        "analysis/GreInterface-library.cs",
+        "analysis/action-inventory/sources/42f2fb5f062ccc60/GreClient.Rules.GreInterface.cs",
+        "analysis/action-inventory/sources/ff02a80282f36c45/GreClient.Rules.GreInterface.cs",
+        "analysis/arena-request-catalog-20261010/handler-sources/GreClient.Rules.GreInterface.cs",
+        "analysis/commander/GreInterface-current.cs"
+      ],
+      "public_assembly_binding": "declared_manifest_and_hash_prefixed_directory_only_not_independent_binary_authentication"
+    },
+    "provenance": {
+      "readme_declared_extraction_utc": "2026-10-16T00:17:11.261540+00:00",
+      "actions_manifest_generated_utc": "2026-10-16T00:17:11.261540+00:00",
+      "actions_manifest_assembly_sha256": {
+        "Google.Protobuf.dll": "592761c0cea52110c818978c94e33202d942a9a36ef8742b224d08fac5d42f2b",
+        "Wizards.MDN.GreProtobuf.dll": "7ca28480089cc2b21417abfea82b9c8721ff855f0369966858d70d58f2afcdae",
+        "Wizards.Arena.Models.Protobuf.dll": "add9ae06a7acc246c73d6b1dedbe99cc36c20463a6e618d5e106145af2a0239f",
+        "SharedClientCore.dll": "42f2fb5f062ccc6098182a902d411746070759a404e875b6e0aac44d3b7ccc6e",
+        "Core.dll": "3e85d45e88b10a2fd3841e3abe6f5b37a17e0c42d360c93988e2270b4fdc858a"
+      },
+      "adapter_coverage_assembly_sha256": {
+        "Google.Protobuf.dll": "592761c0cea52110c818978c94e33202d942a9a36ef8742b224d08fac5d42f2b",
+        "Wizards.MDN.GreProtobuf.dll": "0170f35ec3af708871d41d6a6e939f8faf5972a18691f8c7ac168f3458bfc928",
+        "Wizards.Arena.Models.Protobuf.dll": "add9ae06a7acc246c73d6b1dedbe99cc36c20463a6e618d5e106145af2a0239f",
+        "SharedClientCore.dll": "ff02a80282f36c45d6a639c6dc5013eff16406bce6eb0ef9985b59e1c3244b33",
+        "Core.dll": "947441eecc9a9231503af434ad7970e6af0bc2c56148d56991bba5b6c76458e6"
+      },
+      "older_request_catalog_assembly_sha256": {
+        "Google.Protobuf.dll": "592761c0cea52110c818978c94e33202d942a9a36ef8742b224d08fac5d42f2b",
+        "Wizards.MDN.GreProtobuf.dll": "0170f35ec3af708871d41d6a6e939f8faf5972a18691f8c7ac168f3458bfc928",
+        "Wizards.Arena.Models.Protobuf.dll": "add9ae06a7acc246c73d6b1dedbe99cc36c20463a6e618d5e106145af2a0239f",
+        "SharedClientCore.dll": "ff02a80282f36c45d6a639c6dc5013eff16406bce6eb0ef9985b59e1c3244b33",
+        "Core.dll": "947441eecc9a9231503af434ad7970e6af0bc2c56148d56991bba5b6c76458e6"
+      },
+      "newer_shared_source_count": 193,
+      "older_shared_source_count": 193,
+      "identical_same_relative_name_shared_blobs": 193,
+      "adapter_coverage_matches_older_catalog": true,
+      "adapter_coverage_matches_new_actions_manifest": false,
+      "mapping_source_has_assembly_mvid": false,
+      "mapping_source_has_client_build_id": false,
+      "root_MtgGameState_source_has_version_authenticated_public_assembly_link": false,
+      "old_UI_workflow_has_newer_build_binding": false,
+      "conclusion": "Identical published text spans old and new hash-labelled directories. This is supporting mapping evidence, not proof that methods were independently recovered from the newer assembly."
+    }
+  },
+  "public_reference_receipt_sha256": "5cd5daf18a81871b765cc91509b49ab5cc205bd207ece1e85bf1a0aca96edf5f",
+  "independent_authentication_scope": "reviewer checks public source, whitelisted static method/signature evidence and safe owner receipt; not private original or installed DLL bytes"
+}

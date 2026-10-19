@@ -28,7 +28,7 @@ def _objects(visible):
     return result
 
 
-def project_request(message, visible, seat, refs, scope, *, allow_no_cancel=False):
+def project_request(message, visible, seat, refs, scope, *, allow_no_cancel=False, referent_roles=None):
     """Only after accepted request authentication and existing visibility filtering."""
     _need(type(message) is dict and not set(message)-{'type', 'msgId', 'gameStateId',
         'systemSeatIds', 'prompt', 'allowCancel', 'allowUndo', 'selectTargetsReq'}, 'request_unsupported')
@@ -51,14 +51,22 @@ def project_request(message, visible, seat, refs, scope, *, allow_no_cancel=Fals
     if 'targets' in slot:
         _need(type(slot['targets']) is list and len(slot['targets']) <= 256, 'request_unsupported')
         entries = []
-        for row in slot['targets']:
+        for position, row in enumerate(slot['targets']):
             _need(type(row) is dict and set(row) in ({'targetInstanceId', 'legalAction'},
                 {'targetInstanceId', 'legalAction', 'highlight'}), 'request_unsupported')
             _need(_id(row['targetInstanceId']) and row['legalAction'] in (SELECT, UNSELECT), 'request_unsupported')
             # Highlight is presentation-only. Its value never leaves this boundary.
             _need('highlight' not in row or type(row['highlight']) is str, 'request_unsupported')
-            entries.append({'object_ref': refs.ref('object', scope, row['targetInstanceId']),
-                            'legal_action': row['legalAction']})
+            if referent_roles is None:
+                entries.append({'object_ref': refs.ref('object', scope, row['targetInstanceId']),
+                                'legal_action': row['legalAction']})
+            else:
+                member = copy.deepcopy(referent_roles[row['targetInstanceId']])
+                _need(member['list_position'] == position)
+                entries.append({**member, 'legal_action': row['legalAction']})
+        if referent_roles is not None:
+            ids = [row['targetInstanceId'] for row in slot['targets']]
+            _need(len(ids) == len(set(ids)) and set(ids) == set(referent_roles))
     value = {'source_object_ref': refs.ref('object', scope, body['sourceId']),
         'ability_grp_ref': refs.ref('abilityGrpId', scope, body['abilityGrpId']),
         'targeting_ability_grp_ref': refs.ref('targetingAbilityGrpId', scope, slot['targetingAbilityGrpId']),
@@ -66,8 +74,75 @@ def project_request(message, visible, seat, refs, scope, *, allow_no_cancel=Fals
         'min_targets': slot.get('minTargets'), 'max_targets': slot.get('maxTargets'),
         'selected_count': slot.get('selectedTargets'), 'entries': entries,
         'allow_cancel': message['allowCancel'], 'allow_undo': message.get('allowUndo')}
-    check_request(value, visible, seat, allow_no_cancel=allow_no_cancel)
+    if referent_roles is None:
+        check_request(value, visible, seat, allow_no_cancel=allow_no_cancel)
+    else:
+        check_referent_request(value, visible, seat, allow_no_cancel=allow_no_cancel)
     return value
+
+
+def check_referent_request(value, visible, seat, *, allow_no_cancel=False):
+    """Explicit role contract; never feeds player IDs into legacy object_refs."""
+    base = {**value, 'entries': None}
+    check_request(base, visible, seat, allow_no_cancel=allow_no_cancel)
+    _need(type(value['entries']) is list and 1 <= len(value['entries']) <= 64)
+    objects = _objects(visible)
+    seen = set()
+    for position, row in enumerate(value['entries']):
+        _keys(row, ('target_instance_ref', 'target_referent_kind', 'namespace', 'player_seat',
+            'public_object_ref', 'object_type', 'zone', 'reason', 'list_position', 'legal_action'))
+        ident, kind = row['target_instance_ref'], row['target_referent_kind']
+        _need(type(ident) is int and 0 < ident <= 2**32-1 and row['list_position'] == position and
+            type(row['list_position']) is int and row['legal_action'] in (SELECT, UNSELECT))
+        if kind == 'verified_player':
+            _need(row['namespace'] == 'version_verified_player_instance' and type(row['player_seat']) is int and
+                row['player_seat'] in (1, 2) and ident == row['player_seat'] and ident not in objects and
+                all(row[k] is None for k in ('public_object_ref', 'object_type', 'zone', 'reason')))
+        elif kind == 'verified_public_object':
+            _need(row['namespace'] == 'public_game_object' and row['public_object_ref'] == ident and
+                type(row['public_object_ref']) is int and ident in objects and
+                objects[ident]['zone'] == row['zone'] == 'ZoneType_Battlefield' and
+                row['object_type'] in ('GameObjectType_Card', 'GameObjectType_Token') and
+                row['player_seat'] is None and row['reason'] is None)
+        else:
+            _need(kind == 'unresolved' and row['namespace'] == 'unresolved_request_member' and
+                ident == position+1 and all(row[k] is None for k in
+                    ('player_seat', 'public_object_ref', 'object_type', 'zone')) and
+                row['reason'] in ('player_entity_collision', 'player_list_unverified', 'target_role_unreviewed'))
+        key = (row['namespace'], ident)
+        _need(key not in seen); seen.add(key)
+
+
+def referent_identity(row):
+    return tuple((type(row[k]).__name__, row[k]) for k in ('target_referent_kind',
+        'namespace', 'target_instance_ref', 'player_seat', 'public_object_ref',
+        'object_type', 'zone', 'reason', 'list_position', 'legal_action'))
+
+
+def check_referent_final_set(request, proposed):
+    """Membership/count only for the explicit namespaced offered role domain."""
+    _keys(proposed, ('source_object_ref', 'target_idx', 'target_referents'))
+    _need(type(proposed['target_referents']) is list and len(proposed['target_referents']) <= 64)
+    if any(type(proposed[k]) is not int or proposed[k] != request[k] for k in ('source_object_ref', 'target_idx')):
+        return 'insufficient_evidence', 'proposal_binding_invalid'
+    entries = request['entries']
+    if not entries or any(r['legal_action'] != SELECT or r['target_referent_kind'] == 'unresolved' for r in entries):
+        return 'insufficient_evidence', 'complete_current_referent_domain_not_observed'
+    minimum, maximum = request['min_targets'], request['max_targets']
+    if minimum is None or maximum is None:
+        return 'insufficient_evidence', 'final_target_count_bounds_not_observed'
+    for row in proposed['target_referents']:
+        _keys(row, ('target_instance_ref', 'target_referent_kind', 'namespace', 'player_seat',
+            'public_object_ref', 'object_type', 'zone', 'reason', 'list_position', 'legal_action'))
+    chosen = [referent_identity(r) for r in proposed['target_referents']]
+    if len(set(chosen)) != len(chosen):
+        return 'violated_known_constraints', 'final_target_set_contains_duplicates'
+    if not minimum <= len(chosen) <= maximum:
+        return 'violated_known_constraints', 'final_target_count_outside_observed_bounds'
+    offered = {referent_identity(r) for r in entries}
+    if any(r not in offered for r in chosen):
+        return 'violated_known_constraints', 'target_outside_current_referent_domain'
+    return 'verified_known_constraints', 'role_set_satisfies_observed_membership_and_count'
 
 
 def check_request(value, visible, seat, *, allow_no_cancel=False):

@@ -51,10 +51,12 @@ def _unknown(reason,scope='expired_or_revoked'):
 
 
 def _raw_stamp(reducer):
+    from .target_build import current_build
+    from .current_target_request import role_state_witness
     current=reducer.document()['current']
     fields=('instanceId','grpId','type','parentId','zoneId','ownerSeatId','controllerSeatId',
         'visibility','viewers','isTapped','uniqueAbilities','power','toughness')
-    return copy.deepcopy((reducer.accepted_digest.hex(),current,
+    return copy.deepcopy((reducer.accepted_digest.hex(),current,current_build(reducer),role_state_witness(reducer),
         [{k:reducer.objects[o['id']].get(k) for k in fields} for o in current.get('objects',[])]))
 
 
@@ -322,6 +324,8 @@ def safe_summary(frame):
     for key,names in fields.items():
         if key not in local:continue
         value=local[key];source=value.get('coverage',{}) if key=='complex_action_intents' else value
+        if key=='current_target_evidence' and value.get('schema_version')=='mtgaplayer.current-target-request.v2':
+            names=(*names,'verified_player_memberships','verified_public_object_memberships','unresolved_memberships')
         evidence[key]={'status':value.get('status') if value.get('status') in ('observed','insufficient_evidence','partial') else 'unknown',
             'counts':{name:count(source.get(name)) for name in names},'truncated':value.get('truncated') if type(value.get('truncated')) is bool else None}
     if 'current_cost_stage' in local:
