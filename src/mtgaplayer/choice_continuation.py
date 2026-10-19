@@ -120,21 +120,30 @@ def _raw_child(observation, binding):
 class StageObserver:
     """Private opt-in prepare/apply/finish instrumentation, like TapObserver."""
     def __init__(self, reducer, *, include_revision=False, include_cast=False, include_target_completions=False,
-                 include_player_target_stages=False):
+                 include_player_target_stages=False, include_parent_target_lineage=False):
+        if type(include_parent_target_lineage) is not bool:
+            raise ValueError('invalid_parent_target_lineage_flag')
         self.reducer = reducer
+        self.include_parent_target_lineage = include_parent_target_lineage
+        include_player_target_stages = include_player_target_stages or include_parent_target_lineage
         self.include_target_completions = include_target_completions
         self.include_player_target_stages = include_player_target_stages
         self.completion_work_ns = 0
         self.cast = None
-        if include_cast:
+        if include_cast or include_parent_target_lineage:
             from .cast_continuation import CastStage
-            self.cast = CastStage(reducer)
+            self.cast = CastStage(reducer, include_parent_target_lineage=include_parent_target_lineage)
         self.revision = None
         if include_revision or include_target_completions or include_player_target_stages:
             from .target_revision import RevisionStage
             self.revision = RevisionStage(reducer, include_completions=include_target_completions,
                 include_player_target_stages=include_player_target_stages)
         self.reset()
+
+    def freeze_parent_target_lineage(self, consumer, message, options, policy, *, child_evidence=None):
+        if self.cast is not None and self.include_parent_target_lineage:
+            self.cast.freeze_parent_target_lineage(consumer, message, options, policy,
+                child_evidence=child_evidence, revision=self.revision)
 
     def reset(self):
         self._reset_first()
@@ -218,6 +227,9 @@ class StageObserver:
         elif prepared is not None:
             self._clear()
         if self.revision is not None: self._revise(self.revision.after_apply)
+        if self.include_parent_target_lineage and self.revision is not None:
+            from .parent_target_lineage import link_target_fact
+            self.cast._lineage(link_target_fact, self.revision.player_completions.player_last)
 
     def _revise(self, method, *args):
         if not (self.include_target_completions or self.include_player_target_stages):

@@ -164,6 +164,12 @@ def updated(stage, saved):
             'historical_comparison_status': 'unavailable_no_comparable_frozen_preference',
             'parent_action_causality': 'unknown', 'complete_legality_verified': False,
             'server_acceptance_verified': False, 'current': False, 'historical_only': True, 'read_only': True, **EXECUTION}
+        lineage = saved['role_first'].get('parent_source_lineage')
+        if lineage is not None:
+            _need(_same(lineage['child_request_binding'], ev['current_request_binding']) and
+                _same(lineage['child_snapshot_ref'], ev['source_snapshot_ref']) and
+                lineage['source_lineage_status'] == 'parent_child_source_lineage_verified')
+            fact['parent_source_lineage'] = copy.deepcopy(lineage)
         saved['historical_fact'] = fact
         c = stage.player_completions.player_counts
         c['strictly_paired_target_updates'] += 1

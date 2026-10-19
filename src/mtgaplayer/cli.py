@@ -77,10 +77,11 @@ def _observe_tap(reducer):
 
 
 def _observe_continuation(reducer, *, include_revision=False, include_cast=False, include_target_completions=False,
-                          include_player_target_stages=False):
+                          include_player_target_stages=False, include_parent_target_lineage=False):
     from .choice_continuation import StageObserver
     stage = StageObserver(reducer, include_revision=include_revision, include_cast=include_cast,
-        include_target_completions=include_target_completions, include_player_target_stages=include_player_target_stages)
+        include_target_completions=include_target_completions, include_player_target_stages=include_player_target_stages,
+        include_parent_target_lineage=include_parent_target_lineage)
     previous = reducer.observer
     def observe(event, details):
         stage.observe(event, details)
@@ -307,7 +308,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
           choice_graph=False, combat_frontier=False, decision_state=False,
           _poll_observer=None, _clock_ns=None, decision_state_version=1,
           observed_action_target_menus=False, current_multi_slot_cast=False, _owner_observer=None,
-          _player_target_stages=False):
+          _player_target_stages=False, _parent_target_lineage=False):
     """Read-only completed polls; samples=None explicitly enables continuous watch."""
     from .decision_state import state_schema_version
     state_schema_version(decision_state_version)
@@ -315,6 +316,9 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
         raise ValueError('owner_context_requires_poll_observer')
     if type(_player_target_stages) is not bool or _player_target_stages and (_owner_observer is None or decision_state_version != 15):
         raise ValueError('player_target_stages_requires_owner_state15')
+    if type(_parent_target_lineage) is not bool or _parent_target_lineage and (_owner_observer is None or decision_state_version != 15):
+        raise ValueError('parent_target_lineage_requires_owner_state15')
+    _player_target_stages = _player_target_stages or _parent_target_lineage
     if type(current_multi_slot_cast) is not bool or current_multi_slot_cast and decision_state_version < 5:
         raise ValueError('current_multi_slot_cast_requires_player_log_state5')
     decision_state = decision_state or decision_state_version != 1
@@ -340,7 +344,7 @@ def watch(path, interval=0.25, samples=5, max_history_bytes=64 * 1024 * 1024,
     combat = _observe_combat(reducer) if combat_frontier or decision_state else None
     tap = _observe_tap(reducer) if decision_state_version >= 10 else None
     stage = _observe_continuation(reducer, include_revision=decision_state_version == 14, include_cast=decision_state_version == 15,
-        include_player_target_stages=_player_target_stages) if decision_state_version >= 13 else None
+        include_player_target_stages=_player_target_stages, include_parent_target_lineage=_parent_target_lineage) if decision_state_version >= 13 else None
     if observed_action_target_menus:
         from .action_target_menus import TargetMenuObserver
         menu_observer = TargetMenuObserver()
@@ -682,6 +686,7 @@ def main(argv=None):
     shadow_parser.add_argument('--max-event-silence-ms', type=float, default=5000)
     shadow_parser.add_argument('--controlled-replay', action='store_true', help='explicitly label owner-controlled file append simulation')
     shadow_parser.add_argument('--player-target-stages', action='store_true', help='opt-in bounded MP84 historical role stages; safe count summaries only')
+    shadow_parser.add_argument('--parent-target-lineage', action='store_true', help='opt-in finite historical Cast source lineage; implies player target stages; safe counts only')
     watch_parser.add_argument('input', type=Path)
     watch_parser.add_argument('--observed-action-target-menus', action='store_true',
                               help='read-only current public target menu evidence')
@@ -775,7 +780,7 @@ def main(argv=None):
                 max_history_bytes=args.max_history_bytes,max_observation_age_ns=round(args.max_observation_age_ms*1_000_000),
                 max_event_silence_ns=round(args.max_event_silence_ms*1_000_000),
                 observation_mode='controlled_stream_replay' if args.controlled_replay else 'local_log_watch',
-                player_target_stages=args.player_target_stages)
+                player_target_stages=args.player_target_stages, parent_target_lineage=args.parent_target_lineage)
             terminal=None
             for frame in runtime.frames():
                 terminal=frame;summary=safe_summary(frame)
