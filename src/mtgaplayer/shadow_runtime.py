@@ -94,7 +94,7 @@ class LocalShadowRuntime:
                  research_policy=None,prepared_rules=None,prepared_references=None):
         from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY
         from .target_effect import POLICY as TARGET_POLICY
-        from .unified_research import POLICY as UNIFIED_POLICY
+        from .unified_research import POLICIES as UNIFIED_POLICIES
         from .rules_index import PreparedRulesIndex
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
@@ -102,12 +102,12 @@ class LocalShadowRuntime:
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
                 observation_mode not in ('local_log_watch','controlled_stream_replay') or
                 type(player_target_stages) is not bool or type(parent_target_lineage) is not bool or
-                research_policy not in (None,LAND_POLICY,SWAMP_POLICY,TARGET_POLICY,UNIFIED_POLICY) or
+                research_policy not in (None,LAND_POLICY,SWAMP_POLICY,TARGET_POLICY,*UNIFIED_POLICIES) or
                 prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex) or
-                prepared_references is not None and (research_policy != UNIFIED_POLICY or
+                prepared_references is not None and (research_policy not in UNIFIED_POLICIES or
                     type(prepared_references) is not dict or not set(prepared_references) <= {'land','target_effect'} or
                     any(not isinstance(value,PreparedRulesIndex) for value in prepared_references.values())) or
-                research_policy == UNIFIED_POLICY and prepared_rules is not None):
+                research_policy in UNIFIED_POLICIES and prepared_rules is not None):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
         self.age=max_observation_age_ns;self.silence=max_event_silence_ns;self.clock=clock_ns or time.perf_counter_ns
@@ -151,10 +151,10 @@ class LocalShadowRuntime:
 
     def current_frame(self):
         result=self._current_frame();result['observation_mode']=self.mode
-        from .unified_research import POLICY as UNIFIED_POLICY, _unknown as unified_unknown
-        if self.research_policy==UNIFIED_POLICY:
+        from .unified_research import POLICIES as UNIFIED_POLICIES, _unknown as unified_unknown
+        if self.research_policy in UNIFIED_POLICIES:
             if 'unified_research_decision' not in result:
-                result['unified_research_decision']=unified_unknown(result['reason'])
+                result['unified_research_decision']=unified_unknown(result['reason'],policy_version=self.research_policy)
         elif self.research_policy is not None and 'research_decision' not in result:
             from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY, _unknown as land_unknown, _swamp_unknown
             from .target_effect import _unknown as target_unknown
@@ -236,19 +236,18 @@ class LocalShadowRuntime:
             if self.research_policy is not None:
                 from .land_development import POLICY as LAND_POLICY, SWAMP_POLICY, assess_current_land_development
                 from .target_effect import POLICY as TARGET_POLICY, assess_current_target_effect
-                from .unified_research import POLICY as UNIFIED_POLICY, combine_current_research
+                from .unified_research import POLICIES as UNIFIED_POLICIES, _applicable_policy, combine_current_research
                 selected_policy=self.research_policy;prepared=self.prepared_rules
                 dispatch_ns=0
-                if self.research_policy==UNIFIED_POLICY:
+                if self.research_policy in UNIFIED_POLICIES:
                     dispatch_start=self.clock()
-                    selected_policy={'GREMessageType_ActionsAvailableReq':LAND_POLICY,
-                        'GREMessageType_SelectTargetsReq':TARGET_POLICY}.get(typ)
-                    prepared=self.prepared_references.get('land' if selected_policy==LAND_POLICY else 'target_effect')
+                    selected_policy=_applicable_policy(typ,policy_version=self.research_policy)
+                    prepared=self.prepared_references.get('land' if selected_policy in (LAND_POLICY,SWAMP_POLICY) else 'target_effect')
                     dispatch_ns=self.clock()-dispatch_start
                 if selected_policy is not None:
                     assess=assess_current_land_development if selected_policy in (LAND_POLICY,SWAMP_POLICY) else assess_current_target_effect
                     def applicable_research():
-                        if self.research_policy==UNIFIED_POLICY and selected_policy==LAND_POLICY:
+                        if self.research_policy in UNIFIED_POLICIES and selected_policy==LAND_POLICY:
                             from .target_build import current_resource
                             from .land_development import _unknown as land_unknown
                             # The legacy land API remains unchanged. The unified
@@ -265,11 +264,11 @@ class LocalShadowRuntime:
                             local.get('current_target_evidence',{}).get('local_proposals',[]))
                         _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in reviewed)==1,
                             'frame_report_binding_invalid')
-                if self.research_policy==UNIFIED_POLICY:
+                if self.research_policy in UNIFIED_POLICIES:
                     dispatch_start=self.clock()
                     try:
                         unified=combine_current_research(options,policy,research,
-                            local.get('current_target_evidence'))
+                            local.get('current_target_evidence'),policy_version=self.research_policy)
                         _bound(unified,binding,ref)
                         _need(unified['status']!='expired','frame_report_binding_invalid')
                     finally:self._timings['unified_dispatch']=dispatch_ns+self.clock()-dispatch_start
@@ -321,9 +320,9 @@ class LocalShadowRuntime:
         self._counts['polls']+=1;self._counts[frame['time_scope']]+=1
         self._in_poll=False
         if frame['time_scope']=='current_at_completed_poll':self._counts['current_'+TYPES.get(frame['request_type'],'other')]+=1
-        from .unified_research import POLICY as UNIFIED_POLICY
+        from .unified_research import POLICIES as UNIFIED_POLICIES
         stages=STAGES
-        if self.research_policy==UNIFIED_POLICY:
+        if self.research_policy in UNIFIED_POLICIES:
             stages=(*STAGES,'research_policy','unified_dispatch')
             labels=[*labels,'unified_'+(TYPES.get(frame.get('request_type'),'other')
                 if frame['time_scope']=='current_at_completed_poll' else 'failed_or_revoked')]
@@ -529,12 +528,14 @@ def safe_summary(frame):
         if type(elapsed) is int and elapsed>=0:result['timings_ns']['research_policy']=elapsed
     unified=frame.get('unified_research_decision')
     if type(unified) is dict:
-        from .land_development import POLICY as LAND_POLICY,REASONS as LAND_REASONS
+        from .land_development import POLICY as LAND_POLICY,SWAMP_POLICY,REASONS as LAND_REASONS
         from .target_effect import POLICY as TARGET_POLICY,REASONS as TARGET_REASONS
         from .shadow_decision import POLICY as SHADOW_POLICY
-        from .unified_research import POLICY as UNIFIED_POLICY,REASONS as UNIFIED_REASONS
-        policies=(SHADOW_POLICY,LAND_POLICY,TARGET_POLICY)
-        result['unified_research_decision']={'policy_version':UNIFIED_POLICY,
+        from .unified_research import POLICY as UNIFIED_POLICY,POLICIES as UNIFIED_POLICIES,REASONS as UNIFIED_REASONS
+        version=unified.get('policy_version')
+        policies=((SHADOW_POLICY,LAND_POLICY if version==UNIFIED_POLICY else SWAMP_POLICY,TARGET_POLICY)
+            if version in UNIFIED_POLICIES else ())
+        result['unified_research_decision']={'policy_version':version if version in UNIFIED_POLICIES else 'unsupported',
             'selected_policy':unified.get('selected_policy') if unified.get('selected_policy') in policies else None,
             'status':unified.get('status') if unified.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
             'reason':unified.get('reason') if unified.get('reason') in

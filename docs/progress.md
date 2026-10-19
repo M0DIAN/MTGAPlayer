@@ -2606,3 +2606,59 @@ fixture hashes in the owner receipt now explicitly use LF; the prior CRLF
 values under LF labels were corrected, never changing original raw SHA256.
 11new tests including these direct regressions pass; updated committed-candidate
 full tests/independent review/hosted CI remain required before merge.
+
+MP93 — explicit Unified Research v2 integration:
+
+Remote main reverified at d3911ee8ebcc704b3fbdb52c2989dd35538bb81a,
+tree6b00fd11154e04a13118bdf03971621707b93416. Existing Unified v1 dispatch and
+arbiter were Land v1 only; no equivalent v2 runtime existed. Minimal changes
+extend the same Runtime and combine_current_research strict version allowlist:
+unified_research.v2 routes AA to existing MP92 Land v2, SelectTargets to MP89
+Target v1, others to MP66. Default keyword stays v1. No new strategy, state,
+request ledger, parser, resource I/O, response encoder or execution capability.
+History/failure/stop summaries preserve the explicit unified version, never a
+candidate. Conflicts, namespaces, weaker MP66 evidence and before/after current
+request/digest/ref/lease/completed-poll/resource gates remain shared.
+
+Owner reverified original complete MP91 8,382,052B SHAaa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b
+and MP81 3,225,997B SHA1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac,
+all789/217 segment hashes/ranges, clean stop, no partial/framing/gap. Actual
+single production Runtime replay per mode accepts93/53requests and reproduces
+all50/42original first-current identities/digests. MP91 uses all3348 original
+poll cuts with original poll-start clock held inside each poll; MP81 uses the
+authentic requestless prefix and original42cutoffs. Future bytes are appended
+only after freezing. MP91's stale lifecycle naturally resubscribes32times
+sequentially; MP81 once, no parallel state or owner. Offline clocks do not prove
+historical subpoll leases. One MP91 already-expired empty poll retains a reason
+difference; original50current four-component reports match50,816leafvalues.
+
+Actual MP91 A/unifiedv1=0preference/41abstain/9unsupported; B/standaloneLandv2
+AA24=1/23/0; C/unifiedv2 all50=1/40/9. Only opportunity42 gains a preference;
+other49gain none. All24detailed Land v2 routes match B, all4target reports retain
+MP89. MP81 v1 andv2 both11/23/8 on42, no invented extra preference. Real conflicts
+zero. MP91 all50 and MP81 41strictly consumed frozen requests immediately revoke,
+never revive; close also revokes. Independent public/synthetic tests cover
+wrong versions/references/namespaces, conflicting candidates and lifecycle
+interruption, without presenting synthetic Swamp transport as real evidence.
+
+All five original modes replayed against accepted base with identical per-mode
+references. Entire460endpoint-mode CurrentDecisionFrames and matching-code safe
+summaries match571,872+23,494leafvalues, zero differences; canonical JSON retains
+types, versions, source hash/ref.binding/evidence/constraints. Only random
+transport session/sequence and actual timings are normalized. Old Unified v1
+keeps original4card land reference; standaloneLandv2/unifiedv2 use reviewed7card
+union including MP92Swamp. Static land/target predicates themselves are unchanged.
+
+11new tests and94relevant focused tests PASS. Full Python3.11.9 1245tests PASS
+in230.062s; Windowsdoctor PASS_READ_ONLY, input_sent=false. Separate bounded
+real-clock v2 original-byte passes preserve n/p50/p95/p99/max for dispatch,
+actualLandv2, poll-to-frame and immediate consumption queries. Startup/history,
+current endpoints and tail are distinct; no live MP91 telemetry is backfilled.
+Host had concurrent tests; timings are observations, not isolated benchmarks
+or MTGA three-second proof. MP91 unknown current_view_unavailable, historical
+Windows qualification and AutoTap gaps remain unchanged. Public receipt binds
+measured source by LF hashes; final exactHEAD/tree independent review and actual
+Linux/Windows/naturalmainCI remain delivery gates. See
+docs/unified-research-runtime.md and docs/evidence/mp93-owner.json.
+complete_legality_verified=false; strategic_optimality_verified=false;
+execution_ready=false; input_sent=false; P10=NOT_RUN.

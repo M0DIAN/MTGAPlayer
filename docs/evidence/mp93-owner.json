@@ -1,0 +1,1081 @@
+{
+  "schema_version": "mtgaplayer.mp93-owner-evidence.v1",
+  "base_main": "d3911ee8ebcc704b3fbdb52c2989dd35538bb81a",
+  "base_tree": "6b00fd11154e04a13118bdf03971621707b93416",
+  "measurement_code": {
+    "scope": "Precommit worktree code; LF hashes below bind executed source to reviewed candidate. Final HEAD/tree and hosted CI belong to PR delivery record.",
+    "source_sha256_lf": {
+      "src/mtgaplayer/shadow_runtime.py": "cdaad05f05e56fa31096850cc0850492930a1de1df93dd942ec15dfa9ec3c0f2",
+      "src/mtgaplayer/unified_research.py": "7b95529b8e37c061bacffa44876472c99dfaeffc5a95d33471a189df4a1a7c86",
+      "tests/test_unified_research_v2.py": "6bb4a47774a7a287f7087afa2c57eba7a3aa77560d70d8e819d59136bd4bd1ac"
+    },
+    "owner_replay_helper_sha256": "f14d206ea95f37eb569422eee6a836612b5c0cf53632153da50baed6ae73e98b"
+  },
+  "method": {
+    "owner_authenticated_private_originals": true,
+    "independent_reviewer_private_raw_certification": false,
+    "mode": "controlled original-byte incremental production Runtime replay, not live MTGA",
+    "state_architecture": "One owner, Follower and Reducer per run; formal sequential Publisher/Consumer subscriptions only. No second parser, state or request ledger.",
+    "currentness": "Exact original endpoint binding/digest/completed-poll stamps; snapshots contain only bytes through the current cutoff. Later source bytes are appended only after frame freeze.",
+    "correctness_clock": "MP91 original 3348 poll-start stamps held constant inside each poll; MP81 authentic requestless prefix and fixed offline logical clock. No historical subpoll lease proof.",
+    "original_vs_replay_empty_poll_limit": "One MP91 already-expired empty poll differs only in expired reason with the logical within-poll clock; all50 original current endpoint reports agree. No historical subpoll lease claim.",
+    "references": {
+      "land1": {
+        "preparation_ms": 442.3629,
+        "requested_records": 4,
+        "resolved_records": 4,
+        "metadata": {
+          "schema_version": "mtgaplayer.mtga-land-reference.v1",
+          "source_format": "mtga_official_sqlite_card_metadata",
+          "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+          "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+          "source_version_is_user_supplied": false
+        }
+      },
+      "land2": {
+        "preparation_ms": 496.1696,
+        "requested_records": 7,
+        "resolved_records": 7,
+        "metadata": {
+          "schema_version": "mtgaplayer.mtga-land-reference.v1",
+          "source_format": "mtga_official_sqlite_card_metadata",
+          "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+          "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+          "source_version_is_user_supplied": false
+        }
+      },
+      "target": {
+        "preparation_ms": 374.6855,
+        "requested_records": 2,
+        "resolved_records": 2,
+        "metadata": {
+          "schema_version": "mtgaplayer.mtga-target-effect-reference.v1",
+          "source_format": "mtga_official_sqlite_target_effect_metadata",
+          "source_version": "Data=2026.64.0.280;GRP=280.1327372",
+          "source_sha256": "1be0105411ad989ca60e233f1341eaaa9276e3a679c89f1ef6f07e07ede10d25",
+          "source_version_is_user_supplied": false
+        }
+      }
+    },
+    "original_land_reference_records": 4,
+    "expanded_land_reference_records": 7,
+    "reference_boundary": "Base and candidate use identical per-mode references. Unified v1 uses original four; Land v2 and Unified v2 use reviewed union including Swamp, not a new static predicate.",
+    "performance_clock": "perf_counter_ns; single bounded v2 real-clock pass per cohort through warmup, first-current endpoints and tail. Concurrent test processes were active; no isolated benchmark claim.",
+    "historical_live_revocation_categories": "MP91 original2814 aggregate samples remain NOT_RECORDED by family/history/terminal; new offline timings cannot backfill them."
+  },
+  "cohorts": {
+    "mp91": {
+      "source_sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+      "source_bytes": 8382052,
+      "archive_verification": {
+        "status": "verified",
+        "clean_stop": true,
+        "complete_source_files_verified": true,
+        "rotation_gap_possible": false,
+        "archive_error": null,
+        "pending_manifest": null,
+        "uncommitted_segments": null,
+        "generations": [
+          {
+            "generation": 1,
+            "bytes": 8382052,
+            "sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+            "segments": 789,
+            "ranges_contiguous": true,
+            "framed_records": 1844,
+            "partial_record": false,
+            "framing_errors": 0,
+            "source_verified_at_stop": true,
+            "rotation_gap_possible": false
+          }
+        ]
+      },
+      "runs": {
+        "default": {
+          "mode": "default",
+          "policy_version": null,
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 50,
+          "status_distribution": {
+            "unsupported": 9,
+            "abstain": 41
+          },
+          "preference_opportunity_ordinals": [],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {},
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 21520.898
+        },
+        "land1": {
+          "mode": "land1",
+          "policy_version": "land_development_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 24,
+          "status_distribution": {
+            "abstain": 24
+          },
+          "preference_opportunity_ordinals": [],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {},
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 24148.3078
+        },
+        "land2": {
+          "mode": "land2",
+          "policy_version": "land_development_research.v2",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 24,
+          "status_distribution": {
+            "abstain": 23,
+            "research_preference": 1
+          },
+          "preference_opportunity_ordinals": [
+            42
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {},
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 26647.3708
+        },
+        "target": {
+          "mode": "target",
+          "policy_version": "target_effect_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 4,
+          "status_distribution": {
+            "abstain": 4
+          },
+          "preference_opportunity_ordinals": [],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {},
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 23895.7487
+        },
+        "unified1": {
+          "mode": "unified1",
+          "policy_version": "unified_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 50,
+          "status_distribution": {
+            "unsupported": 9,
+            "abstain": 41
+          },
+          "preference_opportunity_ordinals": [],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "current_options": 50,
+            "equal_leaf_values": 50816,
+            "shadow_decision": 50,
+            "research_decision": 50,
+            "unified_research_decision": 50
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 24090.5553
+        },
+        "unified2": {
+          "mode": "unified2",
+          "policy_version": "unified_research.v2",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 50,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 3348,
+            "authenticated_requests": 93
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 32,
+          "evaluated_population": 50,
+          "status_distribution": {
+            "unsupported": 9,
+            "abstain": 40,
+            "research_preference": 1
+          },
+          "preference_opportunity_ordinals": [
+            42
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 50,
+          "immediate_revocation_queries": 50,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {},
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [
+            {
+              "original_scope": "expired_or_revoked",
+              "replayed_scope": "expired_or_revoked",
+              "polls": 1
+            }
+          ],
+          "offline_elapsed_ms_not_live_latency": 25443.1884
+        }
+      },
+      "cross_mode_checks": {
+        "checks": {
+          "current_options_all_modes_equal": 50,
+          "shadow_decision_all_modes_equal": 50,
+          "land2_actual_route_equal": 24,
+          "target_effect_route_equal": 4
+        },
+        "additional_unified_preference_ordinals": [
+          42
+        ]
+      },
+      "original_evidence_unchanged": true,
+      "performance": {
+        "clock": "actual perf_counter_ns",
+        "performance_scope": "Controlled original-byte warmup + first-current prefixes + tail, not original live empty-poll scheduling; nested stages overlap.",
+        "timings_ms": {
+          "All": {
+            "unified_dispatch": {
+              "sample_count": 50,
+              "p50_ms": 0.0949,
+              "p95_ms": 0.1836,
+              "p99_ms": 0.1909,
+              "max_ms": 0.1909
+            },
+            "research_policy": {
+              "sample_count": 28,
+              "p50_ms": 7.3401,
+              "p95_ms": 15.8714,
+              "p99_ms": 18.3067,
+              "max_ms": 18.3067
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 52,
+              "p50_ms": 48.9848,
+              "p95_ms": 166.7638,
+              "p99_ms": 1040.8339,
+              "max_ms": 1040.8339
+            }
+          },
+          "ActionsAvailable": {
+            "unified_dispatch": {
+              "sample_count": 24,
+              "p50_ms": 0.1,
+              "p95_ms": 0.1852,
+              "p99_ms": 0.1909,
+              "max_ms": 0.1909
+            },
+            "research_policy": {
+              "sample_count": 24,
+              "p50_ms": 7.4239,
+              "p95_ms": 15.8714,
+              "p99_ms": 18.3067,
+              "max_ms": 18.3067
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 24,
+              "p50_ms": 81.4513,
+              "p95_ms": 166.7638,
+              "p99_ms": 199.2945,
+              "max_ms": 199.2945
+            }
+          },
+          "SelectTargets": {
+            "unified_dispatch": {
+              "sample_count": 4,
+              "p50_ms": 0.0921,
+              "p95_ms": 0.0976,
+              "p99_ms": 0.0976,
+              "max_ms": 0.0976
+            },
+            "research_policy": {
+              "sample_count": 4,
+              "p50_ms": 6.247,
+              "p95_ms": 7.3401,
+              "p99_ms": 7.3401,
+              "max_ms": 7.3401
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 4,
+              "p50_ms": 29.5142,
+              "p95_ms": 31.7974,
+              "p99_ms": 31.7974,
+              "max_ms": 31.7974
+            }
+          },
+          "Other": {
+            "unified_dispatch": {
+              "sample_count": 22,
+              "p50_ms": 0.0705,
+              "p95_ms": 0.1047,
+              "p99_ms": 0.1387,
+              "max_ms": 0.1387
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 22,
+              "p50_ms": 21.4735,
+              "p95_ms": 68.4287,
+              "p99_ms": 143.007,
+              "max_ms": 143.007
+            }
+          },
+          "ExpiredOrRevoked": {
+            "unified_dispatch": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 2,
+              "p50_ms": 124.2336,
+              "p95_ms": 1040.8339,
+              "p99_ms": 1040.8339,
+              "max_ms": 1040.8339
+            }
+          }
+        },
+        "immediate_consumption_revocation_ms": {
+          "All": {
+            "sample_count": 50,
+            "p50_ms": 0.0154,
+            "p95_ms": 0.0204,
+            "p99_ms": 0.0382,
+            "max_ms": 0.0382
+          },
+          "ActionsAvailable": {
+            "sample_count": 24,
+            "p50_ms": 0.0155,
+            "p95_ms": 0.0219,
+            "p99_ms": 0.0382,
+            "max_ms": 0.0382
+          },
+          "SelectTargets": {
+            "sample_count": 4,
+            "p50_ms": 0.0146,
+            "p95_ms": 0.0187,
+            "p99_ms": 0.0187,
+            "max_ms": 0.0187
+          },
+          "Other": {
+            "sample_count": 22,
+            "p50_ms": 0.0146,
+            "p95_ms": 0.0201,
+            "p99_ms": 0.0204,
+            "max_ms": 0.0204
+          }
+        },
+        "failed_revocation_queries": 0,
+        "poll_to_frame_ready_scope_ms": {
+          "current_endpoints": {
+            "sample_count": 50,
+            "p50_ms": 47.2345,
+            "p95_ms": 145.0188,
+            "p99_ms": 199.2945,
+            "max_ms": 199.2945
+          },
+          "startup_history": {
+            "sample_count": 1,
+            "p50_ms": 1040.8339,
+            "p95_ms": 1040.8339,
+            "p99_ms": 1040.8339,
+            "max_ms": 1040.8339
+          },
+          "terminal_tail": {
+            "sample_count": 1,
+            "p50_ms": 124.2336,
+            "p95_ms": 124.2336,
+            "p99_ms": 124.2336,
+            "max_ms": 124.2336
+          }
+        }
+      }
+    },
+    "mp81": {
+      "source_sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+      "source_bytes": 3225997,
+      "archive_verification": {
+        "status": "verified",
+        "clean_stop": true,
+        "complete_source_files_verified": true,
+        "rotation_gap_possible": false,
+        "archive_error": null,
+        "pending_manifest": null,
+        "uncommitted_segments": null,
+        "generations": [
+          {
+            "generation": 1,
+            "bytes": 3225997,
+            "sha256": "1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac",
+            "segments": 217,
+            "ranges_contiguous": true,
+            "framed_records": 367,
+            "partial_record": false,
+            "framing_errors": 0,
+            "source_verified_at_stop": true,
+            "rotation_gap_possible": false
+          }
+        ]
+      },
+      "runs": {
+        "default": {
+          "mode": "default",
+          "policy_version": null,
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 42,
+          "status_distribution": {
+            "unsupported": 8,
+            "abstain": 33,
+            "research_preference": 1
+          },
+          "preference_opportunity_ordinals": [
+            12
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 1848.6681
+        },
+        "land1": {
+          "mode": "land1",
+          "policy_version": "land_development_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 13,
+          "status_distribution": {
+            "abstain": 12,
+            "research_preference": 1
+          },
+          "preference_opportunity_ordinals": [
+            19
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 2054.1874
+        },
+        "land2": {
+          "mode": "land2",
+          "policy_version": "land_development_research.v2",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 13,
+          "status_distribution": {
+            "abstain": 12,
+            "research_preference": 1
+          },
+          "preference_opportunity_ordinals": [
+            19
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 2224.566
+        },
+        "target": {
+          "mode": "target",
+          "policy_version": "target_effect_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 14,
+          "status_distribution": {
+            "unsupported": 1,
+            "abstain": 4,
+            "research_preference": 9
+          },
+          "preference_opportunity_ordinals": [
+            32,
+            33,
+            35,
+            36,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 2218.8768
+        },
+        "unified1": {
+          "mode": "unified1",
+          "policy_version": "unified_research.v1",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 42,
+          "status_distribution": {
+            "unsupported": 8,
+            "abstain": 23,
+            "research_preference": 11
+          },
+          "preference_opportunity_ordinals": [
+            12,
+            19,
+            32,
+            33,
+            35,
+            36,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 2189.4145
+        },
+        "unified2": {
+          "mode": "unified2",
+          "policy_version": "unified_research.v2",
+          "clock": "original logical poll starts",
+          "performance_is_live_MTGA": false,
+          "source_generation": 1,
+          "first_current_endpoints": 42,
+          "counts": {
+            "RawFollower": 1,
+            "RawReducer": 1,
+            "completed_polls": 44,
+            "authenticated_requests": 53
+          },
+          "one_follower_reducer_owner": true,
+          "publisher_consumer_subscriptions": 1,
+          "evaluated_population": 42,
+          "status_distribution": {
+            "unsupported": 8,
+            "abstain": 23,
+            "research_preference": 11
+          },
+          "preference_opportunity_ordinals": [
+            12,
+            19,
+            32,
+            33,
+            35,
+            36,
+            38,
+            39,
+            40,
+            41,
+            42
+          ],
+          "policy_conflicts": 0,
+          "frozen_requests_strictly_consumed": 41,
+          "immediate_revocation_queries": 41,
+          "post_consumption_request_revivals": 0,
+          "closed_result_revoked": true,
+          "original_live_component_comparisons": {
+            "historical_current_options": 42,
+            "historical_shadow_decision": 42
+          },
+          "private_difference_rows": 0,
+          "all_poll_scope_or_reason_differences": [],
+          "offline_elapsed_ms_not_live_latency": 2207.1566
+        }
+      },
+      "cross_mode_checks": {
+        "checks": {
+          "current_options_all_modes_equal": 42,
+          "shadow_decision_all_modes_equal": 42,
+          "land2_actual_route_equal": 13,
+          "target_effect_route_equal": 14
+        },
+        "additional_unified_preference_ordinals": []
+      },
+      "original_evidence_unchanged": true,
+      "performance": {
+        "clock": "actual perf_counter_ns",
+        "performance_scope": "Controlled original-byte warmup + first-current prefixes + tail, not original live empty-poll scheduling; nested stages overlap.",
+        "timings_ms": {
+          "All": {
+            "unified_dispatch": {
+              "sample_count": 42,
+              "p50_ms": 0.1032,
+              "p95_ms": 0.2077,
+              "p99_ms": 0.4008,
+              "max_ms": 0.4008
+            },
+            "research_policy": {
+              "sample_count": 27,
+              "p50_ms": 5.91,
+              "p95_ms": 12.6,
+              "p99_ms": 14.7617,
+              "max_ms": 14.7617
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 44,
+              "p50_ms": 25.2966,
+              "p95_ms": 146.6871,
+              "p99_ms": 288.1181,
+              "max_ms": 288.1181
+            }
+          },
+          "ActionsAvailable": {
+            "unified_dispatch": {
+              "sample_count": 13,
+              "p50_ms": 0.1079,
+              "p95_ms": 0.2077,
+              "p99_ms": 0.2077,
+              "max_ms": 0.2077
+            },
+            "research_policy": {
+              "sample_count": 13,
+              "p50_ms": 8.5832,
+              "p95_ms": 14.7617,
+              "p99_ms": 14.7617,
+              "max_ms": 14.7617
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 13,
+              "p50_ms": 77.9557,
+              "p95_ms": 156.2262,
+              "p99_ms": 156.2262,
+              "max_ms": 156.2262
+            }
+          },
+          "SelectTargets": {
+            "unified_dispatch": {
+              "sample_count": 14,
+              "p50_ms": 0.1334,
+              "p95_ms": 0.4008,
+              "p99_ms": 0.4008,
+              "max_ms": 0.4008
+            },
+            "research_policy": {
+              "sample_count": 14,
+              "p50_ms": 5.0711,
+              "p95_ms": 7.7952,
+              "p99_ms": 7.7952,
+              "max_ms": 7.7952
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 14,
+              "p50_ms": 23.0972,
+              "p95_ms": 30.8383,
+              "p99_ms": 30.8383,
+              "max_ms": 30.8383
+            }
+          },
+          "Other": {
+            "unified_dispatch": {
+              "sample_count": 15,
+              "p50_ms": 0.0792,
+              "p95_ms": 0.1293,
+              "p99_ms": 0.1293,
+              "max_ms": 0.1293
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 15,
+              "p50_ms": 16.9917,
+              "p95_ms": 43.7034,
+              "p99_ms": 43.7034,
+              "max_ms": 43.7034
+            }
+          },
+          "ExpiredOrRevoked": {
+            "unified_dispatch": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "research_policy": {
+              "sample_count": 0,
+              "p50_ms": null,
+              "p95_ms": null,
+              "p99_ms": null,
+              "max_ms": null
+            },
+            "poll_to_frame_ready": {
+              "sample_count": 2,
+              "p50_ms": 73.4044,
+              "p95_ms": 288.1181,
+              "p99_ms": 288.1181,
+              "max_ms": 288.1181
+            }
+          }
+        },
+        "immediate_consumption_revocation_ms": {
+          "All": {
+            "sample_count": 41,
+            "p50_ms": 0.0147,
+            "p95_ms": 0.0317,
+            "p99_ms": 0.0393,
+            "max_ms": 0.0393
+          },
+          "ActionsAvailable": {
+            "sample_count": 13,
+            "p50_ms": 0.016,
+            "p95_ms": 0.0338,
+            "p99_ms": 0.0338,
+            "max_ms": 0.0338
+          },
+          "SelectTargets": {
+            "sample_count": 14,
+            "p50_ms": 0.0135,
+            "p95_ms": 0.0393,
+            "p99_ms": 0.0393,
+            "max_ms": 0.0393
+          },
+          "Other": {
+            "sample_count": 14,
+            "p50_ms": 0.015,
+            "p95_ms": 0.0317,
+            "p99_ms": 0.0317,
+            "max_ms": 0.0317
+          }
+        },
+        "failed_revocation_queries": 0,
+        "poll_to_frame_ready_scope_ms": {
+          "current_endpoints": {
+            "sample_count": 42,
+            "p50_ms": 24.5169,
+            "p95_ms": 108.8344,
+            "p99_ms": 156.2262,
+            "max_ms": 156.2262
+          },
+          "startup_history": {
+            "sample_count": 1,
+            "p50_ms": 288.1181,
+            "p95_ms": 288.1181,
+            "p99_ms": 288.1181,
+            "max_ms": 288.1181
+          },
+          "terminal_tail": {
+            "sample_count": 1,
+            "p50_ms": 73.4044,
+            "p95_ms": 73.4044,
+            "p99_ms": 73.4044,
+            "max_ms": 73.4044
+          }
+        }
+      }
+    }
+  },
+  "complete_legacy_compatibility": {
+    "schema_version": "mtgaplayer.mp93-entire-frame-compatibility.v1",
+    "status": "PASS",
+    "by_cohort_and_mode": {
+      "mp91": {
+        "default": {
+          "endpoints": 50,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 63841,
+          "equal_summary_leaf_values": 1763
+        },
+        "land1": {
+          "endpoints": 50,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 66433,
+          "equal_summary_leaf_values": 2713
+        },
+        "land2": {
+          "endpoints": 50,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 66532,
+          "equal_summary_leaf_values": 2713
+        },
+        "target": {
+          "endpoints": 50,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 68193,
+          "equal_summary_leaf_values": 2713
+        },
+        "unified1": {
+          "endpoints": 50,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 69029,
+          "equal_summary_leaf_values": 3045
+        }
+      },
+      "mp81": {
+        "default": {
+          "endpoints": 42,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 44485,
+          "equal_summary_leaf_values": 1402
+        },
+        "land1": {
+          "endpoints": 42,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 46677,
+          "equal_summary_leaf_values": 2200
+        },
+        "land2": {
+          "endpoints": 42,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 46719,
+          "equal_summary_leaf_values": 2200
+        },
+        "target": {
+          "endpoints": 42,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 49452,
+          "equal_summary_leaf_values": 2200
+        },
+        "unified1": {
+          "endpoints": 42,
+          "entire_current_decision_frames_equal": true,
+          "entire_safe_summaries_equal": true,
+          "equal_frame_leaf_values": 50511,
+          "equal_summary_leaf_values": 2545
+        }
+      }
+    },
+    "compared_endpoints_across_modes": 460,
+    "equal_entire_frame_leaf_values": 571872,
+    "equal_entire_safe_summary_leaf_values": 23494,
+    "private_mismatching_endpoints": 0,
+    "equality": "Canonical JSON retains bool/integer/float distinctions; comparison never uses Python loose numeric equality.",
+    "normalization": "Entire CurrentDecisionFrame and matching-code safe_summary. Only random snapshot transport session_id/sequence and actual timings_ns/timings_ms are removed; all binding, versions, source hashes, evidence and lifecycle fields remain.",
+    "source_data_scope": "Already saved private replay outputs only; no archive is reparsed and no strategy is rerun.",
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "verification": {
+    "new_focused_tests": 11,
+    "relevant_focused_tests": 94,
+    "windows_doctor": "PASS_READ_ONLY; Python3.11.9; input_sent=false",
+    "independent_exact_HEAD_tree_review": "Required on final committed candidate; see PR delivery record",
+    "required_hosted_CI": "Linux/Windows required on exact reviewed candidate; see PR delivery record",
+    "full_python311_tests": "1245 PASS",
+    "full_test_output_sha256": "a95da239305c8e41290ddb267ced401b452c3e52e21ec6dd44f36f457458cf3e"
+  },
+  "scope": "Only explicit composition/version routing. No new land predicate, target effect, tactical ranking, GRE interpretation, response encoding or execution.",
+  "complete_legality_verified": false,
+  "strategic_optimality_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN"
+}
