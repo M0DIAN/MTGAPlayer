@@ -405,6 +405,9 @@ class DecisionConsumer:
             if type(value) is not int or not 1 <= value <= MAX_AGE_NS:
                 raise ValueError('invalid_consumer_lease')
         self._clock = clock_ns or time.perf_counter_ns
+        # Identity only; existing Consumer behavior is unchanged. Opt-in
+        # owner-context reports can reject foreign-thread computations.
+        self._owner_thread_id = threading.get_ident()
         self._last_clock = None
         self._silence_limit, self._age_limit = max_event_silence_ns, max_observation_age_ns
         self._session = None

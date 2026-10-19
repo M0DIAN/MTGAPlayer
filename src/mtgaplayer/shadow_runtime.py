@@ -90,13 +90,18 @@ class LocalShadowRuntime:
     """
     def __init__(self,path,*,interval=.25,samples=None,max_history_bytes=64*1024*1024,
                  max_observation_age_ns=5_000_000_000,max_event_silence_ns=5_000_000_000,
-                 clock_ns=None,observation_mode='local_log_watch',player_target_stages=False,parent_target_lineage=False):
+                 clock_ns=None,observation_mode='local_log_watch',player_target_stages=False,parent_target_lineage=False,
+                 research_policy=None,prepared_rules=None):
+        from .land_development import POLICY as LAND_POLICY
+        from .rules_index import PreparedRulesIndex
         if (type(interval) not in (int,float) or not math.isfinite(interval) or not 0<=interval<=60 or
                 samples is not None and (type(samples) is not int or not 1<=samples<=1000) or
                 type(max_history_bytes) is not int or not 1<=max_history_bytes<=1024**3 or
                 any(type(n) is not int or not 1<=n<=MAX_AGE_NS for n in (max_observation_age_ns,max_event_silence_ns)) or
                 observation_mode not in ('local_log_watch','controlled_stream_replay') or
-                type(player_target_stages) is not bool or type(parent_target_lineage) is not bool):
+                type(player_target_stages) is not bool or type(parent_target_lineage) is not bool or
+                research_policy not in (None,LAND_POLICY) or
+                prepared_rules is not None and not isinstance(prepared_rules,PreparedRulesIndex)):
             raise ValueError('invalid_shadow_runtime_bounds')
         self.path=path;self.interval=interval;self.samples=samples;self.max_history_bytes=max_history_bytes
         self.age=max_observation_age_ns;self.silence=max_event_silence_ns;self.clock=clock_ns or time.perf_counter_ns
@@ -104,6 +109,8 @@ class LocalShadowRuntime:
         self._reducer=self._message=self._source=self._watch=None;self._metadata={};self._stop_reason='not_started'
         self._in_poll=False;self._attempt_started=None;self._completed_stamp=None
         self.parent_target_lineage=parent_target_lineage
+        self.research_policy=research_policy;self.prepared_rules=prepared_rules
+        self._research_work=[];self._research_work_attempted=0
         self.player_target_stages=player_target_stages or parent_target_lineage
         self._stage_observer=None;self._player_freeze_attempted=False;self._parent_freeze_attempted=False
         self._player_work=[];self._player_work_attempted=0;self._player_work_previous=0
@@ -137,6 +144,10 @@ class LocalShadowRuntime:
 
     def current_frame(self):
         result=self._current_frame();result['observation_mode']=self.mode
+        if self.research_policy is not None and 'research_decision' not in result:
+            from .land_development import _unknown as land_unknown
+            result['research_decision']=land_unknown(result['reason'])
+            result['research_decision']['status']='expired'
         if (threading.get_ident()==self._owner and self.player_target_stages and self._stage_observer is not None):
             stage=self._stage_observer;revision=stage.revision
             if self.consumer.current_view()['consumer_status']=='STALE':revision.reset()
@@ -207,6 +218,16 @@ class LocalShadowRuntime:
             _need(_equal(policy['request_binding'],binding) and _equal(policy['source_snapshot_ref'],ref),'frame_report_binding_invalid')
             if policy['status']=='research_preference':
                 _need(sum(_equal(o['option_key'],policy['preferred_option_key']) for o in options['options'])==1,'frame_report_binding_invalid')
+            research=None
+            if self.research_policy is not None:
+                from .land_development import assess_current_land_development
+                research=self._timed('research_policy',lambda:assess_current_land_development(
+                    self.consumer,self._reducer,self._message,self.prepared_rules,policy_version=self.research_policy,
+                    completed_stamp=self._completed_stamp))
+                _bound(research,binding,ref)
+                if research['status']=='research_preference':
+                    _need(sum(_equal(o['option_key'],research['preferred_option_key']) for o in options['options'])==1,
+                        'frame_report_binding_invalid')
             _need(_equal(stamp,_stamp(self._reducer,self._message,state)),'raw_state_changed_during_frame')
             result=_unknown('current_request_research_only','current_at_completed_poll')
             result.update(request_binding=copy.deepcopy(binding),source_snapshot_ref=copy.deepcopy(ref),request_type=typ,
@@ -216,6 +237,7 @@ class LocalShadowRuntime:
                 shadow_policy_status=policy['status'],shadow_preference=copy.deepcopy(policy['preferred_option_key']),
                 abstention_reason=None if policy['status']=='research_preference' else policy['reason'],
                 unresolved_constraints={'options':copy.deepcopy(options['unresolved']),'policy':copy.deepcopy(policy['unresolved'])})
+            if research is not None:result['research_decision']=research
             _bounded_json(result);return result
         try:
             result=_assess_current_report(self.consumer,evaluate,_unknown)
@@ -275,6 +297,9 @@ class LocalShadowRuntime:
         if self.parent_target_lineage:
             result['parent_target_lineage_ms']={**quantiles(self._parent_work),'attempted_samples':self._parent_work_attempted,
                 'omitted_by_cap':self._parent_work_attempted-len(self._parent_work)}
+        if self.research_policy is not None:
+            result['research_policy_ms']={**quantiles(self._research_work),'attempted_samples':self._research_work_attempted,
+                'omitted_by_cap':self._research_work_attempted-len(self._research_work)}
         return result
 
     def close(self,reason='session_stopped'):
@@ -311,6 +336,9 @@ class LocalShadowRuntime:
                 self._timings={k:self._metadata[n] for k,n in (('poll_read_framing','poll_read_ns'),
                     ('reducer_apply','reducer_apply_ns'),('decision_state_assembly','decision_state_assembly_ns'))}
                 ready_start=self.clock();self._publish(document);frame=self.current_frame()
+                if self.research_policy is not None and 'research_policy' in self._timings:
+                    self._research_work_attempted+=1
+                    if len(self._research_work)<20000:self._research_work.append(self._timings['research_policy']/1e6)
                 if self.player_target_stages and self._stage_observer is not None:
                     total=self._stage_observer.completion_work_ns
                     elapsed=total-self._player_work_previous;self._player_work_previous=total
@@ -430,4 +458,16 @@ def safe_summary(frame):
             complete_target_legality=None,complete_action_legality=None,historical_only=True)
         elapsed=frame.get('timings_ns',{}).get('parent_target_lineage')
         if type(elapsed) is int and elapsed>=0:result['timings_ns']['parent_target_lineage']=elapsed
+    research=frame.get('research_decision')
+    if type(research) is dict:
+        from .land_development import POLICY as LAND_POLICY,REASONS
+        result['research_decision']={'policy_version':LAND_POLICY if research.get('policy_version')==LAND_POLICY else 'unsupported',
+            'status':research.get('status') if research.get('status') in ('research_preference','abstain','expired','unsupported') else 'unknown',
+            'reason':research.get('reason') if research.get('reason') in REASONS|PUBLIC_REASONS else 'unreviewed_reason',
+            'coverage':{key:count(research.get('coverage',{}).get(key)) for key in ('active_action_rows','play_offers',
+                'verified_play_sources','verified_static_land_candidates','ordinary_profile_candidates')},
+            'complete_legality_verified':False,'payment_verified':False,'strategic_optimality_verified':False,
+            'read_only':True,**EXECUTION}
+        elapsed=frame.get('timings_ns',{}).get('research_policy')
+        if type(elapsed) is int and elapsed>=0:result['timings_ns']['research_policy']=elapsed
     return result
