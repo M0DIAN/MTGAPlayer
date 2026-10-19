@@ -1,0 +1,164 @@
+{
+  "schema_version": "mtgaplayer.mp92-owner-evidence.v1",
+  "base_main": "93e3ba713515f9cade8e0e83bfec4323961ecb71",
+  "source": {
+    "sha256": "aa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b",
+    "bytes": 8382052,
+    "generations": 1,
+    "segments": 789,
+    "hashes_and_continuity_rechecked": true,
+    "authentication": "Reuse accepted MP91 authentication of93requests; no GRE reparse or new game state.",
+    "first_current_boundaries_rechecked": 50,
+    "repeated_frames_excluded": true
+  },
+  "investigation": {
+    "ActionsAvailable": 24,
+    "SelectTargets": 4,
+    "original_primary_reasons": {
+      "multiple_play_competitors": 8,
+      "no_play_offered": 10,
+      "active_action_structure_unreviewed": 4,
+      "static_land_identity_unverified": 2,
+      "target_value_comparison_unreviewed": 4
+    },
+    "static_land_gaps": [
+      {
+        "opportunity": 28,
+        "card_id": 96828,
+        "static_identity": "unique nonbasic Plains/Swamp, hybrid, three explicit abilities",
+        "special_condition": "Version-bound specific static text offers pay2life or enters tapped; not an ordinary basic profile. No current choice or effective outcome inferred."
+      },
+      {
+        "opportunity": 42,
+        "card_id": 106531,
+        "static_identity": "unique Basic Land/Swamp69/Loc653, strict unlinked primary profile",
+        "current_identity": "unique engine-offered Play, own visible Hand Card, original v1 source/structure audit passed",
+        "phase": "typed ownMain1 turn6; step and Stack remain unknown"
+      }
+    ],
+    "multiple_play": {
+      "requests": 8,
+      "memberships": 25,
+      "requests_containing_Swamp106531": 6,
+      "complete_comparative_resource_value": null,
+      "current_mana_pool_unobserved_requests": 8,
+      "decision": "abstain; no ID/position/history tie-break"
+    },
+    "structure_refusals": {
+      "requests": 4,
+      "also_multiple_Play": 2,
+      "also_no_Play": 2,
+      "frozen_Activate_shapes": "two mana-cost rows/one target slot/two predicted auto-tap rows",
+      "exact_inner_unreviewed_branch": "UNKNOWN from frozen structural summaries; not reparsed or generalized"
+    },
+    "no_Play": {
+      "requests": 10,
+      "containing_Cast": 10,
+      "containing_Activate": 3,
+      "containing_ActivateMana": 10,
+      "containing_Pass": 10,
+      "containing_FloatMana": 10,
+      "decision": "abstain; no general Cast/Activate/Pass strategy added"
+    },
+    "target": {
+      "requests": 4,
+      "members_per_request": 4,
+      "player_targets_per_request": 2,
+      "public_object_targets_per_request": 2,
+      "source_catalog_id": 96854,
+      "specific_ability_id": 191026,
+      "base_effect": "version-bound fixed base2damage, leaves battlefield, any target",
+      "public_object_catalog_id": 86835,
+      "static_type": "Creature/Elemental; not current dynamic type certification",
+      "current_stats": "both opponent-controlled Cards have literal4/5; tapped true and unknown respectively",
+      "current_life": "self9/opponent20",
+      "decision": "abstain; marked damage, actual damage and comparative tactical utility unverified"
+    }
+  },
+  "chosen_family": "ActionsAvailable only",
+  "policy": "land_development_research.v2",
+  "supported_extension": "Exact literal unlinked primary Basic Swamp only; legacy Island predicate unchanged; Mountain/nonbasic/multiplePlay not newly admitted.",
+  "production_scope": "Same owner Consumer and RawReducer/rawstamp/completepoll/lease; current exact build/resource required. No saved reports used in production.",
+  "frozen_research_scope": "Pure extension over original frozen CurrentDecisionOptions plus its accepted source/structure audit; no historical response inputs, no historical live lease claim.",
+  "original_results": {
+    "MP66_all50": [
+      0,
+      41,
+      9
+    ],
+    "MP87_AA24": [
+      0,
+      24,
+      0
+    ],
+    "MP89_target4": [
+      0,
+      4,
+      0
+    ],
+    "MP90_all50": [
+      0,
+      41,
+      9
+    ],
+    "order": [
+      "research_preferences",
+      "abstentions",
+      "unsupported"
+    ]
+  },
+  "new_policy_AA24": {
+    "research_preferences": 1,
+    "abstentions": 23,
+    "unsupported": 0,
+    "preferred_opportunity": 42
+  },
+  "other26_requests": "Outside the land-only policy; not a new unified-policy total.",
+  "default_compatibility": {
+    "status": "PASS",
+    "frame_cases": 64,
+    "equal_leaf_values": 76210,
+    "differences": 0,
+    "scope": "All existing modes None/MP87/MP89/MP90, two real land and14 real target public semantic fixtures, history/current frames and safe summaries.",
+    "normalization": "Snapshot transport session_id/sequence only; preserve all semantic/source/version/binding/evidence values. Logical Clock timing values unchanged.",
+    "MP91_original_reparsed": false,
+    "input_sent": false,
+    "P10": "NOT_RUN"
+  },
+  "public_current_fixture_sha256_lf": "613952804d6fe35e31dc65cc15475c6d29d303a228f8b55e8dd175d68344e8a8",
+  "public_reference_fixture_sha256_lf": "9ed147b164a25b23f8d4ebb105d737cf24ece15e35b65f5b5a6d7480760d30d1",
+  "independent_review_scope": "Public projections, code, controlled runtime and safe owner receipts; private raw byte certification is owner-only.",
+  "telemetry_limits": {
+    "MP91_revocation_query_samples": 2814,
+    "per_family": null,
+    "history_terminal_split": null,
+    "status": "NOT_RECORDED; no retrospective fabricated timings",
+    "current_view_unavailable_cause": "UNKNOWN; no reproducible product defect proved or fix claimed"
+  },
+  "remaining_unknown": [
+    "complete legality",
+    "actual mana production and benefit",
+    "dynamic restrictions and land drop limits",
+    "Cast/Activate opportunity cost",
+    "stack emptiness",
+    "strategic optimality",
+    "historical strategy quality"
+  ],
+  "complete_legality_verified": false,
+  "strategic_optimality_verified": false,
+  "response_encoding_verified": false,
+  "execution_ready": false,
+  "input_sent": false,
+  "P10": "NOT_RUN",
+  "controlled_consistency_regression": {
+    "scope": "Synthetic internal derived-options mismatch, not a proven MP91 or reachable Consumer defect",
+    "old_candidate": "5ec573fa9eebeeef3d5e0c331f26fce48e7d4732",
+    "actual_red_cases": [
+      "source CardId mismatch",
+      "phase mismatch",
+      "options mutation during lookup"
+    ],
+    "red_failures": 3,
+    "new_gate": "Before/after equality of v2 visible options and the same callback state; original policies unchanged."
+  }
+}
