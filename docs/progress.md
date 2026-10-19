@@ -2728,3 +2728,90 @@ gates, not inferred from this local test. No game input/response encoding,
 new parser/state/request ledger or rules engine. complete_legality_verified=false;
 strategic_optimality_verified=false; execution_ready=false; input_sent=false;
 P10=NOT_RUN.
+
+## MP98 — 1U Cast predictive-source consistency (draft candidate, 2026-10-20)
+
+Starts from accepted MP96 main221ba6a52d4fc72ddc914f2aeaad37eb8efba4e0,
+tree751fe70be827dcc6fc60f02a020574c6a36b3045; MP97 has PASS_AUDIT
+only and no product commit. The strictly bounded first implementation slice
+adds an opt-in `assess_current_cast_1u_predictive` owner-thread API. It
+reuses MP96's existing Cast Cardflow reference/goal/current binding and the
+same current RawReducer/Consumer/completed-poll stamp. It verifies literal
+Generic1+Blue1 against two distinct current public own Battlefield sources,
+two separate predictive Blue1 mana units and their unique original offered
+Activate_Mana rows/ability/option/selection equality. It returns a count-only
+observed **predicted route amount and source consistency** report. It does not
+construct/send a payment, certify untapped readiness or claim server acceptance.
+
+The supported positive is the pre-existing MP91 opportunity20 field projection
+in tests/fixtures/cast_cardflow_real.json (owner-retained real-field aliases;
+raw_equivalent=false, synthetic bootstrap). Current source tap literals are
+unknown; both remain counted unknown, not false. Source repetition, mana unit
+repetition/quantity, wrong offer/ability, explicit tapped source, wrong Cast
+cost and consumption are discriminating negative/revocation controls. None
+of these synthetic mutations is an independently observed positive. This is
+not the owner-private original episode payment/ManaPaid examination: the
+MP97 two same-selected histories preserve full_payment=UNKNOWN, and generic1
+MP34 cannot prove literal1U.
+
+The new API is inert unless directly called; there is no new CLI flag, runtime
+policy, decision output version, parser, request ledger, state version or
+InputAdapter connection. Existing default/Unified v1-v3 output is unchanged.
+This narrow Stage-A product experiment is **not MP98 complete payment or legal
+choice acceptance**. All full-payment/action-legality/strategy/execution and
+input flags remain false. The owner-original MP91/MP81 actual payment source
+trace must still be examined to move beyond this evidence level; if absent,
+that higher gate remains EVIDENCE_BLOCKED rather than invented.
+
+Draft feature PR, required exact HEAD Python3.11 full unittest, Windows
+read-only doctor, Linux/Windows PR CI and independent reviewer are separate
+checks; until proven no PASS_IMPLEMENTED/merge acceptance is claimed. No
+original private log access, game, screenshots, packet injection, real input,
+P10 repair or 3s end-to-end qualification. input_sent=false; P10=NOT_RUN.
+
+### MP98 continuation — original payment source links (2026-10-20)
+
+Re-fetched actual main221ba6a52d4fc72ddc914f2aeaad37eb8efba4e0 and existing
+DraftPR109 headc16be2a3bdc6f5fa764adf9d0556283bc6d962e2/tree6503b359dbd4f67088d5e3406c967c9f26117eb2.
+The original history and MP94/95/97 worktrees are preserved; no duplicate PR.
+Independent initial counterexamples found two real P2s: a selected unique
+ability ID could also name another group, and a public object in an unknown/
+private Battlefield zone passed the source check. Reused existing
+ability_observation and strict Reducer mana-source references to repair both,
+with direct synthetic regression tests. No new identity parser or state.
+
+Owner read the two authenticated MP97 original episodes, not another strategy
+evaluation: MP91 opportunity20 (SHAaa5cafb94467184c013539651a619a6101292e2cdf7225e619246aac16ea2e5b,
+8,382,052B) and MP81 opportunity8 (SHA1d75cd1b65ac868da1e9e0025032c7380317fcbf8669016a00fcb536e44a73ac,
+3,225,997B). Existing full-row/pair/consumption gates and MP34 trace facts each
+verify exactly two ManaPaid annotations to the same explicitly migrated Cast
+Stack object, with two sources matching the frozen same-request prediction.
+All four paid sources are subsequently explicitly tapped; all four original
+pre-request tap literals remain unknown. Actual ManaPaid.id values are not the
+predicted manaIds; actual id/color amount semantics and complete payment remain
+UNKNOWN. A Cast, resolution or Draw is not substituted for payment accounting.
+
+Added explicit historical reconcile_observed_cast_1u_sources on the unchanged
+semantic-samples.v2 contract. It reuses bounded replay/check_trace, the shared
+exact1U route checker and two-source/spell identity join; it refuses missing,
+duplicate, extra or wrong actual links and discontinuity. Historical-only
+results cannot supply a current binding/ref/lease or execution permission.
+The MP91 real-field aliased portable positive preserves all11 active rows and
+38 accepted states; inactive1 is recorded separately because oldv2 omits those
+rows. Other card identities are scrubbed to opaque aliases, no synthetic
+bootstrap. MP81's other Cast targets exceed the oldv2 profile; its actual
+Owner findings are reported without dropping that row to invent a positive.
+See docs/cast-1u-payment.md and docs/evidence/mp98-owner.json.
+
+Nine focused methods pass at this implementation stage, including migration
+collision, old/new identity coexistence and payment-source replacement
+counterexamples found during independent pre-commit review. Complete Python3.11,
+Windowsdoctor, independent final exactHEAD/tree and final Linux/Windows/mainCI
+remain delivery gates, with actual results recorded in PR109 and delivery
+receipts. Existing default/Unified v1-v3/Cardflow code and frozen 9/32/9 and
+14/20/8 statistics are unchanged. No new match, real input, private log upload,
+second reducer/ledger, full mana solver or response encoding. L1 predictive
+consistency and finite L3 source links do not establish L2 current readiness
+or L4 arbitrary legality. complete_legality_verified=false;
+strategic_optimality_verified=false; execution_ready=false; input_sent=false;
+P10=NOT_RUN.
