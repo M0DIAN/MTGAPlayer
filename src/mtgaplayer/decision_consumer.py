@@ -523,6 +523,12 @@ class DecisionConsumer:
             current_target_context=current_target_context,current_search_context=current_search_context,
             current_group_context=current_group_context,current_selectn_context=current_selectn_context)
 
+    def current_attacker_configurations(self, reducer, message, *, completed_stamp=None, limit=64):
+        """Explicit nonempty current row configurations; no legal or policy authority."""
+        from .current_attackers import assess_current_attacker_configurations
+        return assess_current_attacker_configurations(self, reducer, message,
+            completed_stamp=completed_stamp, limit=limit)
+
     def current_blocker_assignments(self, reducer, message, *, completed_stamp=None, limit=64):
         """Explicit current row-local assignments; never execution or policy input."""
         from .current_blockers import assess_current_blocker_assignments

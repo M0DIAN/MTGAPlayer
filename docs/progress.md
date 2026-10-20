@@ -2907,3 +2907,47 @@ revisions/results recorded in PR and safe local delivery receipts.
 No game launch or input. complete_legality_verified=false;
 legal_choice_verified=false; strategic_optimality_verified=false;
 execution_ready=false; input_sent=false; P10=NOT_RUN.
+
+## MP102 — bounded current attacker configurations (Issue115)
+
+Re-fetched main e6873a701e4bd9debd7536f731a79c28e62f45eb,
+treeb9bf494e623a9ef004f8c55b3246de55aab56d3a; no open PR at start.
+New clean MP102 worktree preserves MP94/95, MP100 and MP101 evidence.
+MP17/MP36 and MP101's blocker-only API do not generate current hypothetical
+attacker-row configurations. Reuse their existing request/check_request,
+public Battlefield identity checks, frontier and completed-poll Consumer gate.
+
+Added explicit current_attacker_configurations with separate option namespace
+and bounded nonempty initial-row subset. All qualified/attacker rows must agree
+in order, each source is own public Card/Token with unique BF membership, each
+row has one literal opposing Player recipient and no selected field. Every
+candidate preserves all rows and selected/None state. Eight rows/64 returned
+configuration bounds; total is structural subset count, not all legal attacks.
+A private same-Reducer attacker interruption flag survives retransmission and
+is omitted from legacy public documents. No new parser, observer, state/ledger,
+policy integration, schema version, dependency or execution authority.
+
+Real retained prefix8 and308 completed-poll reports produce7/3 configurations:
+two requests, five source-row occurrences and five recipient memberships. All
+sources are public own Tokens. Same-source scrubbed projections, not two raw
+logs/matches or new private-byte authentication. Later revised311/314 cannot
+borrow initial domains. After freezing only, strict historical Submit9 and315
+show0/1 selected rows and first continuous states10/316; these historical
+observations do not prove any hypothetical subset legal.
+
+Unselected-row legality, must-attack/goad, dynamic restrictions, costs and
+global combat/strategic meaning remain unknown; zero-attack configuration is
+excluded. canSubmit true is literal only; manaCost[{}] is uninterpreted. Every
+research-eligibility/legal/strategy/execution flag stays false, complete legal
+actions/minimum null. Existing options, MP66 and Unified v1-v3 unchanged.
+See docs/current-attacker-configurations.md.
+
+Six new focused methods plus76 directly affected existing methods PASS (82).
+Twenty new-API calls per prefix:8 p503.6607ms/p955.0125ms/p99=max6.3778ms;
+308 p502.7144ms/p953.0801ms/p99=max3.3694ms. Local replay only, not live MTGA.
+Full Python3.11, Windows doctor, default/MP101 full-return compatibility,
+independent exactHEAD/tree and required Linux/Windows PR plus natural main CI
+remain final delivery gates recorded against actual versions in PR/receipts.
+No new game or real input. complete_legality_verified=false;
+legal_choice_verified=false; strategic_optimality_verified=false;
+execution_ready=false; input_sent=false; P10=NOT_RUN.
