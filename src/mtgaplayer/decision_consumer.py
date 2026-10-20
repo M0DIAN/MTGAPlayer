@@ -523,6 +523,12 @@ class DecisionConsumer:
             current_target_context=current_target_context,current_search_context=current_search_context,
             current_group_context=current_group_context,current_selectn_context=current_selectn_context)
 
+    def current_blocker_assignments(self, reducer, message, *, completed_stamp=None, limit=64):
+        """Explicit current row-local assignments; never execution or policy input."""
+        from .current_blockers import assess_current_blocker_assignments
+        return assess_current_blocker_assignments(self, reducer, message,
+            completed_stamp=completed_stamp, limit=limit)
+
     def shadow_decision(self, *, policy_version='deterministic_shadow.v1'):
         """Explicit current research policy; never grants input authority."""
         from .shadow_decision import assess_current_shadow_decision
