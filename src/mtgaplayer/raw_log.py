@@ -625,6 +625,8 @@ class RawReducer:
             self.request['_selectn_evidence_interrupted'] = True
         if self.request is not None and self.request['type'] == 'GREMessageType_DeclareBlockersReq':
             self.request['_blocker_evidence_interrupted'] = True
+        if self.request is not None and self.request['type'] == 'GREMessageType_DeclareAttackersReq':
+            self.request['_attacker_evidence_interrupted'] = True
 
     def _request_ended(self, disposition):
         if self.observer is not None and self.request is not None:
@@ -736,6 +738,9 @@ class RawReducer:
                 if len(hits) == 1 and type(hits[0]) is int and hits[0] in (1, 2):
                     self.room_seat = hits[0]
         payload = entry.get('payload')
+        if ('payload' in entry and self.request is not None and self.request['type']=='GREMessageType_DeclareAttackersReq' and
+                not (type(payload) is dict and payload.get('type')=='ClientMessageType_UIMessage')):
+            self._interrupt_current_target()
         if ('payload' in entry and self.request is not None and self.request['type']=='GREMessageType_DeclareBlockersReq' and
                 not (type(payload) is dict and payload.get('type')=='ClientMessageType_UIMessage')):
             self._interrupt_current_target()
@@ -916,6 +921,8 @@ class RawReducer:
                     self.request['id'] == msg_id and self.request.get('_selectn_evidence_interrupted') is True))
                 blocker_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
                     self.request['id'] == msg_id and self.request.get('_blocker_evidence_interrupted') is True))
+                attacker_interrupted = (self._target_record_mixed or prior is not None and bool(self.request and
+                    self.request['id'] == msg_id and self.request.get('_attacker_evidence_interrupted') is True))
                 self.request = {'id': msg_id, 'type': message['type'],
                                 '_continuity_verified': prior is None or bool(self.request and
                                     self.request['id'] == msg_id and
@@ -939,6 +946,8 @@ class RawReducer:
                     self.request['_selectn_evidence_interrupted']=True
                 if message['type']=='GREMessageType_DeclareBlockersReq' and blocker_interrupted:
                     self.request['_blocker_evidence_interrupted']=True
+                if message['type']=='GREMessageType_DeclareAttackersReq' and attacker_interrupted:
+                    self.request['_attacker_evidence_interrupted']=True
                 if self._include_request_parameters:
                     from .request_parameters import project
                     current_objects = self._current()['objects']
@@ -1198,6 +1207,7 @@ class RawReducer:
         if request: request.pop('_group_evidence_interrupted', None)
         if request: request.pop('_selectn_evidence_interrupted', None)
         if request: request.pop('_blocker_evidence_interrupted', None)
+        if request: request.pop('_attacker_evidence_interrupted', None)
         if request and not include_decision_state:
             request.pop('_continuity_verified', None)
             request.pop('_request_parameters', None)
