@@ -2858,3 +2858,52 @@ core blockers. No new game, input, ledger, Reducer, solver or response encoding.
 complete_payment_verified=false; complete_legality_verified=false;
 strategic_optimality_verified=false; execution_ready=false; input_sent=false;
 P10=NOT_RUN.
+
+## MP101 — bounded current blocker assignments (Issue113)
+
+Re-fetched accepted main f4bf11763d7c7aaff9ceb4da34e2be9ea2f9a009,
+tree074d90634b2305fc5bc3ea0c20a6bf2485683f15; no open PR at start.
+A separate clean MP101 worktree preserves MP94/95 and MP100 investigations.
+MP17 already projects current combat identities/edges; MP36 already checks
+historical selected configurations and public results. Neither constructs a
+whole hypothetical assignment for an initial current Blockers request.
+
+Added explicit Consumer.current_blocker_assignments using the existing MP36
+request/check_request, MP17 current frontier, strict public Card/Token
+Battlefield identities and the one Runtime completed-poll/Consumer ref/lease
+gate. It reviews only one current row-offered attacker per listed blocker,
+allows independently offered shared attackers and returns at most64 candidates
+without materializing an unbounded product. A private interruption flag in the
+same RawReducer prevents Cancel/Undo/mixed/Full retransmission revival and is
+omitted from legacy documents. No default policy or frame integration, new
+Reducer, parser, observer, ledger, dependency or State/Event/Candidate version.
+
+Retained real initial prefixes blockers33 and unselect259 produce observed27
+and9 whole row assignments: two requests, five row occurrences, fifteen offered
+edge memberships. Sources are own public Tokens; selected fields are absent,
+each row offers three opposing public attackers and explicit max1. Two scrubbed
+projections derive from the same old private source; no new private-byte auth
+or independent-match claim. LF Git blob and Windows CRLF hashes have separate
+scopes. Later selected-only stages cannot supply current domains. Two Blockers
+final Submits/public results and the Attackers control remain independent MP36
+historical observations, never evidence for the hypothetical configurations.
+See docs/current-blocker-assignments.md.
+
+Known local row membership/capacity does not imply must-block, a legal no-block
+configuration, complete combat rules, dynamic restrictions, complete costs,
+damage assignment, server acceptance or response encoding. All legal-choice,
+complete-legality, research-eligibility, strategy and execution authority stays
+false; complete legal actions/minimum are null. Existing options/Unified modes
+are not fed these new candidates.
+
+Seven new focused tests and69 directly affected existing methods PASS (76 total).
+Windows read-only doctor PASS in independent Python3.11.9 venv, input_sent=false.
+Twenty new-API calls per initial prefix:27 candidates p50 5.4606ms/p956.3228ms/
+p99=max15.3004ms;9 candidates p502.9181ms/p953.5239ms/p99=max3.6352ms.
+Controlled local replay only, not live MTGA latency. Complete Python3.11,
+default full-return comparison, independent final HEAD/tree and required
+Linux/Windows PR/main CI remain final delivery gates, with their actual
+revisions/results recorded in PR and safe local delivery receipts.
+No game launch or input. complete_legality_verified=false;
+legal_choice_verified=false; strategic_optimality_verified=false;
+execution_ready=false; input_sent=false; P10=NOT_RUN.
